@@ -1,0 +1,129 @@
+{
+  "$schema": "pattern@1",
+  "id": "form",
+  "name": "Form Pattern",
+  "purpose": "Data entry screen or section with labeled inputs, validation feedback, and submit action.",
+
+  "zones": {
+    "header": { "description": "Form title and description", "required": false },
+    "fields": { "description": "Input fields with labels", "required": true },
+    "actions": { "description": "Submit/cancel buttons", "required": true }
+  },
+
+  "layout": {
+    "direction": "column",
+    "fieldLayout": "vertical",
+    "maxColumns": 2,
+    "actionAlignment": "right",
+    "spacing": "section"
+  },
+
+  "requires": [
+    { "type": "Input", "minCount": 1 },
+    { "type": "Button", "minCount": 1, "props": { "type": "submit" } }
+  ],
+
+  "recommends": [
+    { "type": "Text", "variant": "h2", "zone": "header" },
+    { "type": "Text", "variant": "muted", "zone": "header" }
+  ],
+
+  "forbids": [
+    { "nested": ["Form", "Form"], "reason": "Nested forms break HTML spec" }
+  ],
+
+  "componentSelection": {
+    "faceUiPrimitives": ["Input", "Select", "Checkbox", "Radio", "Switcher", "Slider", "Button", "Text", "Card", "Bar"],
+    "ufProductBlocks": [
+      {
+        "name": "Form",
+        "contract": "packages/uf/components/Form.json",
+        "context": "app",
+        "whenToUse": ["Product forms with native submit behavior", "Contact, auth, settings or checkout forms"],
+        "whenNotToUse": ["Single inline search controls without submit semantics"]
+      },
+      {
+        "name": "AuthFormCard",
+        "contract": "packages/uf/components/AuthFormCard.json",
+        "context": "app",
+        "whenToUse": ["Login, registration, reset password and invite acceptance screens"],
+        "whenNotToUse": ["Marketing contact forms", "Dense settings forms inside an existing page"]
+      },
+      {
+        "name": "PropRow",
+        "contract": "packages/uf/components/PropRow.json",
+        "context": "props-editor",
+        "whenToUse": ["Props editor forms and low-noise property panels"],
+        "whenNotToUse": ["General form fields with native labels"]
+      },
+      {
+        "name": "FileInput",
+        "contract": "packages/uf/components/FileInput.json",
+        "context": "app",
+        "whenToUse": ["Hidden file pickers triggered from a Face UI or UF control"],
+        "whenNotToUse": ["Visible drag-and-drop upload zones"]
+      },
+      {
+        "name": "Textarea",
+        "contract": "packages/uf/components/Textarea.json",
+        "context": "app",
+        "whenToUse": ["Multiline product form fields with native textarea behavior", "Settings, profile, authoring or editor forms that already use UF form boundaries"],
+        "whenNotToUse": ["Single-line fields; use Face UI Input", "Rich text, chat composer or code editing surfaces with custom keyboard behavior"]
+      },
+      {
+        "name": "ControlLabel",
+        "contract": "packages/uf/components/ControlLabel.json",
+        "context": "components",
+        "whenToUse": ["Checkbox/radio rows with structured nested content"],
+        "whenNotToUse": ["Plain text labels; use Face UI Text with as=\"label\" instead"]
+      }
+    ],
+    "chooseFaceUiWhen": ["The field is a plain primitive control, label or action", "The form has no product-owned shell, submit flow or domain behavior"],
+    "chooseUfWhen": ["The form needs native submit semantics, auth shell states, file selection boundary or props-editor row anatomy already owned by UF"]
+  },
+
+  "skeleton": {
+    "version": "ui@1",
+    "root": {
+      "type": "Card",
+      "children": [
+        { "type": "Text", "props": { "variant": "h3" }, "key": "title" },
+        { "type": "Text", "props": { "variant": "muted" }, "key": "description" },
+        { "type": "Input", "props": { "label": "Field 1" }, "key": "field-1" },
+        { "type": "Input", "props": { "label": "Field 2" }, "key": "field-2" },
+        { "type": "Button", "props": { "text": "Submit", "variant": "accent", "type": "submit" }, "key": "submit" }
+      ]
+    }
+  },
+
+  "variants": [
+    {
+      "name": "inline-form",
+      "description": "Compact single-row form (search bar, filter bar)",
+      "layout": { "direction": "row", "maxColumns": 1, "actionAlignment": "right" }
+    },
+    {
+      "name": "wizard-step",
+      "description": "One step of a multi-step wizard",
+      "requires": [{ "type": "Steps", "minCount": 1 }]
+    }
+  ],
+
+  "examples": [
+    {
+      "name": "Login form",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Card",
+          "children": [
+            { "type": "Text", "props": { "variant": "h2", "text": "Sign in" } },
+            { "type": "Input", "props": { "label": "Email", "type": "email" } },
+            { "type": "Input", "props": { "label": "Password", "type": "password" } },
+            { "type": "Button", "props": { "text": "Sign in", "variant": "accent", "type": "submit" } }
+          ]
+        }
+      }
+    }
+  ]
+}

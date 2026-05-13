@@ -1,0 +1,57 @@
+{
+  "name": "base/contracts",
+  "version": "0.1.0",
+  "description": "Contract quality rules — component API health checks",
+  "rules": [
+    {
+      "id": "contract/no-props",
+      "description": "Component has no extractable props — analysis may have failed or component is trivial.",
+      "severity": "warning",
+      "confidence": 0.7,
+      "match": { "component": "*" },
+      "forbid": { "propsCount": { "$lte": 0 } },
+      "fixHint": "Ensure the component exports a typed Props interface or type alias.",
+      "category": "contract"
+    },
+    {
+      "id": "contract/excessive-props",
+      "description": "Component has more than 25 props — consider decomposing into smaller components.",
+      "severity": "warning",
+      "confidence": 0.9,
+      "match": { "component": "*" },
+      "forbid": { "propsCount": { "$gt": 25 } },
+      "fixHint": "Split into subcomponents or use a config object prop to reduce API surface.",
+      "category": "complexity"
+    },
+    {
+      "id": "contract/extreme-props",
+      "description": "Component has more than 40 props — likely includes inherited HTML attributes. Review prop extraction.",
+      "severity": "info",
+      "confidence": 0.6,
+      "match": { "component": "*" },
+      "forbid": { "propsCount": { "$gt": 40 } },
+      "fixHint": "Check if props include inherited HTML attributes. Use explicit Props type to limit surface.",
+      "category": "complexity"
+    },
+    {
+      "id": "contract/no-events",
+      "description": "Interactive component should accept at least one event callback (onClick, onChange, etc.).",
+      "severity": "info",
+      "confidence": 0.6,
+      "match": { "component": "Button" },
+      "require": { "propExists": "onClick" },
+      "fixHint": "Add an \"onClick\" callback prop for user interaction handling.",
+      "category": "contract"
+    },
+    {
+      "id": "contract/select-options",
+      "description": "Select component should accept an \"options\" prop for list of choices.",
+      "severity": "warning",
+      "confidence": 0.85,
+      "match": { "component": "Select" },
+      "require": { "propExists": "options" },
+      "fixHint": "Add an \"options\" prop: { value: string, label: string }[].",
+      "category": "contract"
+    }
+  ]
+}

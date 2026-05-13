@@ -1,0 +1,36 @@
+{
+  "name": "userface",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "description": "Umbrella CLI for installing Userface public packages.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dimgrenev/userface-engine.git"
+  },
+  "homepage": "https://userface.dev",
+  "bugs": {
+    "url": "https://github.com/dimgrenev/userface-engine/issues"
+  },
+  "bin": {
+    "userface": "./bin/userface.js"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "README.md"
+  ],
+  "dependencies": {
+    "@userface/engine": "^0.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "pack:dry": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=18.17.0"
+  }
+}

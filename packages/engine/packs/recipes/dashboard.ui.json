@@ -1,0 +1,47 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "id": "recipe/dashboard",
+    "name": "Admin Dashboard",
+    "description": "B2B admin dashboard with tab navigation, stats cards, and data table",
+    "tags": ["b2b", "admin", "dashboard"]
+  },
+  "root": {
+    "type": "Panel",
+    "props": { "title": "Dashboard" },
+    "children": [
+      {
+        "type": "Tabs",
+        "key": "nav",
+        "props": {
+          "tabs": [
+            { "id": "overview", "label": "Overview" },
+            { "id": "users", "label": "Users" },
+            { "id": "settings", "label": "Settings" }
+          ],
+          "active": { "$ref": "nav.activeTab" }
+        },
+        "children": [
+          {
+            "type": "Panel",
+            "key": "stats",
+            "props": { "title": "Key Metrics" },
+            "children": [
+              { "type": "Text", "key": "metric-users", "props": { "text": { "$ref": "stats.totalUsers" } } },
+              { "type": "Text", "key": "metric-revenue", "props": { "text": { "$ref": "stats.revenue" } } },
+              { "type": "Progress", "key": "metric-progress", "props": { "value": { "$ref": "stats.goalProgress" }, "label": "Goal Progress" } }
+            ]
+          },
+          {
+            "type": "Table",
+            "key": "data-table",
+            "props": {
+              "columns": { "$ref": "table.columns" },
+              "rows": { "$ref": "table.rows" }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

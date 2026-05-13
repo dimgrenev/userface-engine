@@ -1,0 +1,14 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.artifacts/
+coverage/
+*.log
+*.tsbuildinfo
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.DS_Store
+.env
+.env.*

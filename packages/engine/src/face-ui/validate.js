@@ -1,0 +1,113 @@
+import { FaceUiDocSchema } from './schema';
+function segmentForNode(node, siblingIndexAmongNodes) {
+    const t = String(node.type || '').trim();
+    const k = node.key != null ? String(node.key) : '';
+    if (k)
+        return `${t}:k${k}`;
+    return `${t}:i${siblingIndexAmongNodes}`;
+}
+function joinId(parentId, seg) {
+    if (!parentId)
+        return seg;
+    return `${parentId}/${seg}`;
+}
+/**
+ * Validate a `ui@1` doc for a given identity policy.
+ *
+ * Current checks:
+ * - `nodeIdPolicy: 'stable'`: every non-root node must define `key`.
+ * - `maxDepth` guard: reject trees deeper than allowed (default 64).
+ * - duplicate derived `nodeId` detection (typically same `type+key` under one parent).
+ *
+ * Returns a full list of issues (CI-friendly), never throws.
+ */
+export function validateFaceUiDoc(doc, env) {
+    const issues = [];
+    let parsed;
+    try {
+        parsed = FaceUiDocSchema.parse(doc);
+    }
+    catch (e) {
+        // Schema errors are not part of this validator's contract; surface as a single issue.
+        const msg = String((e === null || e === void 0 ? void 0 : e.message) || e || 'Invalid ui@1 doc');
+        issues.push({
+            code: 'UF_FACE_INVALID_DOC',
+            message: `UF_FACE_INVALID_DOC ${msg}`,
+            nodeId: '',
+            type: '',
+            indexPath: [],
+        });
+        return issues;
+    }
+    const policy = (env === null || env === void 0 ? void 0 : env.nodeIdPolicy) || 'derived';
+    const maxDepth = (() => {
+        const raw = Number(env === null || env === void 0 ? void 0 : env.maxDepth);
+        if (Number.isFinite(raw) && raw > 0)
+            return Math.max(1, Math.floor(raw));
+        return 64;
+    })();
+    const requireStableKeys = policy === 'stable';
+    const seenNodeIds = new Set();
+    const walk = (node, parentId, indexPath, depth) => {
+        const isRoot = !parentId;
+        // sibling index among nodes is computed at the parent loop; for root it's always 0.
+        const nodeId = (() => {
+            const siblingIndex = indexPath.length ? indexPath[indexPath.length - 1] : 0;
+            return joinId(parentId, segmentForNode(node, siblingIndex));
+        })();
+        const t = String(node.type || '').trim();
+        if (seenNodeIds.has(nodeId)) {
+            const msg = `UF_FACE_DUPLICATE_NODE_ID type=${t || 'unknown'} nodeId=${nodeId || '?'} path=${indexPath.join('.')}`;
+            issues.push({
+                code: 'UF_FACE_DUPLICATE_NODE_ID',
+                message: msg,
+                nodeId: nodeId || '',
+                type: t,
+                indexPath,
+            });
+        }
+        else {
+            seenNodeIds.add(nodeId);
+        }
+        if (depth > maxDepth) {
+            const msg = `UF_FACE_MAX_DEPTH limit=${maxDepth} type=${t || 'unknown'} nodeId=${nodeId || '?'} path=${indexPath.join('.')}`;
+            issues.push({
+                code: 'UF_FACE_MAX_DEPTH',
+                message: msg,
+                nodeId: nodeId || '',
+                type: t,
+                indexPath,
+            });
+            return;
+        }
+        if (requireStableKeys && !isRoot) {
+            const k = node.key != null ? String(node.key) : '';
+            if (!k) {
+                const msg = `UF_FACE_KEY_REQUIRED type=${t || 'unknown'} nodeId=${nodeId || '?'} path=${indexPath.join('.')}`;
+                issues.push({
+                    code: 'UF_FACE_KEY_REQUIRED',
+                    message: msg,
+                    nodeId: nodeId || '',
+                    type: t,
+                    indexPath,
+                });
+            }
+        }
+        const raw = Array.isArray(node.children) ? node.children : [];
+        let nodeChildIdx = 0;
+        for (let i = 0; i < raw.length; i++) {
+            const ch = raw[i];
+            if (ch == null)
+                continue;
+            if (typeof ch === 'string' || typeof ch === 'number' || typeof ch === 'boolean')
+                continue;
+            const childIndexPath = [...indexPath, nodeChildIdx];
+            // recurse with the computed parentId (nodeId) – identity uses nodeId chain
+            walk(ch, nodeId, childIndexPath, depth + 1);
+            nodeChildIdx += 1;
+        }
+    };
+    // Root indexPath [0] by convention; it doesn't need key.
+    walk(parsed.root, '', [0], 1);
+    return issues;
+}

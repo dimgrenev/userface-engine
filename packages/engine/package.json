@@ -1,0 +1,140 @@
+{
+  "name": "@userface/engine",
+  "version": "0.1.0",
+  "private": false,
+  "description": "AI-native UI infrastructure: analyze components, generate contracts (face.json), compose UI (ui@1), validate, and render — via CLI, MCP, or SDK.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dimgrenev/userface-engine.git"
+  },
+  "homepage": "https://userface.dev",
+  "bugs": {
+    "url": "https://github.com/dimgrenev/userface-engine/issues"
+  },
+  "keywords": [
+    "ui",
+    "components",
+    "mcp",
+    "ai",
+    "design-system",
+    "face-json",
+    "ui-validation",
+    "component-analysis",
+    "ssr",
+    "react",
+    "vue",
+    "svelte"
+  ],
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./face-ui": {
+      "types": "./dist/types/face-ui/index.d.ts",
+      "import": "./dist/esm/face-ui/index.js",
+      "require": "./dist/cjs/face-ui/index.js"
+    },
+    "./browser/*": "./src/browser/*",
+    "./bundler": {
+      "types": "./dist/types/bundler/vfsBundler.d.ts",
+      "import": "./dist/esm/bundler/vfsBundler.js",
+      "require": "./dist/cjs/bundler/vfsBundler.js"
+    },
+    "./integrations/next/*": {
+      "types": "./integrations/next/*.ts",
+      "import": "./integrations/next/*.ts",
+      "require": "./integrations/next/*.js"
+    },
+    "./transpiler": {
+      "types": "./dist/types/transpiler.d.ts",
+      "import": "./dist/esm/transpiler.js",
+      "require": "./dist/cjs/transpiler.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "dist/esm",
+    "dist/cjs",
+    "dist/types",
+    "integrations/next",
+    "src/browser",
+    "src/face-ui/patterns/*.pattern.json",
+    "prompts",
+    "packs",
+    "assembly-flow.md",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "userface-engine": "./bin/userface-engine.mjs"
+  },
+  "sideEffects": false,
+  "peerDependencies": {
+    "@vue/server-renderer": ">=3",
+    "esbuild": ">=0.20",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "svelte": ">=5.53.5",
+    "vue": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    },
+    "@vue/server-renderer": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    },
+    "esbuild": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "keytar": "^7.9.0",
+    "node-fetch": "^3.3.2",
+    "tar": "^7.5.9",
+    "zod": "^4.0.15"
+  },
+  "scripts": {
+    "build": "node ./scripts/build-npm.cjs",
+    "test": "vitest run --root ../.. packages/engine/src/__tests__ packages/engine/src/storybook/__tests__",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "format": "prettier --write 'src/**/*.{ts,tsx,js}'",
+    "smoke": "node ./scripts/smoke-test.cjs",
+    "pack:dry": "npm pack --dry-run",
+    "prepublishOnly": "npm run build && npm run smoke"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.13",
+    "@types/tar": "^6.1.13",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
+    "eslint": "^10.0.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
+  }
+}

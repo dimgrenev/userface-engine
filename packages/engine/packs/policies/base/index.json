@@ -1,0 +1,10 @@
+{
+  "name": "base",
+  "version": "0.1.0",
+  "description": "Built-in base policy pack — open source, shipped with @userface/engine. Covers accessibility basics, structural patterns, and contract health.",
+  "includes": [
+    "a11y.rules.json",
+    "structure.rules.json",
+    "contracts.rules.json"
+  ]
+}

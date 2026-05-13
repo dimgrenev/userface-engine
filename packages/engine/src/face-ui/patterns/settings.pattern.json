@@ -1,0 +1,215 @@
+{
+  "$schema": "pattern@1",
+  "id": "settings",
+  "name": "Settings Pattern",
+  "purpose": "Configuration screen with grouped settings, toggles, and save action.",
+
+  "zones": {
+    "header": { "description": "Settings page title and description", "required": false },
+    "sections": { "description": "Grouped settings cards/sections", "required": true },
+    "actions": { "description": "Save/cancel buttons (sticky or at bottom)", "required": true }
+  },
+
+  "layout": {
+    "direction": "column",
+    "sectionLayout": "vertical",
+    "maxWidth": "720px",
+    "spacing": "section",
+    "actionPosition": "bottom-sticky",
+    "responsive": "full-width-on-mobile"
+  },
+
+  "requires": [
+    { "type": "Input", "minCount": 1 },
+    { "type": "Button", "minCount": 1, "props": { "variant": "accent" } },
+    { "type": "Card", "minCount": 1 }
+  ],
+
+  "recommends": [
+    { "type": "Switcher", "minCount": 1, "zone": "sections" },
+    { "type": "Text", "variant": "h2", "zone": "sections" },
+    { "type": "Select", "zone": "sections" },
+    { "type": "Separator", "zone": "sections" },
+    { "type": "Text", "variant": "muted", "zone": "sections" }
+  ],
+
+  "forbids": [
+    { "nested": ["Card", "Card", "Card"], "reason": "Three levels of Card nesting creates visual clutter; flatten settings into max two levels" },
+    { "nested": ["Tabs", "Tabs"], "reason": "Nested tabs are disorienting; use a single Tabs level or sidebar navigation" }
+  ],
+
+  "componentSelection": {
+    "faceUiPrimitives": ["Input", "Select", "Switcher", "Button", "Text", "Card", "Tabs", "Navigation", "Separator", "Bar"],
+    "ufProductBlocks": [
+      {
+        "name": "ProfileSection",
+        "contract": "packages/uf/Profile/ProfileSection.json",
+        "context": "profile",
+        "whenToUse": ["Profile settings surfaces with identity, email, password, preferences and account actions"]
+      },
+      {
+        "name": "ProfilePreferencesSection",
+        "contract": "packages/uf/Profile/ProfilePreferencesSection.json",
+        "context": "profile",
+        "whenToUse": ["Profile preferences for theme and language with optimistic updates and rollback behavior"]
+      },
+      {
+        "name": "RoleSection",
+        "contract": "packages/uf/Profile/RoleSection.json",
+        "context": "profile-admin",
+        "whenToUse": ["Admin role-preview selectors used by superadmin profile mode"]
+      },
+      {
+        "name": "ColorPicker",
+        "contract": "packages/uf/components/ColorPicker.json",
+        "context": "components",
+        "whenToUse": ["Design-system editors and profile controls that edit colors"],
+        "whenNotToUse": ["Static color swatches"]
+      },
+      {
+        "name": "TokenGrid",
+        "contract": "packages/uf/components/TokenGrid/TokenGrid.json",
+        "context": "components",
+        "whenToUse": ["Responsive grids for design token swatches"]
+      },
+      {
+        "name": "Form",
+        "contract": "packages/uf/components/Form.json",
+        "context": "app",
+        "whenToUse": ["Settings forms that need native submit semantics"]
+      }
+    ],
+    "chooseFaceUiWhen": ["The setting is a generic field, toggle, select, button or text section", "The page does not match an audited profile, role, color or token editing UF contract"],
+    "chooseUfWhen": ["The request matches profile settings, profile preferences, admin role preview, token editing or color editing already owned by UF"]
+  },
+
+  "skeleton": {
+    "version": "ui@1",
+    "root": {
+      "type": "Card",
+      "children": [
+        { "type": "Text", "props": { "variant": "h1", "text": "Settings" }, "key": "title" },
+        { "type": "Text", "props": { "variant": "muted", "text": "Manage your account preferences" }, "key": "subtitle" },
+        { "type": "Card", "key": "section-profile", "children": [
+          { "type": "Text", "props": { "variant": "h3", "text": "Profile" }, "key": "profile-title" },
+          { "type": "Text", "props": { "variant": "muted", "text": "Your public profile information" }, "key": "profile-desc" },
+          { "type": "Separator", "key": "sep1" },
+          { "type": "Input", "props": { "label": "Display Name" }, "key": "name" },
+          { "type": "Input", "props": { "label": "Email" }, "key": "email" },
+          { "type": "Input", "props": { "label": "Bio", "multiline": true }, "key": "bio" }
+        ]},
+        { "type": "Card", "key": "section-notifications", "children": [
+          { "type": "Text", "props": { "variant": "h3", "text": "Notifications" }, "key": "notif-title" },
+          { "type": "Text", "props": { "variant": "muted", "text": "Choose how you want to be notified" }, "key": "notif-desc" },
+          { "type": "Separator", "key": "sep2" },
+          { "type": "Switcher", "props": { "label": "Email notifications" }, "key": "email-notif" },
+          { "type": "Switcher", "props": { "label": "Push notifications" }, "key": "push-notif" },
+          { "type": "Switcher", "props": { "label": "Marketing emails" }, "key": "marketing" }
+        ]},
+        { "type": "Card", "key": "section-appearance", "children": [
+          { "type": "Text", "props": { "variant": "h3", "text": "Appearance" }, "key": "appear-title" },
+          { "type": "Separator", "key": "sep3" },
+          { "type": "Select", "props": { "label": "Theme", "placeholder": "Select theme" }, "key": "theme" },
+          { "type": "Select", "props": { "label": "Language", "placeholder": "Select language" }, "key": "language" }
+        ]},
+        { "type": "Bar", "key": "actions", "children": [
+          { "type": "Button", "props": { "text": "Cancel", "variant": "ghost" }, "key": "cancel" },
+          { "type": "Button", "props": { "text": "Save Changes", "variant": "accent" }, "key": "save" }
+        ]}
+      ]
+    }
+  },
+
+  "variants": [
+    {
+      "name": "tabbed-settings",
+      "description": "Settings organized into tabs instead of vertical sections. Each tab is a category.",
+      "requires": [{ "type": "Tabs", "minCount": 1 }],
+      "layout": { "sectionLayout": "tabbed" }
+    },
+    {
+      "name": "sidebar-nav",
+      "description": "Settings with a sidebar navigation for jumping between sections. Good for many categories.",
+      "requires": [{ "type": "Navigation", "minCount": 1 }],
+      "layout": { "direction": "row", "navWidth": "200px" }
+    },
+    {
+      "name": "danger-zone",
+      "description": "Settings page with a destructive actions section at the bottom (delete account, etc.).",
+      "requires": [{ "type": "Button", "minCount": 1, "props": { "variant": "destructive" } }]
+    }
+  ],
+
+  "examples": [
+    {
+      "name": "Account settings with danger zone",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Card",
+          "children": [
+            { "type": "Text", "props": { "variant": "h1", "text": "Account Settings" }, "key": "title" },
+            { "type": "Card", "key": "section-profile", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "Profile" }, "key": "profile-title" },
+              { "type": "Separator", "key": "sep1" },
+              { "type": "Input", "props": { "label": "Name" }, "key": "name" },
+              { "type": "Input", "props": { "label": "Email" }, "key": "email" }
+            ]},
+            { "type": "Card", "key": "section-security", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "Security" }, "key": "sec-title" },
+              { "type": "Separator", "key": "sep2" },
+              { "type": "Input", "props": { "label": "Current Password", "type": "password" }, "key": "current-pw" },
+              { "type": "Input", "props": { "label": "New Password", "type": "password" }, "key": "new-pw" },
+              { "type": "Button", "props": { "text": "Update Password", "variant": "default" }, "key": "update-pw" }
+            ]},
+            { "type": "Card", "key": "danger-zone", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "Danger Zone" }, "key": "danger-title" },
+              { "type": "Text", "props": { "variant": "muted", "text": "Irreversible actions. Proceed with caution." }, "key": "danger-desc" },
+              { "type": "Separator", "key": "sep3" },
+              { "type": "Button", "props": { "text": "Delete Account", "variant": "destructive" }, "key": "delete" }
+            ]},
+            { "type": "Bar", "key": "actions", "children": [
+              { "type": "Button", "props": { "text": "Cancel", "variant": "ghost" }, "key": "cancel" },
+              { "type": "Button", "props": { "text": "Save", "variant": "accent" }, "key": "save" }
+            ]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "Workspace settings",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Card",
+          "children": [
+            { "type": "Text", "props": { "variant": "h1", "text": "Workspace Settings" }, "key": "title" },
+            { "type": "Card", "key": "section-general", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "General" }, "key": "gen-title" },
+              { "type": "Separator", "key": "sep1" },
+              { "type": "Input", "props": { "label": "Workspace Name" }, "key": "ws-name" },
+              { "type": "Input", "props": { "label": "URL Slug" }, "key": "slug" },
+              { "type": "Select", "props": { "label": "Default Role", "placeholder": "Select role" }, "key": "role" }
+            ]},
+            { "type": "Card", "key": "section-members", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "Members" }, "key": "mem-title" },
+              { "type": "Separator", "key": "sep2" },
+              { "type": "Table", "props": {
+                "columns": [
+                  { "key": "name", "header": "Name" },
+                  { "key": "email", "header": "Email" },
+                  { "key": "role", "header": "Role" }
+                ]
+              }, "key": "members-table" },
+              { "type": "Button", "props": { "text": "Invite Member", "variant": "default" }, "key": "invite" }
+            ]},
+            { "type": "Bar", "key": "actions", "children": [
+              { "type": "Button", "props": { "text": "Cancel", "variant": "ghost" }, "key": "cancel" },
+              { "type": "Button", "props": { "text": "Save Changes", "variant": "accent" }, "key": "save" }
+            ]}
+          ]
+        }
+      }
+    }
+  ]
+}

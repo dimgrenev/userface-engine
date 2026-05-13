@@ -1,0 +1,57 @@
+{
+  "name": "base/structure",
+  "version": "0.1.0",
+  "description": "Structural quality rules — common UX patterns detectable from component contracts",
+  "rules": [
+    {
+      "id": "structural/modal-onclose",
+      "description": "Modal component should accept an \"onClose\" or \"onOpenChange\" callback for dismissal.",
+      "severity": "warning",
+      "confidence": 0.8,
+      "match": { "component": "Modal" },
+      "require": { "propExists": "onClose" },
+      "fixHint": "Add an \"onClose\" callback prop to handle dismissal (ESC key, backdrop click).",
+      "category": "structural"
+    },
+    {
+      "id": "structural/table-columns",
+      "description": "Table component should accept a \"columns\" prop to define column structure.",
+      "severity": "info",
+      "confidence": 0.7,
+      "match": { "component": "Table" },
+      "require": { "propExists": "columns" },
+      "fixHint": "Accept a \"columns\" prop with column definitions (key, header, render).",
+      "category": "structural"
+    },
+    {
+      "id": "structural/slider-range",
+      "description": "Slider component should define min and max props for bounded input.",
+      "severity": "warning",
+      "confidence": 0.8,
+      "match": { "component": "Slider" },
+      "require": { "propExists": "min" },
+      "fixHint": "Add \"min\" and \"max\" props to define the allowed range.",
+      "category": "structural"
+    },
+    {
+      "id": "structural/progress-value",
+      "description": "Progress component should accept a \"value\" prop to display progress.",
+      "severity": "warning",
+      "confidence": 0.85,
+      "match": { "component": "Progress" },
+      "require": { "propExists": "value" },
+      "fixHint": "Add a \"value\" prop (0-100) to indicate progress.",
+      "category": "structural"
+    },
+    {
+      "id": "structural/form-action",
+      "description": "Form component should accept an \"onSubmit\" callback prop.",
+      "severity": "warning",
+      "confidence": 0.75,
+      "match": { "component": "Form" },
+      "require": { "propExists": "onSubmit" },
+      "fixHint": "Add an \"onSubmit\" callback to handle form submission.",
+      "category": "structural"
+    }
+  ]
+}

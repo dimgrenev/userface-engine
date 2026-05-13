@@ -1,0 +1,215 @@
+{
+  "$schema": "pattern@1",
+  "id": "dashboard",
+  "name": "Dashboard Pattern",
+  "purpose": "Overview screen with metrics, charts, and tabbed sections for data exploration.",
+
+  "zones": {
+    "header": { "description": "Page title, date range selector, global actions", "required": false },
+    "metrics": { "description": "Key metrics or KPI cards in a row", "required": false },
+    "content": { "description": "Charts, tables, and tabbed sections", "required": true },
+    "sidebar": { "description": "Filters or navigation panel", "required": false }
+  },
+
+  "layout": {
+    "direction": "column",
+    "metricsLayout": "row",
+    "metricsGap": 16,
+    "maxColumns": 4,
+    "spacing": "section",
+    "responsive": "metrics-stack-on-mobile",
+    "sidebarWidth": "280px",
+    "sidebarPosition": "right"
+  },
+
+  "requires": [
+    { "type": "Card", "minCount": 2 },
+    { "type": "Text", "minCount": 1, "props": { "variant": "h1" } }
+  ],
+
+  "recommends": [
+    { "type": "Tabs", "minCount": 1, "zone": "content" },
+    { "type": "Card", "minCount": 4, "zone": "metrics" },
+    { "type": "DatePicker", "zone": "header" },
+    { "type": "Select", "zone": "header" },
+    { "type": "Badge", "zone": "metrics" }
+  ],
+
+  "forbids": [
+    { "nested": ["Card", "Card", "Card"], "reason": "Three levels of Card nesting creates visual noise; flatten to two max" },
+    { "nested": ["Tabs", "Tabs"], "reason": "Nested tabs are disorienting; use a single Tabs level or navigation hierarchy" }
+  ],
+
+  "componentSelection": {
+    "faceUiPrimitives": ["Card", "Text", "Bar", "Tabs", "Table", "Select", "DatePicker", "Badge", "Progress"],
+    "ufProductBlocks": [
+      {
+        "name": "MetricCard",
+        "contract": "packages/uf/components/MetricCard/MetricCard.json",
+        "context": "components",
+        "whenToUse": ["Single KPI cards with value, label and optional detail text"]
+      },
+      {
+        "name": "MetricChart",
+        "contract": "packages/uf/components/MetricChart/MetricChart.json",
+        "context": "profile",
+        "whenToUse": ["Profile analytics and compact metric trend panels"],
+        "whenNotToUse": ["General BI dashboards with axes or legends beyond the UF contract"]
+      },
+      {
+        "name": "MetricTabs",
+        "contract": "packages/uf/components/MetricTabs/MetricTabs.json",
+        "context": "components",
+        "whenToUse": ["Large analytics or product navigation tab blocks"]
+      },
+      {
+        "name": "ProgressStack",
+        "contract": "packages/uf/components/ProgressStack/ProgressStack.json",
+        "context": "components",
+        "whenToUse": ["Segmented progress breakdowns with a legend"]
+      },
+      {
+        "name": "AdminAnalyticsSection",
+        "contract": "packages/uf/Profile/AdminAnalyticsSection.json",
+        "context": "admin",
+        "whenToUse": ["Admin analytics dashboards with time ranges, mock toggle, tabs, charts and tables"]
+      },
+      {
+        "name": "CursorCharts",
+        "contract": "packages/uf/Profile/CursorCharts.json",
+        "context": "profile",
+        "whenToUse": ["Profile analytics SVG charts with measured width, hover cursor and tooltips"]
+      }
+    ],
+    "chooseFaceUiWhen": ["The dashboard is generic and needs only primitive layout, text, controls or tables", "The chart/data behavior is outside an audited UF product contract"],
+    "chooseUfWhen": ["The request matches KPI, profile analytics, segmented progress or admin analytics behavior already owned by UF"]
+  },
+
+  "skeleton": {
+    "version": "ui@1",
+    "root": {
+      "type": "Card",
+      "children": [
+        { "type": "Bar", "key": "header", "children": [
+          { "type": "Text", "props": { "variant": "h1", "text": "Dashboard" }, "key": "title" },
+          { "type": "DatePicker", "props": { "mode": "range" }, "key": "date-range" }
+        ]},
+        { "type": "Bar", "key": "metrics", "children": [
+          { "type": "Card", "key": "metric-1", "children": [
+            { "type": "Text", "props": { "variant": "muted", "text": "Total Users" }, "key": "label" },
+            { "type": "Text", "props": { "variant": "h2", "text": "12,345" }, "key": "value" },
+            { "type": "Badge", "props": { "text": "+12%", "variant": "success" }, "key": "trend" }
+          ]},
+          { "type": "Card", "key": "metric-2", "children": [
+            { "type": "Text", "props": { "variant": "muted", "text": "Revenue" }, "key": "label" },
+            { "type": "Text", "props": { "variant": "h2", "text": "$45,678" }, "key": "value" },
+            { "type": "Badge", "props": { "text": "+8%", "variant": "success" }, "key": "trend" }
+          ]},
+          { "type": "Card", "key": "metric-3", "children": [
+            { "type": "Text", "props": { "variant": "muted", "text": "Conversion" }, "key": "label" },
+            { "type": "Text", "props": { "variant": "h2", "text": "3.2%" }, "key": "value" },
+            { "type": "Badge", "props": { "text": "-0.5%", "variant": "warning" }, "key": "trend" }
+          ]}
+        ]},
+        { "type": "Tabs", "props": {
+          "items": [
+            { "value": "overview", "label": "Overview" },
+            { "value": "analytics", "label": "Analytics" },
+            { "value": "reports", "label": "Reports" }
+          ]
+        }, "key": "tabs" }
+      ]
+    }
+  },
+
+  "variants": [
+    {
+      "name": "metrics-dashboard",
+      "description": "Dashboard focused on KPI cards with minimal content below. 4+ metric cards prominent.",
+      "requires": [{ "type": "Card", "minCount": 4 }],
+      "layout": { "maxColumns": 4, "metricsLayout": "grid" }
+    },
+    {
+      "name": "sidebar-dashboard",
+      "description": "Dashboard with a filter sidebar on the right for parameter selection.",
+      "requires": [{ "type": "Panel", "minCount": 1 }],
+      "layout": { "direction": "row", "sidebarWidth": "280px" }
+    }
+  ],
+
+  "examples": [
+    {
+      "name": "Analytics dashboard",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Card",
+          "children": [
+            { "type": "Bar", "key": "header", "children": [
+              { "type": "Text", "props": { "variant": "h1", "text": "Analytics" }, "key": "title" },
+              { "type": "Select", "props": { "placeholder": "Last 7 days" }, "key": "period" }
+            ]},
+            { "type": "Bar", "key": "metrics", "children": [
+              { "type": "Card", "props": {}, "key": "m1", "children": [
+                { "type": "Text", "props": { "variant": "muted", "text": "Visitors" } },
+                { "type": "Text", "props": { "variant": "h2", "text": "24,500" } }
+              ]},
+              { "type": "Card", "props": {}, "key": "m2", "children": [
+                { "type": "Text", "props": { "variant": "muted", "text": "Page Views" } },
+                { "type": "Text", "props": { "variant": "h2", "text": "89,100" } }
+              ]}
+            ]},
+            { "type": "Tabs", "props": {
+              "items": [
+                { "value": "traffic", "label": "Traffic" },
+                { "value": "conversions", "label": "Conversions" },
+                { "value": "engagement", "label": "Engagement" }
+              ]
+            }, "key": "tabs" },
+            { "type": "Table", "props": {
+              "columns": [
+                { "key": "page", "header": "Page", "sortable": true },
+                { "key": "views", "header": "Views", "sortable": true },
+                { "key": "bounce", "header": "Bounce Rate" }
+              ]
+            }, "key": "top-pages" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Sales dashboard",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Card",
+          "children": [
+            { "type": "Text", "props": { "variant": "h1", "text": "Sales Overview" }, "key": "title" },
+            { "type": "Bar", "key": "metrics", "children": [
+              { "type": "Card", "key": "m1", "children": [
+                { "type": "Text", "props": { "variant": "muted", "text": "MRR" } },
+                { "type": "Text", "props": { "variant": "h2", "text": "$125,000" } }
+              ]},
+              { "type": "Card", "key": "m2", "children": [
+                { "type": "Text", "props": { "variant": "muted", "text": "New Customers" } },
+                { "type": "Text", "props": { "variant": "h2", "text": "48" } }
+              ]},
+              { "type": "Card", "key": "m3", "children": [
+                { "type": "Text", "props": { "variant": "muted", "text": "Churn Rate" } },
+                { "type": "Text", "props": { "variant": "h2", "text": "2.1%" } }
+              ]}
+            ]},
+            { "type": "Table", "props": {
+              "columns": [
+                { "key": "deal", "header": "Deal" },
+                { "key": "value", "header": "Value", "sortable": true },
+                { "key": "stage", "header": "Stage" },
+                { "key": "close", "header": "Expected Close" }
+              ]
+            }, "key": "deals" }
+          ]
+        }
+      }
+    }
+  ]
+}

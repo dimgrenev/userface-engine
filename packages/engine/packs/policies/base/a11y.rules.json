@@ -1,0 +1,57 @@
+{
+  "name": "base/a11y",
+  "version": "0.1.0",
+  "description": "Accessibility rules — WCAG basics detectable from component contracts",
+  "rules": [
+    {
+      "id": "a11y/button-type",
+      "description": "Button component should accept a \"type\" prop (submit/button/reset) to prevent accidental form submissions.",
+      "severity": "warning",
+      "confidence": 0.8,
+      "match": { "component": "Button" },
+      "require": { "propExists": "type" },
+      "fixHint": "Add a \"type\" prop with options: \"button\", \"submit\", \"reset\". Default to \"button\".",
+      "category": "a11y"
+    },
+    {
+      "id": "a11y/input-label",
+      "description": "Input component should accept a \"label\" or \"aria-label\" prop for accessibility.",
+      "severity": "error",
+      "confidence": 0.85,
+      "match": { "component": "Input" },
+      "require": { "propExists": "label" },
+      "fixHint": "Add a \"label\" prop that renders a <label> element, or accept \"aria-label\".",
+      "category": "a11y"
+    },
+    {
+      "id": "a11y/select-label",
+      "description": "Select component should accept a \"label\" or \"aria-label\" prop for accessibility.",
+      "severity": "error",
+      "confidence": 0.85,
+      "match": { "component": "Select" },
+      "require": { "propExists": "label" },
+      "fixHint": "Add a \"label\" prop that renders a <label> element.",
+      "category": "a11y"
+    },
+    {
+      "id": "a11y/checkbox-label",
+      "description": "Checkbox component should accept a \"label\" prop for accessibility.",
+      "severity": "warning",
+      "confidence": 0.8,
+      "match": { "component": "Checkbox" },
+      "require": { "propExists": "label" },
+      "fixHint": "Add a \"label\" prop that renders a <label> element associated with the checkbox.",
+      "category": "a11y"
+    },
+    {
+      "id": "a11y/img-alt",
+      "description": "Image/Media component should accept an \"alt\" prop for accessibility.",
+      "severity": "error",
+      "confidence": 0.9,
+      "match": { "component": "Media" },
+      "require": { "propExists": "alt" },
+      "fixHint": "Add an \"alt\" prop for image description. For decorative images, allow alt=\"\".",
+      "category": "a11y"
+    }
+  ]
+}

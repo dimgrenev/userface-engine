@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist/esm",
+    "module": "ES2020",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "declaration": false,
+    "emitDeclarationOnly": false
+  },
+  "exclude": [
+    "src/**/*.test.*",
+    "src/**/*.spec.*",
+    "src/example-usage.ts",
+    "dist",
+    "../node_modules"
+  ]
+}
+
+

@@ -1,0 +1,65 @@
+name: Publish engine packages to npm
+
+on:
+  push:
+    tags:
+      - 'engine-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF#refs/tags/engine-v}"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Publishing version: $TAG"
+
+      - name: Apply package versions
+        run: |
+          node - <<'NODE'
+          const fs = require('node:fs');
+          const version = process.env.VERSION;
+          for (const file of ['packages/engine/package.json', 'packages/userface/package.json']) {
+            const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+            pkg.version = version;
+            if (pkg.name === 'userface') {
+              pkg.dependencies = pkg.dependencies || {};
+              pkg.dependencies['@userface/engine'] = `^${version}`;
+            }
+            fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
+          }
+          NODE
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Build and verify
+        run: pnpm check
+
+      - name: Publish to npm
+        run: pnpm publish:public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

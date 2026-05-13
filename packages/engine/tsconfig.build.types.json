@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist/types",
+    "module": "ES2020",
+    "moduleResolution": "Bundler",
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationMap": false,
+    "stripInternal": true
+  },
+  "exclude": [
+    "src/**/*.test.*",
+    "src/**/*.spec.*",
+    "src/example-usage.ts",
+    "dist",
+    "../node_modules"
+  ]
+}
+
+

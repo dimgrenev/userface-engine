@@ -1,0 +1,42 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "id": "recipe/list-detail",
+    "name": "List-Detail",
+    "description": "Master-detail layout: selectable list on the left, detail panel on the right",
+    "tags": ["b2b", "list", "detail", "master-detail"]
+  },
+  "root": {
+    "type": "Panel",
+    "props": { "title": { "$ref": "page.title" } },
+    "children": [
+      {
+        "type": "Panel",
+        "key": "list-pane",
+        "children": [
+          { "type": "Input", "key": "search", "props": { "label": "Filter", "placeholder": "Search...", "value": { "$ref": "list.searchQuery" }, "onChange": { "$action": "list.filter" } } },
+          {
+            "type": "Table",
+            "key": "items-table",
+            "props": {
+              "columns": { "$ref": "list.columns" },
+              "rows": { "$ref": "list.filteredItems" },
+              "onRowClick": { "$action": "list.selectItem" }
+            }
+          }
+        ]
+      },
+      {
+        "type": "Panel",
+        "key": "detail-pane",
+        "props": { "title": { "$ref": "detail.title" } },
+        "children": [
+          { "type": "Text", "key": "detail-id", "props": { "text": { "$ref": "detail.id" } } },
+          { "type": "Text", "key": "detail-desc", "props": { "text": { "$ref": "detail.description" } } },
+          { "type": "Button", "key": "edit-btn", "props": { "text": "Edit", "variant": "accent", "onClick": { "$action": "detail.edit" } } },
+          { "type": "Button", "key": "delete-btn", "props": { "text": "Delete", "variant": "outline", "onClick": { "$action": "detail.delete" } } }
+        ]
+      }
+    ]
+  }
+}

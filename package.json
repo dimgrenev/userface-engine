@@ -1,0 +1,37 @@
+{
+  "name": "userface-engine",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone workspace for @userface/engine and the userface umbrella CLI.",
+  "license": "MIT",
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm --dir packages/engine build",
+    "test": "pnpm exec vitest run --config vitest.config.ts --root . packages/engine/src/__tests__/cli-mcp-boundary.test.ts packages/engine/src/__tests__/codeSanitizer.test.ts packages/engine/src/__tests__/codegen.test.ts packages/engine/src/__tests__/createEngine.test.ts packages/engine/src/__tests__/face-v2.schema.test.ts packages/engine/src/__tests__/mcp-design-tokens.test.ts packages/engine/src/__tests__/prop-extractor.test.ts packages/engine/src/__tests__/registry.test.ts packages/engine/src/storybook/__tests__/csf-parser.test.ts packages/userface/__tests__/generate.test.ts packages/userface/__tests__/github-bot.test.ts packages/userface/__tests__/github-webhook.test.ts",
+    "smoke": "pnpm --dir packages/engine smoke",
+    "pack:packages": "pnpm --dir packages/engine pack:dry && pnpm --dir packages/userface pack:dry",
+    "check": "pnpm build && pnpm test && pnpm smoke && pnpm run pack:packages",
+    "publish:public": "node scripts/npm/publish-public-packages.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^5.0.2",
+    "@vue/server-renderer": "^3.5.19",
+    "esbuild": "^0.25.9",
+    "jsdom": "^26.1.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "svelte": "^5.55.5",
+    "tsx": "^4.21.0",
+    "typescript": "^5.0.0",
+    "vite": "^7.3.3",
+    "vitest": "^4.0.18",
+    "vue": "^3.5.19",
+    "@babel/parser": "^7.28.5"
+  }
+}

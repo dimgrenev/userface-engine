@@ -1,0 +1,189 @@
+{
+  "$schema": "pattern@1",
+  "id": "list-detail",
+  "name": "List-Detail Pattern",
+  "purpose": "Master-detail layout with a list/table on one side and a detail panel on the other.",
+
+  "zones": {
+    "list": { "description": "Table or list of items (master pane)", "required": true },
+    "detail": { "description": "Detail view for selected item (detail pane)", "required": true },
+    "toolbar": { "description": "Search and filter controls above the list", "required": false }
+  },
+
+  "layout": {
+    "direction": "row",
+    "listWidth": "40%",
+    "detailWidth": "60%",
+    "spacing": "compact",
+    "responsive": "stack-on-mobile",
+    "divider": true
+  },
+
+  "requires": [
+    { "type": "Table", "minCount": 1 },
+    { "type": "Panel", "minCount": 1 }
+  ],
+
+  "recommends": [
+    { "type": "Input", "minCount": 1, "zone": "toolbar", "props": { "placeholder": "Search..." } },
+    { "type": "Text", "variant": "h3", "zone": "detail" },
+    { "type": "Button", "zone": "detail" },
+    { "type": "Separator", "zone": "detail" }
+  ],
+
+  "forbids": [
+    { "nested": ["Panel", "Panel"], "reason": "Nested detail panels are confusing; use one detail level or navigate to a new page" },
+    { "nested": ["Table", "Table"], "reason": "Nested tables in master pane destroy readability; use drill-down navigation" }
+  ],
+
+  "componentSelection": {
+    "faceUiPrimitives": ["Table", "Panel", "Input", "Text", "Button", "Separator", "Bar", "Navigation", "Drawer", "Modal", "Markdown"],
+    "ufProductBlocks": [
+      {
+        "name": "InfoTree",
+        "contract": "packages/uf/components/InfoTree/InfoTree.json",
+        "context": "components",
+        "whenToUse": ["Structured information rows for feature comparisons and overview sections"]
+      },
+      {
+        "name": "MediaListPicker",
+        "contract": "packages/uf/components/MediaListPicker/MediaListPicker.json",
+        "context": "components",
+        "whenToUse": ["Editable media lists with thumbnails, reorder and remove actions"]
+      },
+      {
+        "name": "ProfileFilesSection",
+        "contract": "packages/uf/Profile/ProfileFilesSection.json",
+        "context": "profile",
+        "whenToUse": ["Profile files and purchases surfaces with downloads, quota and restore behavior"]
+      },
+      {
+        "name": "FontsSection",
+        "contract": "packages/uf/Profile/FontsSection.json",
+        "context": "profile",
+        "whenToUse": ["Profile font management lists with upload, publish status and row-level actions"]
+      },
+      {
+        "name": "PlaygroundPreviewWorkspace",
+        "contract": "packages/uf/Playground/PlaygroundPreviewWorkspace.json",
+        "context": "playground",
+        "whenToUse": ["Playground preview workspace areas that compose preview surface, controls and metadata"]
+      }
+    ],
+    "chooseFaceUiWhen": ["The list/detail relation is generic and can be expressed with Table, Panel, Text and actions", "No audited UF component owns the detail behavior"],
+    "chooseUfWhen": ["The request matches profile files/fonts, media editing, playground preview workspace or structured info rows already owned by UF"]
+  },
+
+  "skeleton": {
+    "version": "ui@1",
+    "root": {
+      "type": "Bar",
+      "children": [
+        { "type": "Card", "key": "list-pane", "children": [
+          { "type": "Input", "props": { "placeholder": "Search...", "icon": "search" }, "key": "search" },
+          { "type": "Table", "props": {
+            "columns": [
+              { "key": "name", "header": "Name" },
+              { "key": "preview", "header": "Preview" },
+              { "key": "date", "header": "Date" }
+            ]
+          }, "key": "list" }
+        ]},
+        { "type": "Panel", "key": "detail-pane", "children": [
+          { "type": "Text", "props": { "variant": "h3", "text": "Item Title" }, "key": "detail-title" },
+          { "type": "Text", "props": { "variant": "muted", "text": "Subtitle or metadata" }, "key": "detail-meta" },
+          { "type": "Separator", "key": "sep" },
+          { "type": "Text", "props": { "variant": "body", "text": "Detail content goes here..." }, "key": "detail-body" },
+          { "type": "Bar", "key": "detail-actions", "children": [
+            { "type": "Button", "props": { "text": "Edit", "variant": "default" }, "key": "edit" },
+            { "type": "Button", "props": { "text": "Delete", "variant": "destructive" }, "key": "delete" }
+          ]}
+        ]}
+      ]
+    }
+  },
+
+  "variants": [
+    {
+      "name": "modal-detail",
+      "description": "Detail opens in a modal instead of a side panel. Useful when detail needs full focus.",
+      "requires": [{ "type": "Modal", "minCount": 1 }],
+      "layout": { "direction": "column", "listWidth": "100%" }
+    },
+    {
+      "name": "drawer-detail",
+      "description": "Detail opens in a Drawer from the right edge. Good for wide detail content.",
+      "requires": [{ "type": "Drawer", "minCount": 1 }],
+      "layout": { "direction": "column", "listWidth": "100%" }
+    },
+    {
+      "name": "three-column",
+      "description": "Navigation + list + detail (e.g. mail client: folders, inbox, email).",
+      "requires": [{ "type": "Navigation", "minCount": 1 }],
+      "layout": { "direction": "row", "navWidth": "200px", "listWidth": "35%", "detailWidth": "auto" }
+    }
+  ],
+
+  "examples": [
+    {
+      "name": "Email client",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Bar",
+          "children": [
+            { "type": "Card", "key": "inbox", "children": [
+              { "type": "Input", "props": { "placeholder": "Search emails...", "icon": "search" }, "key": "search" },
+              { "type": "Table", "props": {
+                "columns": [
+                  { "key": "from", "header": "From" },
+                  { "key": "subject", "header": "Subject" },
+                  { "key": "date", "header": "Date" }
+                ]
+              }, "key": "list" }
+            ]},
+            { "type": "Panel", "key": "email-view", "children": [
+              { "type": "Text", "props": { "variant": "h3", "text": "RE: Project Update" }, "key": "subject" },
+              { "type": "Text", "props": { "variant": "muted", "text": "From: alice@example.com — Mar 15, 2026" }, "key": "meta" },
+              { "type": "Separator", "key": "sep" },
+              { "type": "Markdown", "props": { "content": "Email body content..." }, "key": "body" },
+              { "type": "Bar", "key": "actions", "children": [
+                { "type": "Button", "props": { "text": "Reply" }, "key": "reply" },
+                { "type": "Button", "props": { "text": "Forward" }, "key": "forward" }
+              ]}
+            ]}
+          ]
+        }
+      }
+    },
+    {
+      "name": "File manager",
+      "skeleton": {
+        "version": "ui@1",
+        "root": {
+          "type": "Bar",
+          "children": [
+            { "type": "Card", "key": "files", "children": [
+              { "type": "Bar", "key": "toolbar", "children": [
+                { "type": "Input", "props": { "placeholder": "Search files..." }, "key": "search" },
+                { "type": "Button", "props": { "text": "Upload", "variant": "accent" }, "key": "upload" }
+              ]},
+              { "type": "Table", "props": {
+                "columns": [
+                  { "key": "name", "header": "Name", "sortable": true },
+                  { "key": "size", "header": "Size", "sortable": true },
+                  { "key": "modified", "header": "Modified", "sortable": true }
+                ]
+              }, "key": "list" }
+            ]},
+            { "type": "Panel", "key": "preview", "children": [
+              { "type": "Text", "props": { "variant": "h3" }, "key": "filename" },
+              { "type": "Media", "props": {}, "key": "preview-img" },
+              { "type": "Text", "props": { "variant": "muted" }, "key": "file-info" }
+            ]}
+          ]
+        }
+      }
+    }
+  ]
+}

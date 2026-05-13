@@ -1,0 +1,46 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "id": "recipe/crud-table",
+    "name": "CRUD Table",
+    "description": "Data table with search, create/edit modal, and row actions",
+    "tags": ["b2b", "crud", "table", "data"]
+  },
+  "root": {
+    "type": "Panel",
+    "props": { "title": { "$ref": "page.title" } },
+    "children": [
+      {
+        "type": "Panel",
+        "key": "toolbar",
+        "children": [
+          { "type": "Input", "key": "search", "props": { "label": "Search", "placeholder": "Search...", "value": { "$ref": "search.query" }, "onChange": { "$action": "search.update" } } },
+          { "type": "Button", "key": "create-btn", "props": { "text": "Create New", "variant": "accent", "onClick": { "$action": "modal.openCreate" } } }
+        ]
+      },
+      {
+        "type": "Table",
+        "key": "data-table",
+        "props": {
+          "columns": { "$ref": "table.columns" },
+          "rows": { "$ref": "table.filteredRows" }
+        }
+      },
+      {
+        "type": "Modal",
+        "key": "edit-modal",
+        "props": {
+          "open": { "$ref": "modal.isOpen" },
+          "title": { "$ref": "modal.title" },
+          "onClose": { "$action": "modal.close" }
+        },
+        "children": [
+          { "type": "Input", "key": "field-name", "props": { "label": "Name", "value": { "$ref": "modal.form.name" }, "onChange": { "$action": "form.updateName" } } },
+          { "type": "Input", "key": "field-email", "props": { "label": "Email", "value": { "$ref": "modal.form.email" }, "onChange": { "$action": "form.updateEmail" } } },
+          { "type": "Button", "key": "save-btn", "props": { "text": "Save", "type": "submit", "onClick": { "$action": "form.submit" } } },
+          { "type": "Button", "key": "cancel-btn", "props": { "text": "Cancel", "variant": "outline", "onClick": { "$action": "modal.close" } } }
+        ]
+      }
+    ]
+  }
+}

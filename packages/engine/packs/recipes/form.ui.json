@@ -1,0 +1,27 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "id": "recipe/form",
+    "name": "Form",
+    "description": "Multi-field form with validation feedback, select, checkbox, and submit/cancel actions",
+    "tags": ["b2b", "form", "input", "crud"]
+  },
+  "root": {
+    "type": "Panel",
+    "props": { "title": { "$ref": "form.title" } },
+    "children": [
+      { "type": "Input", "key": "field-1", "props": { "label": "Full Name", "value": { "$ref": "form.name" }, "onChange": { "$action": "form.update" }, "required": true } },
+      { "type": "Input", "key": "field-2", "props": { "label": "Email", "type": "email", "value": { "$ref": "form.email" }, "onChange": { "$action": "form.update" }, "required": true } },
+      { "type": "Select", "key": "field-3", "props": { "label": "Role", "options": { "$ref": "form.roleOptions" }, "value": { "$ref": "form.role" }, "onChange": { "$action": "form.update" } } },
+      { "type": "Checkbox", "key": "field-4", "props": { "label": "Send notification email", "checked": { "$ref": "form.sendNotification" }, "onChange": { "$action": "form.update" } } },
+      {
+        "type": "Panel",
+        "key": "actions",
+        "children": [
+          { "type": "Button", "key": "submit", "props": { "text": "Save", "type": "submit", "variant": "accent", "onClick": { "$action": "form.submit" } } },
+          { "type": "Button", "key": "cancel", "props": { "text": "Cancel", "variant": "outline", "onClick": { "$action": "form.cancel" } } }
+        ]
+      }
+    ]
+  }
+}
