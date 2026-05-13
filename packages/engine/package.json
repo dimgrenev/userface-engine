@@ -2,7 +2,7 @@
   "name": "@userface/engine",
   "version": "0.1.0",
   "private": false,
-  "description": "AI-native UI infrastructure: analyze components, generate contracts (face.json), compose UI (ui@1), validate, and render — via CLI, MCP, or SDK.",
+  "description": "Component contracts, validation, registry scanning, ui@1 composition, code generation, and MCP tooling for AI-assisted UI work.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -51,9 +51,8 @@
       "require": "./dist/cjs/bundler/vfsBundler.js"
     },
     "./integrations/next/*": {
-      "types": "./integrations/next/*.ts",
-      "import": "./integrations/next/*.ts",
-      "require": "./integrations/next/*.js"
+      "types": "./integrations/next/*.d.ts",
+      "import": "./integrations/next/*.js"
     },
     "./transpiler": {
       "types": "./dist/types/transpiler.d.ts",
@@ -113,10 +112,12 @@
     }
   },
   "dependencies": {
-    "keytar": "^7.9.0",
     "node-fetch": "^3.3.2",
     "tar": "^7.5.9",
     "zod": "^4.0.15"
+  },
+  "optionalDependencies": {
+    "keytar": "^7.9.0"
   },
   "scripts": {
     "build": "node ./scripts/build-npm.cjs",

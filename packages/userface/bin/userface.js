@@ -8,10 +8,6 @@ import { generateComponentScaffold } from '../lib/generate.js';
 
 const INSTALL_TARGETS = {
   engine: ['@userface/engine'],
-  'face-ui-react': ['@userface/face-ui-react'],
-  faceui: ['@userface/face-ui-react'],
-  ui: ['@userface/face-ui-react'],
-  all: ['@userface/engine', '@userface/face-ui-react'],
 };
 
 function printHelp() {
@@ -20,14 +16,11 @@ Userface CLI
 
 Usage:
   userface add engine
-  userface add face-ui-react
-  userface add all
   userface validate [path] [--ci] [--mode fast|standard|deep] [--fail-on error|warning|info]
   userface generate <ComponentName> [--root path] [--overwrite]
 
 Examples:
   userface add engine
-  userface add face-ui-react
   userface validate src/components --ci
   userface generate EmptyState
 `);
@@ -61,12 +54,11 @@ function runInstall(cwd, packages) {
       console.error('');
       console.error(`Userface install failed for: ${packageList}`);
       console.error('Most likely cause: the requested packages are not published to npm yet.');
-      console.error('Expected public packages:');
+      console.error('Expected public package:');
       console.error('  - @userface/engine');
-      console.error('  - @userface/face-ui-react');
       console.error('');
       console.error('If you are testing from the monorepo, use workspace packages locally.');
-      console.error('If you are testing from outside the monorepo, publish those packages first.');
+      console.error('If you are testing from outside the monorepo, publish the package first.');
     }
     process.exit(result.status || 1);
   }
@@ -103,10 +95,8 @@ async function main() {
   if (command === 'init') {
     const requested = parseInstallTarget(arg || '');
     console.error('`userface init` has been removed.');
-    console.error('Create your app yourself, then install packages with one of:');
+    console.error('Create your app yourself, then install the engine with:');
     console.error('  userface add engine');
-    console.error('  userface add face-ui-react');
-    console.error('  userface add all');
     if (requested) {
       console.error('');
       console.error(`Detected install target hint: ${requested}`);

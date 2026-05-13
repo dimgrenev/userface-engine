@@ -1,5 +1,5 @@
-import { ensureEngineScriptsLoaded } from './engineLoaderService';
-import { bundleFromVfs } from '../../src/bundler/vfsBundler';
+import { ensureEngineScriptsLoaded } from './engineLoaderService.js';
+import { bundleFromVfs } from '../../dist/esm/bundler/vfsBundler.js';
 let cachedEngine = null;
 let ensurePromise = null;
 const DEFAULT_DEBUG = true;

@@ -10,11 +10,13 @@
   },
   "scripts": {
     "build": "pnpm --dir packages/engine build",
-    "test": "pnpm exec vitest run --config vitest.config.ts --root . packages/engine/src/__tests__/cli-mcp-boundary.test.ts packages/engine/src/__tests__/codeSanitizer.test.ts packages/engine/src/__tests__/codegen.test.ts packages/engine/src/__tests__/createEngine.test.ts packages/engine/src/__tests__/face-v2.schema.test.ts packages/engine/src/__tests__/mcp-design-tokens.test.ts packages/engine/src/__tests__/prop-extractor.test.ts packages/engine/src/__tests__/registry.test.ts packages/engine/src/storybook/__tests__/csf-parser.test.ts packages/userface/__tests__/generate.test.ts packages/userface/__tests__/github-bot.test.ts packages/userface/__tests__/github-webhook.test.ts",
+    "test": "pnpm build && pnpm exec vitest run --config vitest.config.ts --root .",
     "smoke": "pnpm --dir packages/engine smoke",
     "pack:packages": "pnpm --dir packages/engine pack:dry && pnpm --dir packages/userface pack:dry",
-    "check": "pnpm build && pnpm test && pnpm smoke && pnpm run pack:packages",
-    "publish:public": "node scripts/npm/publish-public-packages.mjs"
+    "check": "pnpm test && pnpm smoke && pnpm run pack:packages",
+    "publish:engine": "node scripts/npm/publish-public-packages.mjs @userface/engine",
+    "publish:userface": "node scripts/npm/publish-public-packages.mjs userface",
+    "publish:public": "pnpm publish:engine"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

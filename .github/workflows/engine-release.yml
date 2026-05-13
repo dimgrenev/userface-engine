@@ -1,4 +1,4 @@
-name: Publish engine packages to npm
+name: Publish @userface/engine to npm
 
 on:
   push:
@@ -38,20 +38,15 @@ jobs:
           echo "version=$TAG" >> "$GITHUB_OUTPUT"
           echo "Publishing version: $TAG"
 
-      - name: Apply package versions
+      - name: Apply package version
         run: |
           node - <<'NODE'
           const fs = require('node:fs');
           const version = process.env.VERSION;
-          for (const file of ['packages/engine/package.json', 'packages/userface/package.json']) {
-            const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
-            pkg.version = version;
-            if (pkg.name === 'userface') {
-              pkg.dependencies = pkg.dependencies || {};
-              pkg.dependencies['@userface/engine'] = `^${version}`;
-            }
-            fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
-          }
+          const file = 'packages/engine/package.json';
+          const pkg = JSON.parse(fs.readFileSync(file, 'utf8'));
+          pkg.version = version;
+          fs.writeFileSync(file, JSON.stringify(pkg, null, 2) + '\n');
           NODE
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -60,6 +55,6 @@ jobs:
         run: pnpm check
 
       - name: Publish to npm
-        run: pnpm publish:public
+        run: pnpm publish:engine
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

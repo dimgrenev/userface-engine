@@ -1,16 +1,10 @@
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import { loadRegistryManifest, RegistryManifestError } from '../registryManifest.ts';
 
 const tempRoots: string[] = [];
-
-function repoRoot(): string {
-  const cwd = process.cwd();
-  if (cwd.endsWith(join('packages', 'engine'))) return resolve(cwd, '../..');
-  return cwd;
-}
 
 function makeTempPackage(packageName = '@demo/components') {
   const repoRoot = mkdtempSync(join(tmpdir(), 'userface-registry-manifest-'));
@@ -39,16 +33,35 @@ afterEach(() => {
 });
 
 describe('loadRegistryManifest', () => {
-  it('loads the current UF default-private registry manifest', () => {
-    const root = repoRoot();
-    const loaded = loadRegistryManifest(resolve(root, 'packages/uf/component-registry.json'), { repoRoot: root });
+  it('loads a default-private manifest with mixed public and private components', () => {
+    const fixture = makeTempPackage();
+    mkdirSync(join(fixture.packageRoot, 'PrivatePanel'), { recursive: true });
+    writeFileSync(join(fixture.packageRoot, 'PrivatePanel', 'PrivatePanel.tsx'), 'export function PrivatePanel() { return null; }\n');
+    writeFileSync(join(fixture.packageRoot, 'PrivatePanel', 'PrivatePanel.json'), JSON.stringify({ name: 'PrivatePanel' }));
+    fixture.writeManifest({
+      version: 1,
+      package: '@demo/components',
+      defaultRegistryVisibility: 'private',
+      components: {
+        Button: {
+          registryVisibility: 'public',
+          entry: './Button/Button.tsx',
+          contract: './Button/Button.json',
+        },
+        PrivatePanel: {
+          registryVisibility: 'private',
+          entry: './PrivatePanel/PrivatePanel.tsx',
+          contract: './PrivatePanel/PrivatePanel.json',
+        },
+      },
+    });
 
-    expect(loaded.manifest.package).toBe('@userface/uf');
+    const loaded = loadRegistryManifest(fixture.manifestPath, { repoRoot: fixture.repoRoot });
+
+    expect(loaded.manifest.package).toBe('@demo/components');
     expect(loaded.manifest.defaultRegistryVisibility).toBe('private');
-    expect(loaded.components.filter(component => component.registryVisibility === 'public')).toHaveLength(27);
-    expect(loaded.components.map(component => component.name)).toContain('Form');
-    expect(loaded.components.map(component => component.name)).toContain('Textarea');
-    expect(loaded.components.map(component => component.name)).toContain('PriceButton');
+    expect(loaded.components.filter(component => component.registryVisibility === 'public').map(component => component.name)).toEqual(['Button']);
+    expect(loaded.components.filter(component => component.registryVisibility === 'private').map(component => component.name)).toEqual(['PrivatePanel']);
   });
 
   it('loads a valid manifest and resolves component files from the package root', () => {

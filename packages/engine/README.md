@@ -1,89 +1,94 @@
 # @userface/engine
 
-AI-native UI infrastructure: give your AI agent real component contracts so it stops hallucinating props.
+Component intelligence for AI-assisted UI work.
 
-## The problem
+Userface Engine turns a component library into machine-readable contracts and
+tools. It helps an agent discover components, understand their props, validate
+`ui@1` compositions, and generate framework code without guessing component APIs.
 
-You ask an AI agent to "build a settings page." It invents prop names, nests interactive elements inside each other, ignores your design system. You spend more time fixing than you'd spend writing from scratch.
+## Install
 
-## What this does
-
-Userface Engine sits between AI code generation and your UI components. Instead of guessing, the agent uses real contracts.
-
-- **Registry** — scans your project, discovers components, reads `face.json` contracts
-- **Validation** — 15 rules checking a11y, structure, and contract compliance (0-100 score)
-- **Composition** — validates `ui@1` documents (nesting, required props, unknown types)
-- **Codegen** — materializes `ui@1` into React JSX, Vue SFC, or HTML
-- **Contract Diffs** — detects breaking changes between `face.json` versions
-- **MCP Server** — 8 tools exposed via Model Context Protocol for AI-IDE integration
-- **State Matrix** — generates all meaningful visual states for a component
-
-## Quick Start
-
-```bash
-# Install
+```sh
 npm install @userface/engine
-
-# Set up your project (auto-detect framework, generate configs)
-npx userface connect
-
-# Or just start the MCP server directly
-npx userface-engine mcp-serve
 ```
 
-After setup, restart your AI-IDE. The agent discovers your components through MCP.
+Requirements:
+
+- Node.js 20+
+- React 18+ for React analysis/render workflows
+- Vue/Svelte dependencies only when using those render paths
+
+## What It Does
+
+| Area | Capability |
+| --- | --- |
+| Component analysis | Reads component files from a deterministic `entryPath` and extracts props/types |
+| Registry | Scans component directories and reports entries, props, `face.json` status, and metadata |
+| Contracts | Parses and validates `face.json` / face v2 contracts |
+| Composition | Validates `ui@1` trees, registry boundaries, refs/actions, and built-in patterns |
+| Codegen | Generates React, Vue, or HTML from `ui@1` documents |
+| Quality rules | Runs the base policy pack for a11y, structure, and contract checks |
+| MCP | Exposes engine tools to AI IDEs over stdio JSON-RPC |
+| Packaging | Ships ESM, CJS, and TypeScript declarations |
 
 ## CLI
 
-```bash
-# Scan all components → registry with props
-npx userface-engine registry scan ./src/components
-
-# Validate quality (score + violations + fix hints)
-npx userface-engine validate ./src/components/Button --mode fast
-
-# Validate ui@1 composition structure
-npx userface-engine composition-validate dashboard.ui.json
-
-# Generate React JSX from ui@1
-npx userface-engine materialize settings.ui.json --framework react
-
-# Detect breaking changes in contracts
-npx userface-engine diff --base v1/face.json --head v2/face.json
-
-# Analyze a single component
-npx userface-engine analyze ./src/components/Button
-
-# Generate visual states
-npx userface-engine states ./src/components/Button
-
-# SSR smoke test + a11y audit
-npx userface-engine test --dir ./src/components
-
-# Start MCP server for AI-IDE
+```sh
+npx userface-engine connect --root src/components
+npx userface-engine registry scan src/components
+npx userface-engine analyze src/components/Button
+npx userface-engine validate src/components/Button --mode fast
+npx userface-engine states src/components/Button
+npx userface-engine composition-validate dashboard.ui.json --registry-dir src/components
+npx userface-engine materialize dashboard.ui.json --framework react
+npx userface-engine diff --base old.face.json --head new.face.json
+npx userface-engine test --dir src/components
 npx userface-engine mcp-serve
 ```
 
-All commands output JSON to stdout. Logs go to stderr.
+Output rules:
 
-## MCP Tools
+- machine-readable commands write JSON to stdout
+- logs and diagnostics go to stderr
+- validation exits non-zero only when the selected `--fail-on` threshold is hit
 
-8 tools via Model Context Protocol (JSON-RPC 2.0 over stdin/stdout):
+## SDK
 
-| Tool | What it does |
-|------|-------------|
-| `component_list` | List all components with props, types, and metadata |
-| `component_analyze` | Deep analysis of a single component |
-| `component_validate` | Quality gate: score + violations + fix hints |
-| `composition_validate` | Validate ui@1 document structure and contracts |
-| `ui_materialize` | Generate React/Vue/HTML from ui@1 |
-| `component_states` | Generate all visual states for a component |
-| `component_test` | SSR smoke test + a11y audit |
-| `component_render` | Render with specific props |
+```ts
+import { createEngine } from '@userface/engine';
 
-### Cursor Setup
+const engine = createEngine({
+  React,
+  ReactDOMServer,
+});
 
-Add to `.cursor/mcp.json`:
+const spec = await engine.analyzeComponent(
+  [
+    {
+      name: 'Button.tsx',
+      content: `
+        export interface ButtonProps {
+          variant?: 'primary' | 'secondary';
+          disabled?: boolean;
+        }
+        export function Button(props: ButtonProps) {
+          return <button disabled={props.disabled} />;
+        }
+      `,
+    },
+  ],
+  { entryPath: 'Button.tsx' },
+);
+
+const states = engine.generateStates(spec.props);
+```
+
+`entryPath` is required. The engine does not guess the main file when called
+through the SDK.
+
+## MCP
+
+Cursor config:
 
 ```json
 {
@@ -96,9 +101,28 @@ Add to `.cursor/mcp.json`:
 }
 ```
 
-## face.json — Component Contracts
+Main tools:
 
-A machine-readable description of what a component accepts:
+| Tool | Purpose |
+| --- | --- |
+| `component_list` | List components under a directory |
+| `component_analyze` | Extract props/types from one component |
+| `component_validate` | Run quality rules and return scores/violations |
+| `component_render` | Render a component with props |
+| `component_states` | Generate representative visual states |
+| `component_test` | Render generated states and report failures |
+| `composition_validate` | Validate a `ui@1` document |
+| `ui_materialize` | Generate React/Vue/HTML from `ui@1` |
+| `component_contract` | Read a face v2 contract |
+| `component_composition_guide` | Return composition guidance from face v2 |
+| `design_tokens` | Read CSS token metadata when available |
+| `pattern_list` / `pattern_get` | Inspect built-in composition patterns |
+| `assembly_flow` | Return the recommended UI assembly flow |
+| `library_guide` | Read local Face UI operating docs when present |
+
+## `face.json`
+
+A contract describes the public API of one component.
 
 ```json
 {
@@ -106,23 +130,26 @@ A machine-readable description of what a component accepts:
   "props": {
     "variant": {
       "type": "enum",
-      "options": ["default", "destructive", "outline", "ghost"],
-      "default": "default"
+      "options": ["primary", "secondary"],
+      "default": "primary"
     },
-    "size": {
-      "type": "enum",
-      "options": ["default", "sm", "lg", "icon"],
-      "default": "default"
+    "disabled": {
+      "type": "boolean",
+      "default": false
     },
-    "disabled": { "type": "boolean", "default": false },
-    "children": { "type": "node", "required": true }
+    "children": {
+      "type": "node"
+    }
   }
 }
 ```
 
-The registry reads these contracts and exposes them to the AI agent. No more guessing.
+The registry can combine extracted props with manual contracts. Manual contracts
+are still the right answer for complex component APIs.
 
-## ui@1 — Declarative Composition
+## `ui@1`
+
+`ui@1` is a declarative composition document.
 
 ```json
 {
@@ -131,39 +158,45 @@ The registry reads these contracts and exposes them to the AI agent. No more gue
     "type": "Panel",
     "props": { "title": "Settings" },
     "children": [
-      { "type": "Input", "props": { "label": "Name", "value": { "$ref": "user.name" } } },
-      { "type": "Button", "props": { "type": "submit" }, "children": ["Save"] }
+      {
+        "type": "Input",
+        "props": {
+          "label": "Name",
+          "value": { "$ref": "user.name" }
+        }
+      },
+      {
+        "type": "Button",
+        "props": { "type": "submit" },
+        "children": ["Save"]
+      }
     ]
   }
 }
 ```
 
-`materialize` turns this into real React JSX. `composition-validate` checks it against your registry.
+Use `composition-validate` before codegen.
 
-## Included Packs
+## Subpath Exports
 
-### Recipe Packs
-5 B2B ui@1 templates: Dashboard, CRUD Table, Form, Settings, List-Detail.
-
-### Base Policy Pack
-15 rules: a11y (button-type, input-label, img-alt), structural (modal-onclose, no-nested-interactive), contract (no-props, excessive-props, select-options).
-
-### System Prompts
-AI-IDE instructions: `prompts/cursor-rules.md`, `prompts/claude-prompt.md`, `prompts/generic-prompt.md`.
-
-## Known Limitations
-
-- **Prop extraction**: The regex extractor returns 0 props for complex patterns (forwardRef + ComponentPropsWithoutRef). Write `face.json` manually or use the ts-morph extractor on the server.
-- **SSR test**: Returns empty results for components without extractable props (use face.json).
-- **Framework support**: React is primary. Vue and Svelte SSR adapters exist but are less tested.
-
-## GitHub Action
-
-```yaml
-  with:
-    components-dir: src/components
-    fail-on: error
+```ts
+import { createEngine } from '@userface/engine';
+import { validateFaceUiDoc, generateReactCode } from '@userface/engine/face-ui';
+import { bundleFromVfs } from '@userface/engine/bundler';
+import { transpileToIIFE } from '@userface/engine/transpiler';
+import { ensureEngineReady } from '@userface/engine/integrations/next/engineController';
 ```
+
+## Known Limits
+
+- Prop extraction is conservative. Complex inherited React types may need a
+  manual `face.json`.
+- React is the primary validated runtime path. Vue and Svelte adapters exist,
+  but should be treated as less mature.
+- Browser runtime files are shipped for host apps that already serve the engine
+  browser bundle.
+- Library sync/auth commands are intentionally not part of the public CLI path
+  in this release.
 
 ## License
 

@@ -1,62 +1,29 @@
 # userface
 
-Umbrella CLI for the Userface ecosystem.
+Staged branded CLI for the Userface ecosystem.
+
+This package is included in the repository for local development and future
+publishing. It is not part of the default `@userface/engine` release because the
+npm `userface` package already has a legacy 1.x version line.
 
 ## Commands
 
-```bash
+```sh
 userface add engine
-userface add face-ui-react
-userface add all
 userface validate src/components --ci
 userface generate EmptyState
 ```
 
-## Scope
+`userface add engine` installs `@userface/engine` into an existing project.
 
-This package is the branded entrypoint for:
+`userface validate ...` wraps the engine validator and returns an aggregate
+CI-friendly report.
 
-- `@userface/engine`
-- `@userface/face-ui-react`
+`userface generate ...` creates a starter component and matching contract in a
+local component directory.
 
-It is not the runtime package for the full desktop app.
+## Release Note
 
-`userface add ...` installs the requested publishable package set into an existing project.
-
-`userface validate ...` runs Userface component validation in CI-friendly aggregate mode. It wraps `@userface/engine` and can emit JSON or GitHub Actions annotations.
-
-`userface generate ...` creates a local component scaffold with a matching `face.json` contract and updates the component barrel export when an `index.ts` file is present.
-
-## GitHub Automation
-
-This repo now ships a local GitHub Action at `.github/actions/validate-components` for PR validation.
-
-Example workflow step:
-
-```yaml
-- uses: ./.github/actions/validate-components
-  with:
-    root: packages/face-ui-react
-    mode: standard
-    fail-on: error
-    changed-only: true
-    comment-on-pr: true
-    github-token: ${{ secrets.GITHUB_TOKEN }}
-```
-
-The reusable bot helpers live in:
-
-- `packages/userface/lib/github-bot.js`
-- `packages/userface/lib/github-webhook.js`
-- `packages/userface/lib/generate.js`
-
-For server-side webhook handling, the repo includes `apps/web/pages/api/github/userface.ts`. Configure:
-
-- `USERFACE_GITHUB_WEBHOOK_SECRET`
-- `USERFACE_GITHUB_BOT_TOKEN`
-- `USERFACE_GITHUB_REPO_ROOT` (optional, defaults to the current checkout)
-
-Supported GitHub commands:
-
-- PR comment: `@userface validate`
-- Issue or issue comment: `@userface generate Button`
+Do not publish this package as `0.x` over the existing npm `userface` package.
+When the CLI is ready to replace the legacy package, release it intentionally on
+a new version line.

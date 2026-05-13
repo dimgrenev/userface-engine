@@ -109,5 +109,19 @@ check('publishConfig.access is public', pkg.publishConfig?.access === 'public');
 check('LICENSE file exists', fileExists('LICENSE'));
 check('CHANGELOG.md exists', fileExists('CHANGELOG.md'));
 
+console.log('\n8. Next integration subpath:');
+check('integrations/next/engineController.js exists', fileExists('integrations/next/engineController.js'));
+check('integrations/next/engineController.d.ts exists', fileExists('integrations/next/engineController.d.ts'));
+const nextIntegrationResult = spawnSync(
+  process.execPath,
+  [
+    '--input-type=module',
+    '-e',
+    "import('@userface/engine/integrations/next/engineController').then((m)=>{ if (typeof m.ensureEngineReady !== 'function') process.exit(2); }).catch((e)=>{ console.error(e); process.exit(1); })",
+  ],
+  { cwd: ENGINE, encoding: 'utf8', timeout: 5000 }
+);
+check('Next integration import resolves through package exports', nextIntegrationResult.status === 0);
+
 console.log(`\n${failures === 0 ? 'ALL PASSED' : `${failures} FAILURE(S)`}\n`);
 process.exit(failures > 0 ? 1 : 0);

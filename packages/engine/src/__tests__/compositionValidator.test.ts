@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -18,14 +18,6 @@ function repoRoot(): string {
   const cwd = process.cwd();
   if (existsSync(resolve(cwd, 'packages/engine'))) return cwd;
   return resolve(cwd, '../..');
-}
-
-function readRepoFaceDoc(relativePath: string): FaceUiDoc {
-  return JSON.parse(readFileSync(resolve(repoRoot(), relativePath), 'utf8')) as FaceUiDoc;
-}
-
-function actualUfRegistryManifestPath(): string {
-  return resolve(repoRoot(), 'packages/uf/component-registry.json');
 }
 
 function registryBoundaryRuleIdsInSource(): string[] {
@@ -134,9 +126,7 @@ describe('composition pattern component selection', () => {
     }
   });
 
-  it('keeps UF product block references tied to real contracts', () => {
-    const root = repoRoot();
-
+  it('keeps UF product block references package-relative and named', () => {
     for (const id of BUILTIN_PATTERN_IDS) {
       const pattern = loadPatternById(id);
       const selection = pattern?.componentSelection;
@@ -146,17 +136,12 @@ describe('composition pattern component selection', () => {
       for (const block of selection?.ufProductBlocks || []) {
         expect(block.name, id).toBeTruthy();
         expect(block.contract, block.name).toMatch(/^packages\/uf\//);
-        expect(existsSync(resolve(root, block.contract)), block.contract).toBe(true);
       }
     }
   });
 
-  it('keeps pattern Face UI primitive references tied to the Face UI registry', () => {
-    const root = repoRoot();
-    const faceUiRegistry = JSON.parse(
-      readFileSync(resolve(root, 'packages/face-ui-react/component-registry.json'), 'utf8'),
-    ) as { components?: Record<string, unknown> };
-    const registryNames = new Set(Object.keys(faceUiRegistry.components || {}));
+  it('keeps pattern Face UI primitive references inside the public boundary allowlist', () => {
+    const fixture = makeRegistryBoundaryFixture();
 
     for (const id of BUILTIN_PATTERN_IDS) {
       const pattern = loadPatternById(id);
@@ -164,7 +149,11 @@ describe('composition pattern component selection', () => {
       expect(primitiveNames.length, id).toBeGreaterThan(0);
 
       for (const name of primitiveNames) {
-        expect(registryNames.has(name), `${id}:${name}`).toBe(true);
+        const violations = registryBoundaryViolations(
+          docWithChildren('Card', [name]),
+          fixture.manifestPath,
+        );
+        expect(violations, `${id}:${name}`).toEqual([]);
       }
     }
   });
@@ -363,74 +352,47 @@ describe('composition registry boundary', () => {
     `);
   });
 
-  it('snapshots current UF ui@1 registry-boundary warnings without broadening the public manifest', () => {
-    const cases = new Map([
-      ['packages/uf/library-workspace.ui@1.json', {
+  it('snapshots default-private registry-boundary behavior with local fixtures', () => {
+    const fixture = makeRegistryBoundaryFixture();
+    const cases = [
+      {
+        name: 'public manifest components pass',
+        doc: docWithChildren('Card', ['PublicPanel']),
         expectedViolations: [],
-        allowedPublicComponents: ['Card', 'InfoTree', 'MetricTabs', 'PriceButton', 'ProgressStack', 'Text'],
-      }],
-      ['packages/uf/chat-panel.ui@1.json', {
+      },
+      {
+        name: 'private manifest components warn',
+        doc: docWithChildren('Card', ['PrivatePanel']),
         expectedViolations: [
-          { ruleId: REGISTRY_BOUNDARY_RULE_ID, component: 'ChatPanel' },
+          { ruleId: REGISTRY_BOUNDARY_RULE_ID, component: 'PrivatePanel' },
         ],
-        allowedPublicComponents: [],
-      }],
-      ['packages/uf/userface-browser.ui@1.json', {
-        expectedViolations: [
-          { ruleId: REGISTRY_BOUNDARY_RULE_ID, component: 'UserfacePanel' },
-        ],
-        allowedPublicComponents: [],
-      }],
-    ]);
-    const discoveredFixturePaths = readdirSync(resolve(repoRoot(), 'packages/uf'))
-      .filter(file => file.endsWith('.ui@1.json'))
-      .map(file => `packages/uf/${file}`)
-      .sort();
+      },
+    ];
 
-    expect(discoveredFixturePaths).toEqual([...cases.keys()].sort());
-
-    for (const path of discoveredFixturePaths) {
-      const entry = cases.get(path);
-      expect(entry, path).toBeDefined();
-      if (!entry) continue;
-
-      const report = validateComposition(readRepoFaceDoc(path), {
+    for (const entry of cases) {
+      const report = validateComposition(entry.doc, {
         enforceRegistryBoundary: true,
-        registryManifestPath: actualUfRegistryManifestPath(),
+        registryManifestPath: fixture.manifestPath,
       });
       const violations = report.violations
         .filter(v => v.ruleId.startsWith(REGISTRY_BOUNDARY_RULE_PREFIX))
         .map(v => ({
           ruleId: v.ruleId,
           component: v.location.component,
-        }))
-        .sort((a, b) => `${a.ruleId}:${a.component}`.localeCompare(`${b.ruleId}:${b.component}`));
-      const violationComponents = violations.map(v => v.component);
+        }));
 
-      expect(violations, path).toEqual(entry.expectedViolations);
-
-      for (const component of entry.allowedPublicComponents) {
-        expect(violationComponents, path).not.toContain(component);
-      }
+      expect(violations, entry.name).toEqual(entry.expectedViolations);
     }
   });
 
-  it('keeps root-public UF non-pattern surfaces behind the opt-in registry boundary', () => {
-    const privateSurfaceTypes = [
-      'ActionSurface',
-      'ErrorStatusPage',
-      'GlobalTopBar',
-      'HostedApiDashboard',
-      'PaymentStatusCard',
-      'TextLink',
-    ];
+  it('keeps non-public local surfaces behind the opt-in registry boundary', () => {
     const report = validateComposition(docWithChildren('Card', [
-      'ButtonPrice',
-      'PriceButton',
-      ...privateSurfaceTypes,
+      'PublicPanel',
+      'PrivatePanel',
+      'LocalWizard',
     ]), {
       enforceRegistryBoundary: true,
-      registryManifestPath: actualUfRegistryManifestPath(),
+      registryManifestPath: makeRegistryBoundaryFixture().manifestPath,
     });
 
     const boundaryComponents = report.violations
@@ -438,6 +400,6 @@ describe('composition registry boundary', () => {
       .map(v => v.location.component)
       .sort();
 
-    expect(boundaryComponents).toEqual([...privateSurfaceTypes].sort());
+    expect(boundaryComponents).toEqual(['LocalWizard', 'PrivatePanel']);
   });
 });

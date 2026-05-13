@@ -70,6 +70,19 @@ function hasFlag(args: string[], flag: string): boolean {
   return args.includes(flag);
 }
 
+function isLibraryCliEnabled(): boolean {
+  return process.env.USERFACE_ENABLE_LIBRARY_CLI === '1';
+}
+
+function assertLibraryCliEnabled(command: string): void {
+  if (isLibraryCliEnabled()) return;
+  process.stderr.write(
+    `Error: "${command}" is not part of the public engine CLI yet.\n` +
+    'This release only exposes local component analysis, validation, registry, ui@1, and MCP workflows.\n'
+  );
+  process.exit(1);
+}
+
 // ---------------------------------------------------------------------------
 // Commands
 // ---------------------------------------------------------------------------
@@ -760,6 +773,7 @@ async function cmdCompositionValidate(targetPath: string, args: string[], config
 }
 
 async function cmdPull(args: string[], config: any = {}) {
+  assertLibraryCliEnabled('pull');
   const { getToken } = await import('./auth/tokenStorage');
   const { downloadAndExtractLibrary, saveManifest } = await import('./auth/downloader');
   
@@ -806,6 +820,7 @@ async function cmdPull(args: string[], config: any = {}) {
 }
 
 async function cmdUpdate(args: string[], config: any = {}) {
+  assertLibraryCliEnabled('update');
   const { getToken } = await import('./auth/tokenStorage');
   
   process.stderr.write('Initializing uf update...\n');
@@ -835,15 +850,19 @@ async function cmdUpdate(args: string[], config: any = {}) {
 }
 
 async function cmdLogin(args: string[], config: any = {}) {
+  assertLibraryCliEnabled('login');
   const { storeToken } = await import('./auth/tokenStorage');
-  // For MVP without real server, simulate OAuth device flow
-  process.stderr.write('Mock device-flow: opening browser for login...\n');
-  const mockToken = 'uf_token_' + Math.random().toString(36).substring(2);
-  await storeToken(mockToken);
-  process.stderr.write(`Successfully logged in. Token saved to keychain.\n`);
+  const token = String(process.env.USERFACE_TOKEN || '').trim();
+  if (!token) {
+    process.stderr.write('Error: USERFACE_TOKEN is required for the experimental library CLI.\n');
+    process.exit(1);
+  }
+  await storeToken(token);
+  process.stderr.write(`Token saved to keychain.\n`);
 }
 
 async function cmdLogout(args: string[], config: any = {}) {
+  assertLibraryCliEnabled('logout');
   const { deleteToken } = await import('./auth/tokenStorage');
   const deleted = await deleteToken();
   if (deleted) {
@@ -854,6 +873,7 @@ async function cmdLogout(args: string[], config: any = {}) {
 }
 
 async function cmdSync(args: string[], config: any = {}) {
+  assertLibraryCliEnabled('sync');
   const { getToken } = await import('./auth/tokenStorage');
   const { readFileSync: rfs, readdirSync, statSync } = await import('node:fs');
   const { resolve: pathResolve, relative, extname } = await import('node:path');
@@ -953,13 +973,6 @@ Usage:
   userface-engine registry scan <dir>              Scan for components
   userface-engine doctor                           Check environment and configuration
   userface-engine mcp-serve                        Start MCP server
-
-  # Libraries and Auth (under construction)
-  userface-engine login                            Login to Userface via browser
-  userface-engine logout                           Logout
-  userface-engine pull                             Download and install libraries from userface.config.json
-  userface-engine sync                             Sync project libraries with profile
-  userface-engine update                           Update installed libraries to compatible versions
 
 Options:
   --mode <m>         Validation mode: fast, standard, deep (for validate)
