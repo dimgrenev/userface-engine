@@ -9,6 +9,8 @@ export type EnsureEngineScriptsOptions = {
   debug?: boolean;
   timeoutMs?: number;
   scripts?: EngineScriptItem[];
+  /** Load optional framework globals such as Vue/Svelte during engine bootstrap. */
+  includeOptionalFrameworks?: boolean;
 };
 
 const DEFAULT_TIMEOUT_MS = 12_000;
@@ -130,7 +132,11 @@ export async function ensureEngineScriptsLoaded(options: EnsureEngineScriptsOpti
 
   const debug = options.debug ?? false;
   const timeoutMs = Math.max(500, options.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-  const scripts = options.scripts ?? DEFAULT_SCRIPTS;
+  const scripts = options.scripts ?? (
+    options.includeOptionalFrameworks
+      ? DEFAULT_SCRIPTS
+      : DEFAULT_SCRIPTS.filter((script) => !script.optional)
+  );
 
   state = 'loading';
   sharedPromise = (async () => {
@@ -140,8 +146,9 @@ export async function ensureEngineScriptsLoaded(options: EnsureEngineScriptsOpti
           await loadScriptOnce(item.src, item.global, debug, timeoutMs);
         } catch (scriptErr) {
           if (item.optional) {
-            // Non-critical script (Vue, Svelte) — log and continue.
-            try { console.warn(`[engine-loader] optional script failed, skipping: ${item.src}`); } catch {}
+            if (debug) {
+              try { console.warn(`[engine-loader] optional script failed, skipping: ${item.src}`); } catch {}
+            }
             continue;
           }
           throw scriptErr;

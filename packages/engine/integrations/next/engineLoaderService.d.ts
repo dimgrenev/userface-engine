@@ -8,6 +8,8 @@ export type EnsureEngineScriptsOptions = {
   debug?: boolean;
   timeoutMs?: number;
   scripts?: EngineScriptItem[];
+  /** Load optional framework globals such as Vue/Svelte during engine bootstrap. */
+  includeOptionalFrameworks?: boolean;
 };
 
 export declare function getEngineLoaderState(): {

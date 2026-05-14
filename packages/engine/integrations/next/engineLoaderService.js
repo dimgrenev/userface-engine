@@ -121,7 +121,9 @@ export async function ensureEngineScriptsLoaded(options = {}) {
         return sharedPromise;
     const debug = (_a = options.debug) !== null && _a !== void 0 ? _a : false;
     const timeoutMs = Math.max(500, (_b = options.timeoutMs) !== null && _b !== void 0 ? _b : DEFAULT_TIMEOUT_MS);
-    const scripts = (_c = options.scripts) !== null && _c !== void 0 ? _c : DEFAULT_SCRIPTS;
+    const scripts = (_c = options.scripts) !== null && _c !== void 0 ? _c : (options.includeOptionalFrameworks
+        ? DEFAULT_SCRIPTS
+        : DEFAULT_SCRIPTS.filter((script) => !script.optional));
     state = 'loading';
     sharedPromise = (async () => {
         try {
@@ -131,7 +133,9 @@ export async function ensureEngineScriptsLoaded(options = {}) {
                 }
                 catch (scriptErr) {
                     if (item.optional) {
-                        try { console.warn(`[engine-loader] optional script failed, skipping: ${item.src}`); } catch (_a) { }
+                        if (debug) {
+                            try { console.warn(`[engine-loader] optional script failed, skipping: ${item.src}`); } catch (_a) { }
+                        }
                         continue;
                     }
                     throw scriptErr;
