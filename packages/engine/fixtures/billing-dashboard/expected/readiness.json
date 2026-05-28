@@ -1,0 +1,309 @@
+{
+  "schemaVersion": "userface-readiness@1",
+  "status": "ready",
+  "score": 98,
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "repo": {
+    "root": "<fixture>/billing-dashboard",
+    "framework": "react",
+    "frameworkMeta": "next@15.0.0",
+    "typescript": true,
+    "packageManager": "unknown"
+  },
+  "components": {
+    "root": "src/components",
+    "discovered": 6,
+    "contracted": 6,
+    "contractCoverage": 1,
+    "react": 6,
+    "nonReact": 0,
+    "props": 15,
+    "states": 6,
+    "diagnostics": 0,
+    "sample": [
+      {
+        "name": "BillingDashboard",
+        "path": "src/components/BillingDashboard",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 2,
+        "states": 1
+      },
+      {
+        "name": "BillingTable",
+        "path": "src/components/BillingTable",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 3,
+        "states": 1
+      },
+      {
+        "name": "InternalDebugPanel",
+        "path": "src/components/InternalDebugPanel",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 1,
+        "states": 1
+      },
+      {
+        "name": "KpiCard",
+        "path": "src/components/KpiCard",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 3,
+        "states": 1
+      },
+      {
+        "name": "PlanBanner",
+        "path": "src/components/PlanBanner",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 2,
+        "states": 1
+      },
+      {
+        "name": "UsageMeter",
+        "path": "src/components/UsageMeter",
+        "framework": "react",
+        "hasFaceJson": true,
+        "props": 4,
+        "states": 1
+      }
+    ],
+    "safe": [
+      {
+        "name": "BillingDashboard",
+        "path": "src/components/BillingDashboard",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      },
+      {
+        "name": "BillingTable",
+        "path": "src/components/BillingTable",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      },
+      {
+        "name": "InternalDebugPanel",
+        "path": "src/components/InternalDebugPanel",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      },
+      {
+        "name": "KpiCard",
+        "path": "src/components/KpiCard",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      },
+      {
+        "name": "PlanBanner",
+        "path": "src/components/PlanBanner",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      },
+      {
+        "name": "UsageMeter",
+        "path": "src/components/UsageMeter",
+        "reason": "React component with face.json contract and no registry diagnostics."
+      }
+    ],
+    "unsafe": []
+  },
+  "uiDocuments": {
+    "discovered": 1,
+    "sample": [
+      "screens/fixed.ui.json"
+    ]
+  },
+  "firstScreen": {
+    "status": "passed",
+    "candidate": "screens/fixed.ui.json",
+    "summary": "Use screens/fixed.ui.json as the first-screen readiness target."
+  },
+  "pilot": {
+    "verdict": "ready",
+    "canRunFirstScreenPilot": true,
+    "summary": "Ready for a first-screen AI UI acceptance pilot.",
+    "blockers": [],
+    "requiredFixes": []
+  },
+  "composition": {
+    "checked": 1,
+    "violations": 0,
+    "status": "passed",
+    "summary": "1 ui@1 document(s) passed composition readiness."
+  },
+  "tokenStyleRisks": {
+    "status": "passed",
+    "risks": []
+  },
+  "renderPreviewReadiness": {
+    "status": "passed",
+    "summary": "Preview evidence can be attached after guard passes and desktop/CI render validation runs.",
+    "requiredEvidence": [
+      "guard proof",
+      "desktop render validation",
+      "preview/screenshot artifact"
+    ]
+  },
+  "guard": {
+    "offlineCore": true,
+    "canRun": true,
+    "reason": "Local guard can validate ui@1 composition against the discovered registry without model/network egress."
+  },
+  "proof": {
+    "schema": "userface-proof@1",
+    "id": "ufp_b97f3a06e0351dae593a",
+    "status": "passed",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "renderer": {
+      "name": "userface-proof",
+      "version": 1
+    },
+    "repo": {
+      "rootHash": "sha256:a646efcaa78f419595d6b7dbd2f38a1275ce393a9c3f6fb4574451fb80beecdc"
+    },
+    "target": {
+      "kind": "readiness",
+      "paths": [
+        "screens/fixed.ui.json"
+      ]
+    },
+    "components": {
+      "total": 6,
+      "contracted": 6,
+      "used": [
+        "BillingDashboard",
+        "BillingTable",
+        "InternalDebugPanel",
+        "KpiCard",
+        "PlanBanner",
+        "UsageMeter"
+      ]
+    },
+    "validation": {
+      "status": "passed",
+      "score": 98,
+      "reason": "Repo is ready for an AI UI acceptance pilot.",
+      "violations": []
+    },
+    "composition": {
+      "status": "passed",
+      "reason": "1 ui@1 document(s) passed composition readiness.",
+      "violations": []
+    },
+    "preview": {
+      "status": "not_run",
+      "reason": "Readiness does not render preview artifacts; guard/desktop validation attaches preview evidence.",
+      "artifacts": []
+    },
+    "patch": {
+      "files": [],
+      "additions": 0,
+      "deletions": 0
+    },
+    "agent": {
+      "status": "not_run",
+      "attempts": 0
+    },
+    "egress": {
+      "mode": "offline",
+      "measurement": "zero_upload",
+      "modelCalls": 0,
+      "filesConsidered": 7,
+      "filesSent": 0,
+      "bytesSent": 0,
+      "absolutePathsSent": false,
+      "remoteTelemetry": false,
+      "network": false
+    },
+    "pr": {
+      "provider": "none",
+      "annotations": 0
+    },
+    "summaries": [
+      "Repo is ready for an AI UI acceptance pilot.",
+      "6 component(s), 6 contracted, 1 ui@1 document(s)."
+    ]
+  },
+  "checks": [
+    {
+      "id": "framework",
+      "label": "Framework",
+      "status": "passed",
+      "score": 100,
+      "summary": "next@15.0.0 detected."
+    },
+    {
+      "id": "typescript",
+      "label": "TypeScript",
+      "status": "passed",
+      "score": 100,
+      "summary": "TypeScript signal detected."
+    },
+    {
+      "id": "components",
+      "label": "Components",
+      "status": "passed",
+      "score": 100,
+      "summary": "6 component(s) discovered in src/components."
+    },
+    {
+      "id": "contracts",
+      "label": "Component contracts",
+      "status": "passed",
+      "score": 100,
+      "summary": "6/6 components have face.json contracts."
+    },
+    {
+      "id": "registry_diagnostics",
+      "label": "Registry diagnostics",
+      "status": "passed",
+      "score": 100,
+      "summary": "Component registry scan produced no diagnostics."
+    },
+    {
+      "id": "token_style",
+      "label": "Token/style risks",
+      "status": "passed",
+      "score": 90,
+      "summary": "Token/style signal is present or not blocking for this readiness pass."
+    },
+    {
+      "id": "ui_documents",
+      "label": "ui@1 documents",
+      "status": "passed",
+      "score": 100,
+      "summary": "1 ui@1 document(s) discovered."
+    },
+    {
+      "id": "composition",
+      "label": "Composition gate",
+      "status": "passed",
+      "score": 100,
+      "summary": "1 ui@1 document(s) passed composition readiness."
+    },
+    {
+      "id": "first_screen",
+      "label": "First-screen feasibility",
+      "status": "passed",
+      "score": 100,
+      "summary": "First-screen candidate: screens/fixed.ui.json."
+    },
+    {
+      "id": "preview",
+      "label": "Preview readiness",
+      "status": "passed",
+      "score": 90,
+      "summary": "Preview evidence can be attached after guard passes and desktop/CI render validation runs."
+    },
+    {
+      "id": "guard",
+      "label": "Offline guard",
+      "status": "passed",
+      "score": 100,
+      "summary": "Offline guard can run locally with zero model/network egress."
+    }
+  ],
+  "recommendation": {
+    "summary": "Repo is ready for an AI UI acceptance pilot.",
+    "nextSteps": [
+      "Run userface guard on a representative ui@1 change and attach the generated proof to the PR."
+    ]
+  }
+}

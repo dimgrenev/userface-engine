@@ -1,0 +1,8 @@
+::error file=screens/broken.ui.json,line=1::[PlanBanner] composition/invalid-enum-value%3A Prop "plan" on "PlanBanner" has value "ultimate" which is not in allowed options%3A starter%2C growth%2C enterprise
+::error file=screens/broken.ui.json,line=1::[KpiCard] composition/invalid-enum-value%3A Prop "tone" on "KpiCard" has value "danger" which is not in allowed options%3A neutral%2C positive%2C warning
+::error file=screens/broken.ui.json,line=1::[BillingTable] composition/invalid-enum-value%3A Prop "density" on "BillingTable" has value "giant" which is not in allowed options%3A compact%2C comfortable
+::error file=screens/broken.ui.json,line=1::[KpiCard] composition/missing-required-prop%3A Required prop "value" missing on "KpiCard"
+::error file=screens/broken.ui.json,line=1::[UsageMeter] composition/missing-required-prop%3A Required prop "max" missing on "UsageMeter"
+::warning file=screens/broken.ui.json,line=1::[InternalDebugPanel] composition/registry-boundary-non-public-component%3A Component type "InternalDebugPanel" has "private" registry visibility; only Face UI components and public UF registry components are allowed by the registry boundary
+::notice file=screens/broken.ui.json,line=1::[BillingDashboard] composition/list-missing-keys%3A 5 children of "BillingDashboard" lack "key" prop — may cause rendering issues
+::notice file=screens/broken.ui.json,line=1::[BillingTable] composition/unknown-prop%3A Unknown prop "sparkles" on "BillingTable"

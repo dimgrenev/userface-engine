@@ -1,0 +1,26 @@
+{
+  "name": "BillingTable",
+  "props": {
+    "rows": {
+      "type": "number",
+      "required": true
+    },
+    "density": {
+      "type": "enum",
+      "required": true,
+      "options": ["compact", "comfortable"]
+    },
+    "emptyState": {
+      "type": "boolean"
+    }
+  },
+  "states": [
+    {
+      "name": "Default",
+      "props": {
+        "rows": 6,
+        "density": "compact"
+      }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Fixed billing dashboard preview">
+  <rect width="640" height="360" fill="#0f1115"/>
+  <rect x="40" y="40" width="560" height="280" rx="18" fill="#171a21" stroke="#2a2f3a"/>
+  <text x="72" y="86" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Billing</text>
+  <text x="72" y="116" fill="#8b93a1" font-family="Inter, Arial, sans-serif" font-size="14">Growth plan · Renews Jun 1</text>
+  <rect x="72" y="146" width="142" height="74" rx="10" fill="#202532"/>
+  <text x="94" y="176" fill="#8b93a1" font-family="Inter, Arial, sans-serif" font-size="12">MRR</text>
+  <text x="94" y="202" fill="#f4f6f8" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700">$42k</text>
+  <rect x="236" y="146" width="142" height="74" rx="10" fill="#202532"/>
+  <text x="258" y="176" fill="#8b93a1" font-family="Inter, Arial, sans-serif" font-size="12">Seats</text>
+  <rect x="258" y="192" width="86" height="8" rx="4" fill="#2a2f3a"/>
+  <rect x="258" y="192" width="61" height="8" rx="4" fill="#4f8cff"/>
+  <rect x="72" y="246" width="496" height="1" fill="#2a2f3a"/>
+  <rect x="72" y="268" width="496" height="16" rx="8" fill="#202532"/>
+  <rect x="72" y="294" width="420" height="12" rx="6" fill="#202532"/>
+</svg>

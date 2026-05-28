@@ -1,0 +1,17 @@
+{
+  "name": "InternalDebugPanel",
+  "props": {
+    "traceId": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "states": [
+    {
+      "name": "Default",
+      "props": {
+        "traceId": "debug-123"
+      }
+    }
+  ]
+}

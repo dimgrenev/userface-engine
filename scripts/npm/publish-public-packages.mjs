@@ -6,7 +6,7 @@ const packageMap = new Map([
 ]);
 
 const requestedNames = process.argv.slice(2);
-const targetNames = requestedNames.length > 0 ? requestedNames : ['@userface/engine'];
+const targetNames = requestedNames.length > 0 ? requestedNames : ['@userface/engine', 'userface'];
 const unknownNames = targetNames.filter((name) => !packageMap.has(name));
 
 if (unknownNames.length > 0) {

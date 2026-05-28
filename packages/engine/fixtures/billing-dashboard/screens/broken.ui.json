@@ -1,0 +1,51 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "name": "Broken billing dashboard"
+  },
+  "root": {
+    "type": "BillingDashboard",
+    "props": {
+      "title": "Billing",
+      "period": "monthly"
+    },
+    "children": [
+      {
+        "type": "PlanBanner",
+        "props": {
+          "plan": "ultimate",
+          "renewal": "Renews Jun 1"
+        }
+      },
+      {
+        "type": "KpiCard",
+        "props": {
+          "label": "MRR",
+          "tone": "danger"
+        }
+      },
+      {
+        "type": "UsageMeter",
+        "props": {
+          "label": "Seats",
+          "value": 24,
+          "state": "over_limit"
+        }
+      },
+      {
+        "type": "BillingTable",
+        "props": {
+          "rows": 6,
+          "density": "giant",
+          "sparkles": true
+        }
+      },
+      {
+        "type": "InternalDebugPanel",
+        "props": {
+          "traceId": "debug-ai-output"
+        }
+      }
+    ]
+  }
+}

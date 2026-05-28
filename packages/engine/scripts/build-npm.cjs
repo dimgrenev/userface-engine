@@ -75,6 +75,13 @@ function main() {
   fixEsmExtensions(path.join(ENGINE_ROOT, 'dist', 'esm'));
   console.log('[engine:npm] fixed ESM import extensions');
 
+  fs.mkdirSync(path.join(ENGINE_ROOT, 'dist', 'schemas'), { recursive: true });
+  fs.copyFileSync(
+    path.join(ENGINE_ROOT, 'src', 'userface-proof.schema.json'),
+    path.join(ENGINE_ROOT, 'dist', 'schemas', 'userface-proof@1.json')
+  );
+  console.log('[engine:npm] copied public schemas');
+
   // Make CLI binary executable.
   const cliBin = path.join(ENGINE_ROOT, 'dist', 'esm', 'cli.js');
   if (fs.existsSync(cliBin)) {
@@ -86,4 +93,3 @@ function main() {
 }
 
 if (require.main === module) main();
-

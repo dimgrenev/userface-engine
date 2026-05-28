@@ -1,0 +1,65 @@
+{
+  "schema": "userface-proof@1",
+  "id": "ufp_947b5724a188070c8ec5",
+  "status": "passed",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "renderer": {
+    "name": "userface-proof",
+    "version": 1
+  },
+  "repo": {
+    "rootHash": "sha256:fbd0aa3f8f2e48a64cc2c221014e00154cab442c024526ea0798497845aabae1"
+  },
+  "target": {
+    "kind": "trust",
+    "paths": []
+  },
+  "components": {
+    "total": 0,
+    "contracted": 0,
+    "used": []
+  },
+  "validation": {
+    "status": "not_run",
+    "reason": "Trust doctor records the local data boundary. It does not validate UI composition.",
+    "violations": []
+  },
+  "composition": {
+    "status": "not_run",
+    "reason": "Run userface guard for composition proof.",
+    "violations": []
+  },
+  "preview": {
+    "status": "not_run",
+    "reason": "Trust doctor does not render preview artifacts.",
+    "artifacts": []
+  },
+  "patch": {
+    "files": [],
+    "additions": 0,
+    "deletions": 0
+  },
+  "agent": {
+    "status": "not_run",
+    "attempts": 0
+  },
+  "egress": {
+    "mode": "offline",
+    "measurement": "zero_upload",
+    "modelCalls": 0,
+    "filesConsidered": 0,
+    "filesSent": 0,
+    "bytesSent": 0,
+    "absolutePathsSent": false,
+    "remoteTelemetry": false,
+    "network": false
+  },
+  "pr": {
+    "provider": "none",
+    "annotations": 0
+  },
+  "summaries": [
+    "Trust doctor ran locally/offline and performed no model or network work.",
+    "Desktop AI runs attach provider/model/request-boundary egress summaries to chat evidence."
+  ]
+}

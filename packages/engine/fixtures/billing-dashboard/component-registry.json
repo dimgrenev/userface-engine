@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "package": "@userface/fixture-billing-dashboard",
+  "defaultRegistryVisibility": "private",
+  "components": {
+    "BillingDashboard": {
+      "registryVisibility": "public",
+      "entry": "./src/components/BillingDashboard/BillingDashboard.tsx",
+      "contract": "./src/components/BillingDashboard/face.json"
+    },
+    "BillingTable": {
+      "registryVisibility": "public",
+      "entry": "./src/components/BillingTable/BillingTable.tsx",
+      "contract": "./src/components/BillingTable/face.json"
+    },
+    "KpiCard": {
+      "registryVisibility": "public",
+      "entry": "./src/components/KpiCard/KpiCard.tsx",
+      "contract": "./src/components/KpiCard/face.json"
+    },
+    "PlanBanner": {
+      "registryVisibility": "public",
+      "entry": "./src/components/PlanBanner/PlanBanner.tsx",
+      "contract": "./src/components/PlanBanner/face.json"
+    },
+    "UsageMeter": {
+      "registryVisibility": "public",
+      "entry": "./src/components/UsageMeter/UsageMeter.tsx",
+      "contract": "./src/components/UsageMeter/face.json"
+    },
+    "InternalDebugPanel": {
+      "registryVisibility": "private",
+      "entry": "./src/components/InternalDebugPanel/InternalDebugPanel.tsx",
+      "contract": "./src/components/InternalDebugPanel/face.json"
+    }
+  }
+}

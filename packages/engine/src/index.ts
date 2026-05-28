@@ -33,6 +33,37 @@ export type {
   Rule, Violation, ValidationReport, ValidationScores,
   ValidateOptions, ValidateMode, BudgetMode, PolicyPack,
 } from './rules';
+export {
+  USERFACE_PROOF_SCHEMA,
+  USERFACE_PROOF_JSON_SCHEMA,
+  USERFACE_PROOF_RENDERER_VERSION,
+  createUserfaceProof,
+  renderUserfaceProofMarkdown,
+  reportFailsThreshold,
+  violationFailsThreshold,
+  proofStatusFromViolations,
+  checkFromValidationReport,
+  validateUserfaceProof,
+} from './proof';
+
+export {
+  USERFACE_READINESS_SCHEMA,
+  createReadinessReport,
+  renderReadinessReportMarkdown,
+  type UserfaceReadinessCheck,
+  type UserfaceReadinessCheckStatus,
+  type UserfaceReadinessReport,
+  type UserfaceReadinessStatus,
+} from './readiness';
+export type {
+  UserfaceProof,
+  UserfaceProofStatus,
+  UserfaceProofCheck,
+  UserfaceProofCheckStatus,
+  UserfaceProofFailOn,
+  CreateUserfaceProofInput,
+  UserfaceProofValidationResult,
+} from './proof';
 
 // Config
 export interface UserfaceConfig {
@@ -57,5 +88,3 @@ export interface UserfaceConfig {
 export function defineConfig(config: UserfaceConfig): UserfaceConfig {
   return config;
 }
-
-

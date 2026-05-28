@@ -1,16 +1,25 @@
 # userface
 
-Staged branded CLI for the Userface ecosystem.
+Buyer-facing CLI for the Userface ecosystem.
 
-This package is included in the repository for local development and future
-publishing. It is not part of the default `@userface/engine` release because the
-npm `userface` package already has a legacy 1.x version line.
+This package is the short command surface used in docs and sales material. It
+forwards engine-owned commands to `@userface/engine` so users can run one stable
+command name:
+
+```sh
+npx userface guard --changed --offline --fail-on warning --proof userface-proof.json
+```
 
 ## Commands
 
 ```sh
 userface add engine
+userface connect --root src/components
 userface validate src/components --ci
+userface readiness --root .
+userface guard --changed --offline --fail-on warning --proof userface-proof.json
+userface trust --offline --summary userface-trust.md
+userface mcp-serve --root src/components
 userface generate EmptyState
 ```
 
@@ -19,11 +28,17 @@ userface generate EmptyState
 `userface validate ...` wraps the engine validator and returns an aggregate
 CI-friendly report.
 
+Most engine commands, including `connect`, `analyze`, `readiness`, `guard`,
+`trust`, `composition-validate`, `materialize`, `proof-schema`, and `mcp-serve`,
+forward to the installed `@userface/engine` CLI so public docs can use one
+stable `userface` command name.
+
 `userface generate ...` creates a starter component and matching contract in a
 local component directory.
 
-## Release Note
+## Release note
 
-Do not publish this package as `0.x` over the existing npm `userface` package.
-When the CLI is ready to replace the legacy package, release it intentionally on
-a new version line.
+Publish `@userface/engine` first, then publish `userface`. If the legacy npm
+`userface` package line is not yet available, do not publish paid docs that rely
+on `npx userface ...`; reclaim the package or temporarily document the
+transitional `userface-engine` alias.

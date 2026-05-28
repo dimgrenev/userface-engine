@@ -11,7 +11,7 @@ validation, code generation, registry scanning, and MCP tools.
 | Package | Status | Purpose |
 | --- | --- | --- |
 | `@userface/engine` | public release target | Engine SDK, CLI, MCP server, validators, registry, codegen |
-| `userface` | staged | Branded helper CLI. Not part of the default engine release because npm `userface` already has a legacy 1.x line. |
+| `userface` | public release target | Buyer-facing umbrella CLI that forwards `userface guard`, `userface readiness`, `userface trust`, and `userface mcp-serve` to the engine package. |
 
 ## Development
 
@@ -26,6 +26,8 @@ pnpm check
 - full Vitest suite
 - engine smoke test
 - `npm pack --dry-run` for publishable packages
+- packed-tarball smoke for the buyer-facing `userface` CLI and transitional
+  `userface-engine` alias
 
 Useful commands:
 
@@ -34,15 +36,18 @@ pnpm build
 pnpm test
 pnpm smoke
 pnpm run pack:packages
+pnpm run smoke:public-cli
 pnpm --dir packages/engine exec userface-engine --help
 ```
 
 ## Release
 
-The default release path publishes only `@userface/engine`.
+The default public release path publishes the engine first and the branded
+umbrella CLI second, so docs that say `npx userface ...` match the package
+surface.
 
 ```sh
-pnpm publish:engine
+pnpm publish:public
 ```
 
 GitHub release workflow:
@@ -51,8 +56,9 @@ GitHub release workflow:
 - example: `engine-v0.1.1`
 - required secret: `NPM_TOKEN`
 
-The `userface` package must be released separately after its npm version line is
-intentionally reclaimed from the legacy package.
+If the legacy npm `userface` package line is not yet available, do not publish
+commercial pages that rely on `npx userface ...`; either reclaim the package
+first or temporarily document the transitional `userface-engine` alias.
 
 ## Repository Policy
 

@@ -2,21 +2,29 @@
 
 Date: 2026-05-13
 
-Scope: `@userface/engine` public npm release readiness.
+Scope: public npm release readiness for `@userface/engine` and the buyer-facing
+`userface` CLI.
 
 ## Decision
 
-`@userface/engine` is the release target.
+`@userface/engine` and `userface` are the release targets.
 
-The `userface` package is staged but not part of the default release. The npm
-name already has a legacy `1.0.82` latest version, so releasing the staged
-`0.1.x` CLI as `latest` would create a confusing and unsafe package history.
+`@userface/engine` owns the implementation. `userface` owns the short public
+command used in docs and commercial workflows, then forwards engine commands
+such as `guard`, `readiness`, `trust`, `proof-schema`, and `mcp-serve`.
+
+If the npm `userface` package line is still occupied by a legacy release, do not
+publish paid pages that rely on `npx userface ...`. Reclaim the package line or
+temporarily document the transitional `userface-engine` alias.
 
 ## Fixed Before Release
 
 - Root test command now runs the full Vitest suite from `vitest.config.ts`.
-- Engine release workflow publishes only `@userface/engine`.
-- Publish script accepts explicit package names and defaults to the engine only.
+- Release workflow publishes `@userface/engine` first and `userface` second.
+- Publish script accepts explicit package names and defaults to both public
+  packages.
+- Root `pnpm check` includes packed-tarball smoke for `userface` and the
+  transitional `userface-engine` alias.
 - Next integration export now resolves to JavaScript, with TypeScript
   declarations included.
 - Smoke test verifies the Next integration subpath through package exports.
@@ -36,6 +44,7 @@ Run locally before tagging:
 pnpm install
 pnpm check
 npm view @userface/engine version
+npm view userface version
 ```
 
 Tag:

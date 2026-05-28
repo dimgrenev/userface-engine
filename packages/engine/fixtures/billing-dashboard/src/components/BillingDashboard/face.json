@@ -1,0 +1,23 @@
+{
+  "name": "BillingDashboard",
+  "props": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "period": {
+      "type": "enum",
+      "required": true,
+      "options": ["monthly", "annual"]
+    }
+  },
+  "states": [
+    {
+      "name": "Monthly",
+      "props": {
+        "title": "Billing",
+        "period": "monthly"
+      }
+    }
+  ]
+}

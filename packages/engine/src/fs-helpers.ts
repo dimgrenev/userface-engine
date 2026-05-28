@@ -8,6 +8,30 @@ import { resolve, join, basename, extname } from 'node:path';
 
 const COMPONENT_EXTS = /\.(tsx|jsx|vue|svelte)$/;
 const ALL_SOURCE_EXTS = /\.(tsx?|jsx?|css|scss|sass|vue|svelte)$/;
+const IGNORED_DISCOVERY_DIRS = new Set([
+  'node_modules',
+  '.git',
+  '.next',
+  'dist',
+  'build',
+  'coverage',
+  '.turbo',
+  '.userface',
+  '__tests__',
+  '__fixtures__',
+  'test',
+  'tests',
+  'fixtures',
+  'examples',
+]);
+
+function isTestLikeSource(fileName: string): boolean {
+  return /\.(test|spec|stories|story)\.(tsx|jsx|vue|svelte)$/.test(fileName);
+}
+
+function isComponentEntryCandidate(fileName: string): boolean {
+  return COMPONENT_EXTS.test(fileName) && !isTestLikeSource(fileName);
+}
 
 export interface ComponentFiles {
   files: Array<{ name: string; content: string }>;
@@ -21,13 +45,17 @@ export interface DiscoverComponentsOptions {
   maxDepth?: number;
 }
 
+export function findEntriesInDir(dir: string): string[] {
+  return readdirSync(dir).filter(isComponentEntryCandidate);
+}
+
 /**
  * Find the most likely entry file inside a component directory.
  * Priority: file whose name matches the directory name > first .tsx > first .jsx > first .vue/.svelte
  */
 export function findEntryInDir(dir: string): string {
   const dirName = basename(dir);
-  const candidates = readdirSync(dir).filter(f => COMPONENT_EXTS.test(f));
+  const candidates = findEntriesInDir(dir);
 
   if (candidates.length === 0) return '';
 
@@ -121,9 +149,10 @@ export function discoverComponents(dir: string, options: DiscoverComponentsOptio
         continue;
       }
       if (!isDirectory) continue;
+      if (IGNORED_DISCOVERY_DIRS.has(childName)) continue;
 
       try {
-        if (readdirSync(child).some(f => COMPONENT_EXTS.test(f))) {
+        if (readdirSync(child).some(isComponentEntryCandidate)) {
           components.push(child);
         }
       } catch {
@@ -146,9 +175,10 @@ export function discoverComponents(dir: string, options: DiscoverComponentsOptio
     .filter(d => {
       try { return statSync(d).isDirectory(); } catch { return false; }
     })
+    .filter(d => !IGNORED_DISCOVERY_DIRS.has(basename(d)))
     .filter(d => {
       try {
-        return readdirSync(d).some(f => COMPONENT_EXTS.test(f));
+        return readdirSync(d).some(isComponentEntryCandidate);
       } catch {
         return false;
       }

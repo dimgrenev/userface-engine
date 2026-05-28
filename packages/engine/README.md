@@ -34,17 +34,20 @@ Requirements:
 ## CLI
 
 ```sh
-npx userface-engine connect --root src/components
-npx userface-engine registry scan src/components
-npx userface-engine analyze src/components/Button
-npx userface-engine validate src/components/Button --mode fast
-npx userface-engine states src/components/Button
-npx userface-engine composition-validate dashboard.ui.json --registry-dir src/components
-npx userface-engine materialize dashboard.ui.json --framework react
-npx userface-engine diff --base old.face.json --head new.face.json
-npx userface-engine test --dir src/components
-npx userface-engine mcp-serve
+npx userface connect --root src/components
+npx userface registry scan src/components
+npx userface analyze src/components/Button
+npx userface validate src/components/Button --mode fast
+npx userface states src/components/Button
+npx userface composition-validate dashboard.ui.json --registry-dir src/components
+npx userface materialize dashboard.ui.json --framework react
+npx userface diff --base old.face.json --head new.face.json
+npx userface test --dir src/components
+npx userface mcp-serve
 ```
+
+`userface-engine` remains available as a backward-compatible alias, but public
+docs and generated help should use `userface`.
 
 Output rules:
 
@@ -95,7 +98,7 @@ Cursor config:
   "mcpServers": {
     "userface": {
       "command": "npx",
-      "args": ["userface-engine", "mcp-serve"]
+      "args": ["userface", "mcp-serve"]
     }
   }
 }

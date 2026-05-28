@@ -1,0 +1,28 @@
+{
+  "name": "KpiCard",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
+      "type": "string",
+      "required": true
+    },
+    "tone": {
+      "type": "enum",
+      "required": true,
+      "options": ["neutral", "positive", "warning"]
+    }
+  },
+  "states": [
+    {
+      "name": "Neutral",
+      "props": {
+        "label": "MRR",
+        "value": "$42k",
+        "tone": "neutral"
+      }
+    }
+  ]
+}

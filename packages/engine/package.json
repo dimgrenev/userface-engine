@@ -59,6 +59,7 @@
       "import": "./dist/esm/transpiler.js",
       "require": "./dist/cjs/transpiler.js"
     },
+    "./schemas/userface-proof@1.json": "./dist/schemas/userface-proof@1.json",
     "./package.json": "./package.json"
   },
   "files": [
@@ -66,9 +67,11 @@
     "dist/esm",
     "dist/cjs",
     "dist/types",
+    "dist/schemas",
     "integrations/next",
     "src/browser",
     "src/face-ui/patterns/*.pattern.json",
+    "fixtures",
     "prompts",
     "packs",
     "assembly-flow.md",
@@ -80,6 +83,7 @@
     "access": "public"
   },
   "bin": {
+    "userface": "./bin/userface-engine.mjs",
     "userface-engine": "./bin/userface-engine.mjs"
   },
   "sideEffects": false,
@@ -88,7 +92,7 @@
     "esbuild": ">=0.20",
     "react": ">=18",
     "react-dom": ">=18",
-    "svelte": ">=5.53.5",
+    "svelte": ">=5.55.7",
     "vue": ">=3"
   },
   "peerDependenciesMeta": {

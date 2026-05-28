@@ -1,0 +1,50 @@
+{
+  "version": "ui@1",
+  "meta": {
+    "name": "Fixed billing dashboard"
+  },
+  "root": {
+    "type": "BillingDashboard",
+    "props": {
+      "title": "Billing",
+      "period": "monthly"
+    },
+    "children": [
+      {
+        "type": "PlanBanner",
+        "key": "plan",
+        "props": {
+          "plan": "growth",
+          "renewal": "Renews Jun 1"
+        }
+      },
+      {
+        "type": "KpiCard",
+        "key": "mrr",
+        "props": {
+          "label": "MRR",
+          "value": "$42k",
+          "tone": "positive"
+        }
+      },
+      {
+        "type": "UsageMeter",
+        "key": "seats",
+        "props": {
+          "label": "Seats",
+          "value": 14,
+          "max": 20,
+          "state": "normal"
+        }
+      },
+      {
+        "type": "BillingTable",
+        "key": "invoices",
+        "props": {
+          "rows": 6,
+          "density": "compact"
+        }
+      }
+    ]
+  }
+}

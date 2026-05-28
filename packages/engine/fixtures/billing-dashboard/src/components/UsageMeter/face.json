@@ -1,0 +1,33 @@
+{
+  "name": "UsageMeter",
+  "props": {
+    "label": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
+      "type": "number",
+      "required": true
+    },
+    "max": {
+      "type": "number",
+      "required": true
+    },
+    "state": {
+      "type": "enum",
+      "required": true,
+      "options": ["normal", "near_limit", "over_limit"]
+    }
+  },
+  "states": [
+    {
+      "name": "Normal",
+      "props": {
+        "label": "Seats",
+        "value": 14,
+        "max": 20,
+        "state": "normal"
+      }
+    }
+  ]
+}

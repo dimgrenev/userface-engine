@@ -1,0 +1,75 @@
+{
+  "schema": "userface-proof@1",
+  "id": "ufp_843a468091fb4908d0a9",
+  "status": "passed",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "renderer": {
+    "name": "userface-proof",
+    "version": 1
+  },
+  "repo": {
+    "rootHash": "sha256:763b8673a940717ff31a58d35dbb7b2f29fce35e255cb853bd2ca53b38d5fbe5"
+  },
+  "target": {
+    "kind": "pr_gate",
+    "paths": [
+      "screens/fixed.ui.json"
+    ]
+  },
+  "components": {
+    "total": 5,
+    "contracted": 5,
+    "used": [
+      "BillingDashboard",
+      "BillingTable",
+      "KpiCard",
+      "PlanBanner",
+      "UsageMeter"
+    ]
+  },
+  "validation": {
+    "status": "not_run",
+    "reason": "No component source targets checked",
+    "violations": []
+  },
+  "composition": {
+    "status": "passed",
+    "score": 100,
+    "reason": "Fixed billing dashboard: all composition checks passed (score: 100/100)",
+    "violations": []
+  },
+  "preview": {
+    "status": "passed",
+    "reason": "Preview evidence artifact(s) were attached and hashed.",
+    "artifacts": [
+      "artifacts/fixed.preview.svg#sha256:1a6a801faa89f7fbaa8edf8545ed494e296a7c58938b3efbeed73b67afe5ebd9"
+    ]
+  },
+  "patch": {
+    "files": [],
+    "additions": 0,
+    "deletions": 0
+  },
+  "agent": {
+    "status": "not_run",
+    "attempts": 0
+  },
+  "egress": {
+    "mode": "offline",
+    "measurement": "zero_upload",
+    "modelCalls": 0,
+    "filesConsidered": 1,
+    "filesSent": 0,
+    "bytesSent": 0,
+    "absolutePathsSent": false,
+    "remoteTelemetry": false,
+    "network": false
+  },
+  "pr": {
+    "provider": "none",
+    "annotations": 0
+  },
+  "summaries": [
+    "screens/fixed.ui.json: Fixed billing dashboard: all composition checks passed (score: 100/100)"
+  ]
+}

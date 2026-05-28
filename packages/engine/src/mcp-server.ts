@@ -2,14 +2,14 @@
  * Userface Engine MCP Server (local, stdin/stdout)
  *
  * JSON-RPC 2.0 over line-delimited stdio.
- * Designed to run as: npx userface-engine mcp-serve
+ * Designed to run as: npx userface mcp-serve
  *
  * Cursor config (.cursor/mcp.json):
  * {
  *   "mcpServers": {
- *     "userface-engine": {
+ *     "userface": {
  *       "command": "npx",
- *       "args": ["userface-engine", "mcp-serve"]
+ *       "args": ["userface", "mcp-serve"]
  *     }
  *   }
  * }

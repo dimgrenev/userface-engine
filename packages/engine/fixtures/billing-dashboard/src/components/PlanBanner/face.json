@@ -1,0 +1,23 @@
+{
+  "name": "PlanBanner",
+  "props": {
+    "plan": {
+      "type": "enum",
+      "required": true,
+      "options": ["starter", "growth", "enterprise"]
+    },
+    "renewal": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "states": [
+    {
+      "name": "Growth",
+      "props": {
+        "plan": "growth",
+        "renewal": "Renews Jun 1"
+      }
+    }
+  ]
+}

@@ -5,8 +5,8 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { resolve, join, basename, relative } from 'node:path';
-import { discoverComponents, findEntryInDir } from './fs-helpers';
+import { resolve, join, basename, extname, relative } from 'node:path';
+import { discoverComponents, findEntriesInDir } from './fs-helpers';
 import { extractPropsFromCode } from './propParsingHelpers';
 import { safeParseFaceJsonV2 } from './schemas/face-v2.schema';
 
@@ -97,6 +97,10 @@ function detectFramework(entry: string): RegistryEntry['framework'] {
   if (/\.svelte$/.test(entry)) return 'svelte';
   if (/\.(tsx|jsx)$/.test(entry)) return 'react';
   return 'unknown';
+}
+
+function componentNameFromEntry(entry: string): string {
+  return basename(entry, extname(entry));
 }
 
 // ---------------------------------------------------------------------------
@@ -198,14 +202,18 @@ function fallbackExtractProps(dir: string, entry: string): RegistryPropSummary[]
 // Single component scan
 // ---------------------------------------------------------------------------
 
-function scanComponent(dir: string, root: string, useCache: boolean): RegistryEntry | null {
-  const name = basename(dir);
-  const entry = findEntryInDir(dir);
-  if (!entry) return null;
+function scanComponentEntry(
+  dir: string,
+  root: string,
+  useCache: boolean,
+  entry: string,
+  relativePathMode: 'directory' | 'entry',
+): RegistryEntry | null {
+  const name = componentNameFromEntry(entry);
 
   if (useCache) {
     const mtime = getDirMtime(dir);
-    const cached = registryCache.get(dir);
+    const cached = registryCache.get(`${dir}::${entry}`);
     if (cached && cached.mtime === mtime) return cached.data;
   }
 
@@ -229,7 +237,9 @@ function scanComponent(dir: string, root: string, useCache: boolean): RegistryEn
   const result: RegistryEntry = {
     name,
     path: dir,
-    relativePath: relative(root, dir),
+    relativePath: relativePathMode === 'entry'
+      ? join(relative(root, dir), entry)
+      : relative(root, dir),
     entry,
     framework,
     hasFaceJson,
@@ -239,10 +249,25 @@ function scanComponent(dir: string, root: string, useCache: boolean): RegistryEn
   };
 
   if (useCache) {
-    registryCache.set(dir, { mtime: getDirMtime(dir), data: result });
+    registryCache.set(`${dir}::${entry}`, { mtime: getDirMtime(dir), data: result });
   }
 
   return result;
+}
+
+function scanComponentDir(dir: string, root: string, useCache: boolean): RegistryEntry[] {
+  const entries = findEntriesInDir(dir);
+  if (entries.length === 0) return [];
+
+  const exactEntry = entries.find((entry) => componentNameFromEntry(entry) === basename(dir));
+  if (exactEntry && entries.length === 1) {
+    const component = scanComponentEntry(dir, root, useCache, exactEntry, 'directory');
+    return component ? [component] : [];
+  }
+
+  return entries
+    .map((entry) => scanComponentEntry(dir, root, useCache, entry, entries.length === 1 ? 'directory' : 'entry'))
+    .filter((entry): entry is RegistryEntry => Boolean(entry));
 }
 
 // ---------------------------------------------------------------------------
@@ -264,9 +289,13 @@ export function scanRegistry(dir: string, options: ScanOptions = {}): RegistryIn
   });
   const components: RegistryEntry[] = [];
 
+  for (const entry of findEntriesInDir(root)) {
+    const component = scanComponentEntry(root, root, useCache, entry, 'entry');
+    if (component) components.push(component);
+  }
+
   for (const d of componentDirs) {
-    const entry = scanComponent(d, root, useCache);
-    if (entry) components.push(entry);
+    components.push(...scanComponentDir(d, root, useCache));
   }
 
   components.sort((a, b) => a.name.localeCompare(b.name));

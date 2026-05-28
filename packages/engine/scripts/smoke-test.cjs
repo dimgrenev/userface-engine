@@ -81,6 +81,9 @@ check('cli.js is executable', (() => {
 const versionResult = spawnSync(process.execPath, [cliPath, '--version'], { encoding: 'utf8', timeout: 5000 });
 check('--version returns 0', versionResult.status === 0);
 check('--version outputs version string', /^\d+\.\d+\.\d+/.test((versionResult.stdout || '').trim()));
+const helpResult = spawnSync(process.execPath, [cliPath, '--help'], { encoding: 'utf8', timeout: 5000 });
+check('--help returns 0', helpResult.status === 0);
+check('--help uses primary userface command', /Userface CLI/.test(helpResult.stderr || '') && /userface guard/.test(helpResult.stderr || ''));
 
 console.log('\n4. Face UI subpath:');
 check('dist/esm/face-ui/index.js exists', fileExists('dist/esm/face-ui/index.js'));
@@ -104,6 +107,7 @@ check('has repository field', !!pkg.repository?.url);
 check('has homepage field', !!pkg.homepage);
 check('has keywords', Array.isArray(pkg.keywords) && pkg.keywords.length > 0);
 check('engines.node >= 20', />=\s*20/.test(pkg.engines?.node || ''));
+check('bin.userface defined', !!pkg.bin?.userface);
 check('bin.userface-engine defined', !!pkg.bin?.['userface-engine']);
 check('publishConfig.access is public', pkg.publishConfig?.access === 'public');
 check('LICENSE file exists', fileExists('LICENSE'));

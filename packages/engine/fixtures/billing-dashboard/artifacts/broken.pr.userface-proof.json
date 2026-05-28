@@ -1,0 +1,178 @@
+{
+  "schema": "userface-proof@1",
+  "id": "ufp_bd7579cfe015056cc0d8",
+  "status": "blocked",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "renderer": {
+    "name": "userface-proof",
+    "version": 1
+  },
+  "repo": {
+    "rootHash": "sha256:b56dcccfea309bed6ea7a6ddaafd09b428d8efa91d6bc27480b5ee97cc3d85b8"
+  },
+  "target": {
+    "kind": "pr_gate",
+    "paths": [
+      "screens/broken.ui.json"
+    ]
+  },
+  "components": {
+    "total": 6,
+    "contracted": 6,
+    "used": [
+      "BillingDashboard",
+      "BillingTable",
+      "InternalDebugPanel",
+      "KpiCard",
+      "PlanBanner",
+      "UsageMeter"
+    ]
+  },
+  "validation": {
+    "status": "not_run",
+    "reason": "No component source targets checked",
+    "violations": []
+  },
+  "composition": {
+    "status": "failed",
+    "score": 87,
+    "reason": "Broken billing dashboard: 8 issue(s) found (score: 87/100)",
+    "violations": [
+      {
+        "ruleId": "composition/invalid-enum-value",
+        "description": "Prop \"plan\" on \"PlanBanner\" has value \"ultimate\" which is not in allowed options: starter, growth, enterprise",
+        "severity": "error",
+        "confidence": 0.95,
+        "category": "contract",
+        "location": {
+          "component": "PlanBanner",
+          "prop": "plan",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Use one of: starter, growth, enterprise"
+      },
+      {
+        "ruleId": "composition/invalid-enum-value",
+        "description": "Prop \"tone\" on \"KpiCard\" has value \"danger\" which is not in allowed options: neutral, positive, warning",
+        "severity": "error",
+        "confidence": 0.95,
+        "category": "contract",
+        "location": {
+          "component": "KpiCard",
+          "prop": "tone",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Use one of: neutral, positive, warning"
+      },
+      {
+        "ruleId": "composition/invalid-enum-value",
+        "description": "Prop \"density\" on \"BillingTable\" has value \"giant\" which is not in allowed options: compact, comfortable",
+        "severity": "error",
+        "confidence": 0.95,
+        "category": "contract",
+        "location": {
+          "component": "BillingTable",
+          "prop": "density",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Use one of: compact, comfortable"
+      },
+      {
+        "ruleId": "composition/missing-required-prop",
+        "description": "Required prop \"value\" missing on \"KpiCard\"",
+        "severity": "error",
+        "confidence": 0.9,
+        "category": "contract",
+        "location": {
+          "component": "KpiCard",
+          "prop": "value",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Add prop \"value\" (type: string) to \"KpiCard\""
+      },
+      {
+        "ruleId": "composition/missing-required-prop",
+        "description": "Required prop \"max\" missing on \"UsageMeter\"",
+        "severity": "error",
+        "confidence": 0.9,
+        "category": "contract",
+        "location": {
+          "component": "UsageMeter",
+          "prop": "max",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Add prop \"max\" (type: number) to \"UsageMeter\""
+      },
+      {
+        "ruleId": "composition/registry-boundary-non-public-component",
+        "description": "Component type \"InternalDebugPanel\" has \"private\" registry visibility; only Face UI components and public UF registry components are allowed by the registry boundary",
+        "severity": "warning",
+        "confidence": 0.85,
+        "category": "contract",
+        "location": {
+          "component": "InternalDebugPanel",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Use a Face UI primitive, use a public UF registry component, or mark \"InternalDebugPanel\" public in the UF registry manifest."
+      },
+      {
+        "ruleId": "composition/list-missing-keys",
+        "description": "5 children of \"BillingDashboard\" lack \"key\" prop — may cause rendering issues",
+        "severity": "info",
+        "confidence": 0.7,
+        "category": "structural",
+        "location": {
+          "component": "BillingDashboard",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Add unique \"key\" to each child in lists for stable identity."
+      },
+      {
+        "ruleId": "composition/unknown-prop",
+        "description": "Unknown prop \"sparkles\" on \"BillingTable\"",
+        "severity": "info",
+        "confidence": 0.6,
+        "category": "contract",
+        "location": {
+          "component": "BillingTable",
+          "prop": "sparkles",
+          "file": "screens/broken.ui.json"
+        },
+        "fixHint": "Check if \"sparkles\" is a valid prop for \"BillingTable\". Known props: rows, density, emptyState"
+      }
+    ]
+  },
+  "preview": {
+    "status": "not_run",
+    "reason": "CLI guard does not render preview artifacts in v0.",
+    "artifacts": []
+  },
+  "patch": {
+    "files": [],
+    "additions": 0,
+    "deletions": 0
+  },
+  "agent": {
+    "status": "not_run",
+    "attempts": 0
+  },
+  "egress": {
+    "mode": "offline",
+    "measurement": "zero_upload",
+    "modelCalls": 0,
+    "filesConsidered": 1,
+    "filesSent": 0,
+    "bytesSent": 0,
+    "absolutePathsSent": false,
+    "remoteTelemetry": false,
+    "network": false
+  },
+  "pr": {
+    "provider": "github",
+    "annotations": 8,
+    "summaryPath": "artifacts/broken.pr-summary.md"
+  },
+  "summaries": [
+    "screens/broken.ui.json: Broken billing dashboard: 8 issue(s) found (score: 87/100)"
+  ]
+}

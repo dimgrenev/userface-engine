@@ -1,0 +1,10 @@
+:root {
+  --uf-color-background: #0f1115;
+  --uf-color-surface: #171a21;
+  --uf-color-text: #f4f6f8;
+  --uf-color-muted: #8b93a1;
+  --uf-color-accent: #4f8cff;
+  --uf-radius-control: 6px;
+  --uf-space-control-x: 12px;
+  --uf-space-control-y: 8px;
+}

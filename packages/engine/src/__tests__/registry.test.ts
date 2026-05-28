@@ -114,6 +114,35 @@ describe('scanRegistry', () => {
     ]);
   });
 
+  it('indexes multiple production component entries in a domain directory', () => {
+    const root = makeTempRegistry();
+    const domainDir = join(root, 'Chat');
+    mkdirSync(domainDir, { recursive: true });
+    writeFileSync(join(domainDir, 'ChatInput.tsx'), 'export function ChatInput(props: { disabled?: boolean }) { return null; }\n');
+    writeFileSync(join(domainDir, 'ChatMessage.tsx'), 'export function ChatMessage(props: { role: "user" | "assistant" }) { return null; }\n');
+    writeFileSync(join(domainDir, 'ChatMessage.test.tsx'), 'export function ChatMessageTest() { return null; }\n');
+    writeFileSync(join(domainDir, 'ChatMessage.json'), JSON.stringify({
+      name: 'ChatMessage',
+      props: {
+        role: { type: 'enum', required: true, options: ['user', 'assistant'] },
+      },
+    }));
+
+    const index = scanRegistry(root, { cache: false });
+
+    expect(index.components.map(c => c.name)).toEqual(['ChatInput', 'ChatMessage', 'Shallow']);
+    expect(index.components.find(c => c.name === 'ChatInput')).toMatchObject({
+      relativePath: join('Chat', 'ChatInput.tsx'),
+      entry: 'ChatInput.tsx',
+      hasFaceJson: false,
+    });
+    expect(index.components.find(c => c.name === 'ChatMessage')).toMatchObject({
+      relativePath: join('Chat', 'ChatMessage.tsx'),
+      entry: 'ChatMessage.tsx',
+      hasFaceJson: true,
+    });
+  });
+
   it('honors recursive maxDepth boundary', () => {
     const root = makeTempRegistry();
 
@@ -131,5 +160,31 @@ describe('scanRegistry', () => {
     const index = scanRegistry(root, { cache: false, recursive: true, maxDepth: 2 });
 
     expect(index.components.map(c => c.name)).toEqual(['AllowedAtDepth2', 'Shallow']);
+  });
+
+  it('ignores dependency, fixture and test-only directories during component discovery', () => {
+    const root = makeTempRegistry();
+
+    const componentWithTestDir = join(root, 'WithTest');
+    mkdirSync(componentWithTestDir, { recursive: true });
+    writeFileSync(join(componentWithTestDir, 'WithTest.test.tsx'), 'export function WithTestSpec() { return null; }\n');
+    writeFileSync(join(componentWithTestDir, 'WithTest.tsx'), 'export function WithTest() { return null; }\n');
+
+    const testOnlyDir = join(root, 'TestOnly');
+    mkdirSync(testOnlyDir, { recursive: true });
+    writeFileSync(join(testOnlyDir, 'TestOnly.test.tsx'), 'export function TestOnly() { return null; }\n');
+
+    const dependencyDir = join(root, 'node_modules', '@vendor', 'IgnoredDependency');
+    mkdirSync(dependencyDir, { recursive: true });
+    writeFileSync(join(dependencyDir, 'IgnoredDependency.tsx'), 'export function IgnoredDependency() { return null; }\n');
+
+    const fixtureDir = join(root, 'fixtures', 'IgnoredFixture');
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(join(fixtureDir, 'IgnoredFixture.tsx'), 'export function IgnoredFixture() { return null; }\n');
+
+    const index = scanRegistry(root, { cache: false, recursive: true });
+
+    expect(index.components.map(c => c.name)).toEqual(['Nested', 'Shallow', 'WithTest']);
+    expect(index.components.find(c => c.name === 'WithTest')?.entry).toBe('WithTest.tsx');
   });
 });
