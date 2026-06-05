@@ -15,6 +15,20 @@
     "discovered": 6,
     "contracted": 6,
     "contractCoverage": 1,
+    "pilotTarget": {
+      "used": 5,
+      "contracted": 5,
+      "contractCoverage": 1,
+      "names": [
+        "BillingDashboard",
+        "BillingTable",
+        "KpiCard",
+        "PlanBanner",
+        "UsageMeter"
+      ],
+      "missingContracts": [],
+      "unresolved": []
+    },
     "react": 6,
     "nonReact": 0,
     "props": 15,
@@ -148,7 +162,7 @@
   },
   "proof": {
     "schema": "userface-proof@1",
-    "id": "ufp_b97f3a06e0351dae593a",
+    "id": "ufp_0d2f4d3f7491008c16dd",
     "status": "passed",
     "createdAt": "2026-01-01T00:00:00.000Z",
     "renderer": {
@@ -245,10 +259,17 @@
     },
     {
       "id": "contracts",
-      "label": "Component contracts",
+      "label": "Pilot target contracts",
       "status": "passed",
       "score": 100,
-      "summary": "6/6 components have face.json contracts."
+      "summary": "5/5 pilot target component(s) have face.json contracts."
+    },
+    {
+      "id": "library_contracts",
+      "label": "Library contract expansion",
+      "status": "passed",
+      "score": 90,
+      "summary": "Library contract coverage is acceptable for this readiness pass."
     },
     {
       "id": "registry_diagnostics",

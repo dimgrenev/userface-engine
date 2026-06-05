@@ -5,13 +5,15 @@ Score: 98
 Repo: <fixture>/billing-dashboard
 Framework: react (next@15.0.0)
 TypeScript: yes
-Proof: ufp_b97f3a06e0351dae593a (passed)
+Proof: ufp_0d2f4d3f7491008c16dd (passed)
 
 ## Components
 
 Discovered: 6
 Contracts: 6/6
 Contract coverage: 100%
+Pilot target contracts: 5/5
+Pilot target components: BillingDashboard, BillingTable, KpiCard, PlanBanner, UsageMeter
 Props: 15
 States: 6
 First screen: screens/fixed.ui.json (passed)
@@ -61,7 +63,8 @@ Required evidence:
 - passed: Framework - next@15.0.0 detected.
 - passed: TypeScript - TypeScript signal detected.
 - passed: Components - 6 component(s) discovered in src/components.
-- passed: Component contracts - 6/6 components have face.json contracts.
+- passed: Pilot target contracts - 5/5 pilot target component(s) have face.json contracts.
+- passed: Library contract expansion - Library contract coverage is acceptable for this readiness pass.
 - passed: Registry diagnostics - Component registry scan produced no diagnostics.
 - passed: Token/style risks - Token/style signal is present or not blocking for this readiness pass.
 - passed: ui@1 documents - 1 ui@1 document(s) discovered.
