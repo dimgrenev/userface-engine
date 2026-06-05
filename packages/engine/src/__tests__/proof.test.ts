@@ -85,6 +85,49 @@ describe('userface proof factory', () => {
     expect(first.egress.measurement).toBe('zero_upload');
   });
 
+  it('keeps proof ids stable when only repo evidence metadata differs', () => {
+    const input = {
+      target: { kind: 'readiness' as const, paths: ['screens/fixed.ui.json'] },
+      validation: {
+        status: 'passed' as const,
+        reason: 'Representative target passed validation.',
+        violations: [],
+      },
+      composition: {
+        status: 'passed' as const,
+        reason: 'Representative target passed composition.',
+        violations: [],
+      },
+      preview: {
+        status: 'passed' as const,
+        artifacts: ['artifacts/fixed.preview.svg'],
+      },
+      egress: {
+        mode: 'offline' as const,
+        modelCalls: 0,
+        filesConsidered: 0,
+        filesSent: 0,
+        bytesSent: 0,
+        absolutePathsSent: false,
+        remoteTelemetry: false,
+        network: false,
+      },
+    };
+
+    const first = createUserfaceProof({
+      ...input,
+      repo: { rootHash: 'sha256:first', branch: 'main', commit: '111' },
+    });
+    const second = createUserfaceProof({
+      ...input,
+      repo: { rootHash: 'sha256:second', branch: 'feature', commit: '222' },
+    });
+
+    expect(first.id).toBe(second.id);
+    expect(first.repo.rootHash).toBe('sha256:first');
+    expect(second.repo.rootHash).toBe('sha256:second');
+  });
+
   it('keeps missing request-boundary egress explicit instead of estimating payload data', () => {
     const proof = createUserfaceProof({
       repo: { rootHash: 'sha256:missing-egress' },

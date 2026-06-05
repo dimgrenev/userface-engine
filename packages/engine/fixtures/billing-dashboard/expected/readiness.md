@@ -5,7 +5,7 @@ Score: 98
 Repo: <fixture>/billing-dashboard
 Framework: react (next@15.0.0)
 TypeScript: yes
-Proof: ufp_4c5bc9e81aa56fe75c9e (passed)
+Proof: ufp_929414dd3c7a31319773 (passed)
 
 ## Components
 

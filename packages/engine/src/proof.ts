@@ -313,7 +313,6 @@ export function createUserfaceProof(input: CreateUserfaceProofInput): UserfacePr
   };
 
   const seed = {
-    repo,
     target: input.target,
     validation,
     composition,
