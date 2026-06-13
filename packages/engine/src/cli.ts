@@ -18,6 +18,7 @@ import { resolve, basename, dirname } from 'node:path';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, statSync } from 'node:fs';
 import { readComponentFiles, discoverComponents } from './fs-helpers';
 import { createEngine, type CreateEngineOptions, type EngineInstance } from './createEngine';
+import { getComponentFaceJsonFileNames } from './faceJsonPaths';
 import { withOfflineExecutionPolicy } from './offline-policy';
 import {
   checkFromValidationReport,
@@ -765,11 +766,8 @@ function loadComponentFaceJson(cwd: string, targetPath: string, componentName: s
   } catch {
     // readComponentFiles will report the real source-path problem; face.json is best-effort.
   }
-  const candidates = [
-    resolve(dir, 'face.json'),
-    resolve(dir, `${componentName}.json`),
-    resolve(dir, `${componentName}.face.json`),
-  ];
+  const candidates = getComponentFaceJsonFileNames(componentName)
+    .map((fileName) => resolve(dir, fileName));
   for (const candidate of candidates) {
     try {
       return JSON.parse(readFileSync(candidate, 'utf-8'));

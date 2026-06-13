@@ -9,6 +9,7 @@ import { resolve, join, basename, extname, relative } from 'node:path';
 import { discoverComponents, findEntriesInDir } from './fs-helpers';
 import { extractPropsFromCode } from './propParsingHelpers';
 import { safeParseFaceJsonV2 } from './schemas/face-v2.schema';
+import { getComponentFaceJsonFileNames } from './faceJsonPaths';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -107,12 +108,6 @@ function componentNameFromEntry(entry: string): string {
 // Face JSON parsing
 // ---------------------------------------------------------------------------
 
-const FACE_PATTERNS = (name: string) => [
-  `${name}.json`,
-  `${name}.face.json`,
-  'face.json',
-];
-
 function tryReadFaceJson(dir: string, componentName: string): {
   props: RegistryPropSummary[];
   statesCount: number;
@@ -120,7 +115,7 @@ function tryReadFaceJson(dir: string, componentName: string): {
 } | null {
   const diagnostics: string[] = [];
 
-  for (const pattern of FACE_PATTERNS(componentName)) {
+  for (const pattern of getComponentFaceJsonFileNames(componentName)) {
     const fp = join(dir, pattern);
     if (!existsSync(fp)) continue;
 

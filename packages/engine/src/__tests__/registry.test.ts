@@ -143,6 +143,48 @@ describe('scanRegistry', () => {
     });
   });
 
+  it('uses canonical face file ordering and recognizes face.face.json', () => {
+    const root = makeTempRegistry();
+    const canonicalDir = join(root, 'CanonicalFace');
+    mkdirSync(canonicalDir, { recursive: true });
+    writeFileSync(join(canonicalDir, 'CanonicalFace.tsx'), 'export function CanonicalFace() { return null; }\n');
+    writeFileSync(join(canonicalDir, 'face.json'), JSON.stringify({
+      name: 'CanonicalFace',
+      props: {
+        label: { type: 'string', default: 'folder' },
+      },
+    }));
+    writeFileSync(join(canonicalDir, 'CanonicalFace.json'), JSON.stringify({
+      name: 'CanonicalFace',
+      props: {
+        label: { type: 'string', default: 'canonical' },
+      },
+    }));
+
+    const alternateDir = join(root, 'AlternateFace');
+    mkdirSync(alternateDir, { recursive: true });
+    writeFileSync(join(alternateDir, 'AlternateFace.tsx'), 'export function AlternateFace() { return null; }\n');
+    writeFileSync(join(alternateDir, 'face.face.json'), JSON.stringify({
+      name: 'AlternateFace',
+      props: {
+        tone: { type: 'string', default: 'alternate' },
+      },
+    }));
+
+    const index = scanRegistry(root, { cache: false });
+    const canonical = index.components.find(c => c.name === 'CanonicalFace');
+    const alternate = index.components.find(c => c.name === 'AlternateFace');
+
+    expect(canonical).toMatchObject({ hasFaceJson: true });
+    expect(canonical?.props).toEqual([
+      { name: 'label', type: 'string', required: false, defaultValue: 'canonical' },
+    ]);
+    expect(alternate).toMatchObject({ hasFaceJson: true });
+    expect(alternate?.props).toEqual([
+      { name: 'tone', type: 'string', required: false, defaultValue: 'alternate' },
+    ]);
+  });
+
   it('honors recursive maxDepth boundary', () => {
     const root = makeTempRegistry();
 

@@ -22,6 +22,7 @@ import { statSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { readComponentFiles, discoverComponents } from './fs-helpers';
 import { createEngine, type EngineInstance } from './createEngine';
 import type { CreateEngineOptions } from './createEngine';
+import { getComponentFaceJsonFileNames } from './faceJsonPaths';
 import { scanRegistry } from './registry';
 import { RuleEngine, basePolicyPack, type ValidateMode, type BudgetMode } from './rules/index';
 import { validateComposition, listPatterns, loadPatternById } from './face-ui/compositionValidator';
@@ -928,11 +929,7 @@ class UserfaceEngineMcpServer {
     }
     const candidates: string[] = [];
     for (const searchDir of searchDirs) {
-      candidates.push(
-        resolve(searchDir, name, `${name}.json`),
-        resolve(searchDir, name, `${name}.face.json`),
-        resolve(searchDir, name, 'face.json'),
-      );
+      candidates.push(...getComponentFaceJsonFileNames(name).map((fileName) => resolve(searchDir, name, fileName)));
     }
     try {
       for (const filePath of candidates) {
