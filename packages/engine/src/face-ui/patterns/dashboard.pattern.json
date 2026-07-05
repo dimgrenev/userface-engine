@@ -30,7 +30,7 @@
   "recommends": [
     { "type": "Tabs", "minCount": 1, "zone": "content" },
     { "type": "Card", "minCount": 4, "zone": "metrics" },
-    { "type": "DatePicker", "zone": "header" },
+    { "type": "Date", "zone": "header" },
     { "type": "Select", "zone": "header" },
     { "type": "Badge", "zone": "metrics" }
   ],
@@ -41,7 +41,7 @@
   ],
 
   "componentSelection": {
-    "faceUiPrimitives": ["Card", "Text", "Bar", "Tabs", "Table", "Select", "DatePicker", "Badge", "Progress"],
+    "faceUiPrimitives": ["Card", "Text", "Bar", "Tabs", "Table", "Select", "Date", "Badge", "Progress"],
     "ufProductBlocks": [
       {
         "name": "MetricCard",
@@ -92,7 +92,7 @@
       "children": [
         { "type": "Bar", "key": "header", "children": [
           { "type": "Text", "props": { "variant": "h1", "text": "Dashboard" }, "key": "title" },
-          { "type": "DatePicker", "props": { "mode": "range" }, "key": "date-range" }
+          { "type": "Date", "props": { "mode": "range" }, "key": "date-range" }
         ]},
         { "type": "Bar", "key": "metrics", "children": [
           { "type": "Card", "key": "metric-1", "children": [

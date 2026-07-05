@@ -92,7 +92,6 @@ const FALLBACK_FACE_UI_COMPONENT_TYPES = [
     'Code',
     'Command',
     'Date',
-    'DatePicker',
     'Drawer',
     'Icon',
     'Input',
