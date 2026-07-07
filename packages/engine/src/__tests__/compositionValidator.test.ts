@@ -72,7 +72,8 @@ afterEach(() => {
 
 function formDocWithChild(type: string): FaceUiDoc {
   return {
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     meta: { name: `${type} form` },
     root: {
       type: 'Form',
@@ -87,7 +88,8 @@ function formDocWithChild(type: string): FaceUiDoc {
 
 function docWithChildren(rootType: string, childTypes: string[]): FaceUiDoc {
   return {
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     meta: { name: `${rootType} composition` },
     root: {
       type: rootType,

@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import {
+  FACE_UI_SCHEMA,
+  FACE_UI_SCHEMA_VERSION,
+} from './types';
 
 const FaceJsonPrimitiveSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 export const FaceJsonValueSchema: z.ZodTypeAny = z.lazy(() =>
@@ -28,7 +32,8 @@ export const FaceUiNodeSchema: z.ZodTypeAny = z.lazy(() =>
 );
 
 export const FaceUiDocSchema = z.object({
-  version: z.literal('ui@1'),
+  schema: z.literal(FACE_UI_SCHEMA),
+  'schema-version': z.literal(FACE_UI_SCHEMA_VERSION),
   root: FaceUiNodeSchema,
   meta: z
     .object({
@@ -39,4 +44,13 @@ export const FaceUiDocSchema = z.object({
   state: z.record(z.string(), FaceJsonPrimitiveSchema).optional(),
 });
 
-
+export function isFaceUiDoc(value: unknown): boolean {
+  return Boolean(
+    value
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && (value as Record<string, unknown>).schema === FACE_UI_SCHEMA
+    && (value as Record<string, unknown>)['schema-version'] === FACE_UI_SCHEMA_VERSION
+    && (value as Record<string, unknown>).root,
+  );
+}

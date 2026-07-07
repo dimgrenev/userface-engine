@@ -3,7 +3,7 @@
 Public workspace for `@userface/engine`.
 
 `@userface/engine` gives AI-assisted UI tools a typed view of a component library:
-component discovery, prop extraction, `face.json` contracts, `ui@1` composition
+component discovery, prop extraction, `face.json` contracts, face schema composition
 validation, code generation, registry scanning, and MCP tools.
 
 ## Packages

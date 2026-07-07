@@ -194,7 +194,8 @@ try {
   }
 
   writeJson(path.join(installRoot, 'screen.ui.json'), {
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     root: {
       type: 'Card',
       children: [{ type: 'Button' }],

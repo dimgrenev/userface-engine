@@ -108,7 +108,8 @@ describe('userface umbrella CLI engine forwarding', () => {
 
   it('forwards guard to @userface/engine through the buyer-facing command name', async () => {
     await writeFile(join(tempRoot, 'screen.ui.json'), JSON.stringify({
-      version: 'ui@1',
+      schema: 'face',
+      'schema-version': 1,
       root: {
         type: 'Card',
         children: [{ type: 'Button' }],

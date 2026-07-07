@@ -1,4 +1,5 @@
 import type { FaceUiNode, FaceUiValue, FaceUiActionRef, FaceUiRef } from './types';
+import { FaceUiDocSchema } from './schema';
 
 export interface CodegenOptions {
   componentName?: string;
@@ -258,12 +259,14 @@ ${template}
 }
 
 export function generateCode(doc: any, options: CodegenOptions = {}): string {
-  if (doc?.version !== 'ui@1' || !doc.root) {
-    throw new Error('Invalid ui@1 document');
+  const parsed = FaceUiDocSchema.safeParse(doc);
+  if (!parsed.success || !parsed.data.root) {
+    throw new Error('Invalid face document');
   }
 
+  const normalizedDoc = parsed.data;
   const fw = options.framework || 'react';
-  if (fw === 'vue') return generateVueCode(doc, options);
-  if (fw === 'html') return generateHtmlCode(doc, options);
-  return generateReactCode(doc, options);
+  if (fw === 'vue') return generateVueCode(normalizedDoc, options);
+  if (fw === 'html') return generateHtmlCode(normalizedDoc, options);
+  return generateReactCode(normalizedDoc, options);
 }

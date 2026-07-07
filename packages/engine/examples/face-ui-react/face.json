@@ -1,0 +1,38 @@
+{
+  "schema": "face",
+  "schema-version": 1,
+  "meta": {
+    "name": "face-ui-react example",
+    "description": "Minimal face schema v1 document that renders a small UI tree"
+  },
+  "root": {
+    "type": "Panel",
+    "props": {
+      "left": "UI from face.json",
+      "right": {
+        "$ref": "props.right"
+      }
+    },
+    "children": [
+      {
+        "type": "Text",
+        "props": {
+          "text": "Hello from face schema v1"
+        }
+      },
+      {
+        "type": "Button",
+        "props": {
+          "text": "Click",
+          "variant": "accent",
+          "onClick": {
+            "$action": "log",
+            "args": {
+              "msg": "clicked"
+            }
+          }
+        }
+      }
+    ]
+  }
+}

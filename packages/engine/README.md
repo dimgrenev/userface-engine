@@ -4,7 +4,7 @@ Component intelligence for AI-assisted UI work.
 
 Userface Engine turns a component library into machine-readable contracts and
 tools. It helps an agent discover components, understand their props, validate
-`ui@1` compositions, and generate framework code without guessing component APIs.
+face schema v1 compositions, and generate framework code without guessing component APIs.
 
 ## Install
 
@@ -25,8 +25,8 @@ Requirements:
 | Component analysis | Reads component files from a deterministic `entryPath` and extracts props/types |
 | Registry | Scans component directories and reports entries, props, `face.json` status, and metadata |
 | Contracts | Parses and validates `face.json` / face v2 contracts |
-| Composition | Validates `ui@1` trees, registry boundaries, refs/actions, and built-in patterns |
-| Codegen | Generates React, Vue, or HTML from `ui@1` documents |
+| Composition | Validates face schema v1 trees, registry boundaries, refs/actions, and built-in patterns |
+| Codegen | Generates React, Vue, or HTML from face schema v1 documents |
 | Quality rules | Runs the base policy pack for a11y, structure, and contract checks |
 | MCP | Exposes engine tools to AI IDEs over stdio JSON-RPC |
 | Packaging | Ships ESM, CJS, and TypeScript declarations |
@@ -114,8 +114,8 @@ Main tools:
 | `component_render` | Render a component with props |
 | `component_states` | Generate representative visual states |
 | `component_test` | Render generated states and report failures |
-| `composition_validate` | Validate a `ui@1` document |
-| `ui_materialize` | Generate React/Vue/HTML from `ui@1` |
+| `composition_validate` | Validate a face schema v1 document |
+| `ui_materialize` | Generate React/Vue/HTML from face schema v1 |
 | `component_contract` | Read a face v2 contract |
 | `component_composition_guide` | Return composition guidance from face v2 |
 | `design_tokens` | Read CSS token metadata when available |
@@ -150,13 +150,14 @@ A contract describes the public API of one component.
 The registry can combine extracted props with manual contracts. Manual contracts
 are still the right answer for complex component APIs.
 
-## `ui@1`
+## Face Schema V1
 
-`ui@1` is a declarative composition document.
+Face schema v1 is a declarative composition document.
 
 ```json
 {
-  "version": "ui@1",
+  "schema": "face",
+  "schema-version": 1,
   "root": {
     "type": "Panel",
     "props": { "title": "Settings" },

@@ -61,7 +61,7 @@ function findNodeById(root, nodeId) {
     };
     return walk(root, null, '', 0, [0], 1);
 }
-/** Get a node from `ui@1` doc by derived nodeId. */
+/** Get a node from a face schema document by derived nodeId. */
 export function getNode(doc, nodeId) {
     const parsed = FaceUiDocSchema.parse(doc);
     const hit = findNodeById(parsed.root, nodeId);

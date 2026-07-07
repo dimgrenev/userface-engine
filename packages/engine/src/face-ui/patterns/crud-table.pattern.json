@@ -3,14 +3,24 @@
   "id": "crud-table",
   "name": "CRUD Table Pattern",
   "purpose": "Data table with create, read, update, delete actions. Includes search, filters, and row actions.",
-
   "zones": {
-    "toolbar": { "description": "Search input, filters, create button", "required": false },
-    "table": { "description": "Data table with columns and rows", "required": true },
-    "pagination": { "description": "Page controls or infinite scroll", "required": false },
-    "detail": { "description": "Modal or side panel for row detail/edit", "required": false }
+    "toolbar": {
+      "description": "Search input, filters, create button",
+      "required": false
+    },
+    "table": {
+      "description": "Data table with columns and rows",
+      "required": true
+    },
+    "pagination": {
+      "description": "Page controls or infinite scroll",
+      "required": false
+    },
+    "detail": {
+      "description": "Modal or side panel for row detail/edit",
+      "required": false
+    }
   },
-
   "layout": {
     "direction": "column",
     "toolbarLayout": "row",
@@ -18,134 +28,332 @@
     "responsive": "stack-toolbar-on-mobile",
     "tableOverflow": "horizontal-scroll"
   },
-
   "requires": [
-    { "type": "Table", "minCount": 1 },
-    { "type": "Button", "minCount": 1, "props": { "variant": "accent" } }
+    {
+      "type": "Table",
+      "minCount": 1
+    },
+    {
+      "type": "Button",
+      "minCount": 1,
+      "props": {
+        "variant": "accent"
+      }
+    }
   ],
-
   "recommends": [
-    { "type": "Input", "minCount": 1, "zone": "toolbar", "props": { "placeholder": "Search..." } },
-    { "type": "Menu", "zone": "table" },
-    { "type": "Pagination", "zone": "pagination" },
-    { "type": "Modal", "zone": "detail" },
-    { "type": "Badge", "zone": "table" }
+    {
+      "type": "Input",
+      "minCount": 1,
+      "zone": "toolbar",
+      "props": {
+        "placeholder": "Search..."
+      }
+    },
+    {
+      "type": "Menu",
+      "zone": "table"
+    },
+    {
+      "type": "Pagination",
+      "zone": "pagination"
+    },
+    {
+      "type": "Modal",
+      "zone": "detail"
+    },
+    {
+      "type": "Badge",
+      "zone": "table"
+    }
   ],
-
   "forbids": [
-    { "nested": ["Table", "Table"], "reason": "Nested tables destroy readability and keyboard navigation" },
-    { "nested": ["Table", "Form"], "reason": "Forms inside table cells break tab order; use inline-edit variant or detail modal" }
+    {
+      "nested": [
+        "Table",
+        "Table"
+      ],
+      "reason": "Nested tables destroy readability and keyboard navigation"
+    },
+    {
+      "nested": [
+        "Table",
+        "Form"
+      ],
+      "reason": "Forms inside table cells break tab order; use inline-edit variant or detail modal"
+    }
   ],
-
   "componentSelection": {
-    "faceUiPrimitives": ["Table", "Button", "Input", "Select", "Menu", "Pagination", "Modal", "Badge", "Text", "Bar"],
+    "faceUiPrimitives": [
+      "Table",
+      "Button",
+      "Input",
+      "Select",
+      "Menu",
+      "Pagination",
+      "Modal",
+      "Badge",
+      "Text",
+      "Bar"
+    ],
     "ufProductBlocks": [
       {
         "name": "AdminUsersSection",
         "contract": "packages/uf/Profile/AdminUsersSection.json",
         "context": "profile-admin",
-        "whenToUse": ["Superadmin user management with filters, role editing and delete actions"]
+        "whenToUse": [
+          "Superadmin user management with filters, role editing and delete actions"
+        ]
       },
       {
         "name": "AdminFontsSection",
         "contract": "packages/uf/Profile/AdminFontsSection.json",
         "context": "admin",
-        "whenToUse": ["Admin font management tables with view and delete actions"]
+        "whenToUse": [
+          "Admin font management tables with view and delete actions"
+        ]
       },
       {
         "name": "AdminLogsSection",
         "contract": "packages/uf/Profile/AdminLogsSection.json",
         "context": "profile-admin",
-        "whenToUse": ["Purchase-log inspection with search, refresh, test-log action and tabular metadata"]
+        "whenToUse": [
+          "Purchase-log inspection with search, refresh, test-log action and tabular metadata"
+        ]
       },
       {
         "name": "FontsSection",
         "contract": "packages/uf/Profile/FontsSection.json",
         "context": "profile",
-        "whenToUse": ["Profile font management with upload, publish status, reorder and row actions"]
+        "whenToUse": [
+          "Profile font management with upload, publish status, reorder and row actions"
+        ]
       },
       {
         "name": "MediaListPicker",
         "contract": "packages/uf/components/MediaListPicker/MediaListPicker.json",
         "context": "components",
-        "whenToUse": ["Drag-reorderable media strips with remove actions"],
-        "whenNotToUse": ["General file upload controls", "Large asset managers"]
+        "whenToUse": [
+          "Drag-reorderable media strips with remove actions"
+        ],
+        "whenNotToUse": [
+          "General file upload controls",
+          "Large asset managers"
+        ]
       }
     ],
-    "chooseFaceUiWhen": ["The screen is a generic data table without a known UF domain contract", "The product behavior is not already represented by a UF composite"],
-    "chooseUfWhen": ["A listed UF block already owns the product data flow, mutation behavior or row action model", "The request matches a profile/admin media or management surface"]
+    "chooseFaceUiWhen": [
+      "The screen is a generic data table without a known UF domain contract",
+      "The product behavior is not already represented by a UF composite"
+    ],
+    "chooseUfWhen": [
+      "A listed UF block already owns the product data flow, mutation behavior or row action model",
+      "The request matches a profile/admin media or management surface"
+    ]
   },
-
   "skeleton": {
-    "version": "ui@1",
+    "schema": "face",
+    "schema-version": 1,
     "root": {
       "type": "Card",
       "children": [
-        { "type": "Bar", "key": "toolbar", "children": [
-          { "type": "Text", "props": { "variant": "h2", "text": "Items" }, "key": "title" },
-          { "type": "Input", "props": { "placeholder": "Search...", "icon": "search" }, "key": "search" },
-          { "type": "Button", "props": { "text": "Create", "variant": "accent" }, "key": "create" }
-        ]},
-        { "type": "Table", "props": {
-          "columns": [
-            { "key": "name", "header": "Name", "sortable": true },
-            { "key": "status", "header": "Status" },
-            { "key": "updated", "header": "Updated", "sortable": true },
-            { "key": "actions", "header": "" }
-          ],
-          "selectable": true
-        }, "key": "table" },
-        { "type": "Bar", "key": "footer", "children": [
-          { "type": "Text", "props": { "variant": "muted", "text": "Showing 1-10 of 50" }, "key": "count" },
-          { "type": "Pagination", "props": { "total": 5 }, "key": "pagination" }
-        ]}
+        {
+          "type": "Bar",
+          "key": "toolbar",
+          "children": [
+            {
+              "type": "Text",
+              "props": {
+                "variant": "h2",
+                "text": "Items"
+              },
+              "key": "title"
+            },
+            {
+              "type": "Input",
+              "props": {
+                "placeholder": "Search...",
+                "icon": "search"
+              },
+              "key": "search"
+            },
+            {
+              "type": "Button",
+              "props": {
+                "text": "Create",
+                "variant": "accent"
+              },
+              "key": "create"
+            }
+          ]
+        },
+        {
+          "type": "Table",
+          "props": {
+            "columns": [
+              {
+                "key": "name",
+                "header": "Name",
+                "sortable": true
+              },
+              {
+                "key": "status",
+                "header": "Status"
+              },
+              {
+                "key": "updated",
+                "header": "Updated",
+                "sortable": true
+              },
+              {
+                "key": "actions",
+                "header": ""
+              }
+            ],
+            "selectable": true
+          },
+          "key": "table"
+        },
+        {
+          "type": "Bar",
+          "key": "footer",
+          "children": [
+            {
+              "type": "Text",
+              "props": {
+                "variant": "muted",
+                "text": "Showing 1-10 of 50"
+              },
+              "key": "count"
+            },
+            {
+              "type": "Pagination",
+              "props": {
+                "total": 5
+              },
+              "key": "pagination"
+            }
+          ]
+        }
       ]
     }
   },
-
   "variants": [
     {
       "name": "inline-edit",
       "description": "Table with inline editing instead of modal detail. Rows become editable on click.",
-      "layout": { "direction": "column" },
-      "forbids": [{ "nested": ["Table", "Modal"], "reason": "Inline-edit variant should not open modals for editing" }]
+      "layout": {
+        "direction": "column"
+      },
+      "forbids": [
+        {
+          "nested": [
+            "Table",
+            "Modal"
+          ],
+          "reason": "Inline-edit variant should not open modals for editing"
+        }
+      ]
     },
     {
       "name": "side-detail",
       "description": "Table with a side Panel for detail view (list-detail hybrid). Panel opens on row click.",
-      "layout": { "direction": "row", "tableWidth": "60%", "detailWidth": "40%", "responsive": "stack-on-mobile" },
-      "requires": [{ "type": "Panel", "minCount": 1 }]
+      "layout": {
+        "direction": "row",
+        "tableWidth": "60%",
+        "detailWidth": "40%",
+        "responsive": "stack-on-mobile"
+      },
+      "requires": [
+        {
+          "type": "Panel",
+          "minCount": 1
+        }
+      ]
     },
     {
       "name": "bulk-actions",
       "description": "Table with row checkboxes and bulk action bar that appears on selection.",
-      "requires": [{ "type": "Bar", "minCount": 1 }]
+      "requires": [
+        {
+          "type": "Bar",
+          "minCount": 1
+        }
+      ]
     }
   ],
-
   "examples": [
     {
       "name": "User management table",
       "skeleton": {
-        "version": "ui@1",
+        "schema": "face",
+        "schema-version": 1,
         "root": {
           "type": "Card",
           "children": [
-            { "type": "Bar", "key": "toolbar", "children": [
-              { "type": "Text", "props": { "variant": "h2", "text": "Users" }, "key": "title" },
-              { "type": "Input", "props": { "placeholder": "Search users...", "icon": "search" }, "key": "search" },
-              { "type": "Button", "props": { "text": "Add User", "variant": "accent" }, "key": "add" }
-            ]},
-            { "type": "Table", "props": {
-              "columns": [
-                { "key": "name", "header": "Name", "sortable": true },
-                { "key": "email", "header": "Email" },
-                { "key": "role", "header": "Role" },
-                { "key": "status", "header": "Status" }
-              ],
-              "selectable": true
-            }, "key": "table" },
-            { "type": "Pagination", "props": { "total": 10 }, "key": "pagination" }
+            {
+              "type": "Bar",
+              "key": "toolbar",
+              "children": [
+                {
+                  "type": "Text",
+                  "props": {
+                    "variant": "h2",
+                    "text": "Users"
+                  },
+                  "key": "title"
+                },
+                {
+                  "type": "Input",
+                  "props": {
+                    "placeholder": "Search users...",
+                    "icon": "search"
+                  },
+                  "key": "search"
+                },
+                {
+                  "type": "Button",
+                  "props": {
+                    "text": "Add User",
+                    "variant": "accent"
+                  },
+                  "key": "add"
+                }
+              ]
+            },
+            {
+              "type": "Table",
+              "props": {
+                "columns": [
+                  {
+                    "key": "name",
+                    "header": "Name",
+                    "sortable": true
+                  },
+                  {
+                    "key": "email",
+                    "header": "Email"
+                  },
+                  {
+                    "key": "role",
+                    "header": "Role"
+                  },
+                  {
+                    "key": "status",
+                    "header": "Status"
+                  }
+                ],
+                "selectable": true
+              },
+              "key": "table"
+            },
+            {
+              "type": "Pagination",
+              "props": {
+                "total": 10
+              },
+              "key": "pagination"
+            }
           ]
         }
       }
@@ -153,24 +361,74 @@
     {
       "name": "Product inventory",
       "skeleton": {
-        "version": "ui@1",
+        "schema": "face",
+        "schema-version": 1,
         "root": {
           "type": "Card",
           "children": [
-            { "type": "Bar", "key": "toolbar", "children": [
-              { "type": "Text", "props": { "variant": "h2", "text": "Inventory" }, "key": "title" },
-              { "type": "Input", "props": { "placeholder": "Search products..." }, "key": "search" },
-              { "type": "Select", "props": { "placeholder": "Category" }, "key": "filter" },
-              { "type": "Button", "props": { "text": "Add Product", "variant": "accent" }, "key": "add" }
-            ]},
-            { "type": "Table", "props": {
-              "columns": [
-                { "key": "sku", "header": "SKU" },
-                { "key": "name", "header": "Product", "sortable": true },
-                { "key": "stock", "header": "Stock", "sortable": true },
-                { "key": "price", "header": "Price", "sortable": true }
+            {
+              "type": "Bar",
+              "key": "toolbar",
+              "children": [
+                {
+                  "type": "Text",
+                  "props": {
+                    "variant": "h2",
+                    "text": "Inventory"
+                  },
+                  "key": "title"
+                },
+                {
+                  "type": "Input",
+                  "props": {
+                    "placeholder": "Search products..."
+                  },
+                  "key": "search"
+                },
+                {
+                  "type": "Select",
+                  "props": {
+                    "placeholder": "Category"
+                  },
+                  "key": "filter"
+                },
+                {
+                  "type": "Button",
+                  "props": {
+                    "text": "Add Product",
+                    "variant": "accent"
+                  },
+                  "key": "add"
+                }
               ]
-            }, "key": "table" }
+            },
+            {
+              "type": "Table",
+              "props": {
+                "columns": [
+                  {
+                    "key": "sku",
+                    "header": "SKU"
+                  },
+                  {
+                    "key": "name",
+                    "header": "Product",
+                    "sortable": true
+                  },
+                  {
+                    "key": "stock",
+                    "header": "Stock",
+                    "sortable": true
+                  },
+                  {
+                    "key": "price",
+                    "header": "Price",
+                    "sortable": true
+                  }
+                ]
+              },
+              "key": "table"
+            }
           ]
         }
       }

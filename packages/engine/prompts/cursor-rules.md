@@ -11,9 +11,9 @@ You have access to Userface Engine MCP tools for building and validating UI.
 
 1. **ALWAYS** call `component_list` first to see available components with their props and contracts
 2. Use face.json contracts as the source of truth for component APIs — never invent props
-3. Compose UI using **ui@1** format when building screens or pages
+3. Compose UI using **face schema v1** format when building screens or pages
 4. Call `composition_validate` to check structural correctness before materializing
-5. Call `ui_materialize` to generate framework code from ui@1
+5. Call `ui_materialize` to generate framework code from face schema v1
 6. Call `component_validate` before committing changes to verify quality
 
 ## Rules
@@ -31,8 +31,8 @@ You have access to Userface Engine MCP tools for building and validating UI.
 | `component_list` | You need to see what components exist and their APIs |
 | `component_analyze` | You need detailed prop analysis for a specific component |
 | `component_validate` | You want to check component quality (a11y, structure, contracts) |
-| `composition_validate` | You built a ui@1 composition and want to verify it |
-| `ui_materialize` | You have a ui@1 document and want React/Vue/HTML code |
+| `composition_validate` | You built a face schema v1 composition and want to verify it |
+| `ui_materialize` | You have a face schema v1 document and want React/Vue/HTML code |
 | `component_states` | You need to see all visual states of a component |
 | `component_test` | You want to run SSR smoke tests on components |
 
@@ -41,7 +41,7 @@ You have access to Userface Engine MCP tools for building and validating UI.
 ```
 User: "Build a settings page"
 1. component_list({ dir: "src/components" })  → see available components
-2. Compose a ui@1 document using those components
+2. Compose a face schema v1 document using those components
 3. composition_validate({ doc, registryDir: "src/components", patterns: ["settings"] })
 4. ui_materialize({ doc, framework: "react" })  → get JSX code
 5. component_validate each modified component

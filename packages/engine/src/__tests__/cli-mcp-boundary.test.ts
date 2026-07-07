@@ -56,7 +56,8 @@ function makeBoundaryFixture() {
   }, null, 2));
 
   const doc = {
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     root: {
       type: 'Card',
       children: [
@@ -500,11 +501,12 @@ describe('engine CLI and MCP registry-boundary defaults', () => {
     expect(proof.validation.violations.map((violation: any) => violation.ruleId)).toContain('guard/changed-input-needs-target');
   });
 
-  it('discovers changed ui@1 documents and emits guard proof without explicit targets', () => {
+  it('discovers changed face documents and emits guard proof without explicit targets', () => {
     const fixture = makeBoundaryFixture();
     commitFixture(fixture.root);
     const changedDoc = {
-      version: 'ui@1',
+      schema: 'face',
+      'schema-version': 1,
       root: {
         type: 'Card',
         children: [

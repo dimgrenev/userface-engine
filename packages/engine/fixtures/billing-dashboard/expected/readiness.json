@@ -140,7 +140,7 @@
     "checked": 1,
     "violations": 0,
     "status": "passed",
-    "summary": "1 ui@1 document(s) passed composition readiness."
+    "summary": "1 face document(s) passed composition readiness."
   },
   "tokenStyleRisks": {
     "status": "passed",
@@ -158,7 +158,7 @@
   "guard": {
     "offlineCore": true,
     "canRun": true,
-    "reason": "Local guard can validate ui@1 composition against the discovered registry without model/network egress."
+    "reason": "Local guard can validate face composition against the discovered registry without model/network egress."
   },
   "proof": {
     "schema": "userface-proof@1",
@@ -198,7 +198,7 @@
     },
     "composition": {
       "status": "passed",
-      "reason": "1 ui@1 document(s) passed composition readiness.",
+      "reason": "1 face document(s) passed composition readiness.",
       "violations": []
     },
     "preview": {
@@ -232,7 +232,7 @@
     },
     "summaries": [
       "Repo is ready for an AI UI acceptance pilot.",
-      "6 component(s), 6 contracted, 1 ui@1 document(s)."
+      "6 component(s), 6 contracted, 1 face document(s)."
     ]
   },
   "checks": [
@@ -287,17 +287,17 @@
     },
     {
       "id": "ui_documents",
-      "label": "ui@1 documents",
+      "label": "Face documents",
       "status": "passed",
       "score": 100,
-      "summary": "1 ui@1 document(s) discovered."
+      "summary": "1 face document(s) discovered."
     },
     {
       "id": "composition",
       "label": "Composition gate",
       "status": "passed",
       "score": 100,
-      "summary": "1 ui@1 document(s) passed composition readiness."
+      "summary": "1 face document(s) passed composition readiness."
     },
     {
       "id": "first_screen",
@@ -324,7 +324,7 @@
   "recommendation": {
     "summary": "Repo is ready for an AI UI acceptance pilot.",
     "nextSteps": [
-      "Run userface guard on a representative ui@1 change and attach the generated proof to the PR."
+      "Run userface guard on a representative face document change and attach the generated proof to the PR."
     ]
   }
 }

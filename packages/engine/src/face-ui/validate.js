@@ -12,7 +12,7 @@ function joinId(parentId, seg) {
     return `${parentId}/${seg}`;
 }
 /**
- * Validate a `ui@1` doc for a given identity policy.
+ * Validate a face schema document for a given identity policy.
  *
  * Current checks:
  * - `nodeIdPolicy: 'stable'`: every non-root node must define `key`.
@@ -29,7 +29,7 @@ export function validateFaceUiDoc(doc, env) {
     }
     catch (e) {
         // Schema errors are not part of this validator's contract; surface as a single issue.
-        const msg = String((e === null || e === void 0 ? void 0 : e.message) || e || 'Invalid ui@1 doc');
+        const msg = String((e === null || e === void 0 ? void 0 : e.message) || e || 'Invalid face document');
         issues.push({
             code: 'UF_FACE_INVALID_DOC',
             message: `UF_FACE_INVALID_DOC ${msg}`,

@@ -1,7 +1,7 @@
 /**
- * Composition Validator for ui@1 documents.
+ * Composition Validator for face schema documents.
  *
- * Validates the *structure* of a ui@1 tree against:
+ * Validates the *structure* of a face tree against:
  * - Structural rules (nesting depth, interactive-in-interactive, list keys)
  * - Contract rules (type exists in registry, required props, enum values)
  * - $ref/$action resolution

@@ -1,4 +1,8 @@
-export type FaceUiVersion = 'ui@1';
+export const FACE_UI_SCHEMA = 'face' as const;
+export const FACE_UI_SCHEMA_VERSION = 1 as const;
+
+export type FaceUiSchema = typeof FACE_UI_SCHEMA;
+export type FaceUiSchemaVersion = typeof FACE_UI_SCHEMA_VERSION;
 
 export type FaceJsonPrimitive = string | number | boolean | null;
 export type FaceJsonValue = FaceJsonPrimitive | FaceJsonValue[] | { [key: string]: FaceJsonValue };
@@ -34,7 +38,8 @@ export type FaceUiNode = {
 };
 
 export type FaceUiDoc = {
-  version: FaceUiVersion;
+  schema: FaceUiSchema;
+  'schema-version': FaceUiSchemaVersion;
   root: FaceUiNode;
   meta?: {
     name?: string;
@@ -92,7 +97,7 @@ export type FaceUiRenderEnv = {
 
 /**
  * Materialized node representation used by editors/tooling and by canonical renderers.
- * NOTE: ids are derived-only (no explicit `id` field in ui@1 doc).
+ * NOTE: ids are derived-only (no explicit `id` field in face schema v1 doc).
  */
 export type MaterializedFaceUiNode = {
   nodeId: string;
@@ -116,5 +121,3 @@ export type MaterializedFaceUiTree = {
   root: MaterializedFaceUiNode;
   byId: Record<string, MaterializedFaceUiNode>;
 };
-
-

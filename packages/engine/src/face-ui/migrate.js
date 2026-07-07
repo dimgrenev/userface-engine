@@ -1,6 +1,8 @@
+import { FACE_UI_SCHEMA, FACE_UI_SCHEMA_VERSION } from './types';
+import { isFaceUiDoc } from './schema';
 /**
  * Migration layer for Face UI documents.
- * Upgrades older versions (or legacy formats) to the latest supported version (ui@1).
+ * Validates documents against the latest supported face schema.
  */
 export function migrateFaceUiDoc(raw, options = {}) {
     if (!raw || typeof raw !== 'object') {
@@ -9,28 +11,16 @@ export function migrateFaceUiDoc(raw, options = {}) {
         return null;
     }
     const doc = raw;
-    let version = doc.version;
-    // 1. Detect legacy or unspecified version
-    if (!version) {
-        // If it looks like a ui@1 document but misses version, assume ui@1.
-        if (doc.root && typeof doc.root === 'object' && doc.root.type) {
-            version = 'ui@1';
-            doc.version = 'ui@1';
-        }
-        else {
-            if (options.strict)
-                throw new Error('Unrecognized Face UI document format.');
-            return null;
-        }
-    }
-    // 2. Process migrations sequentially
-    if (version === 'ui@1') {
-        // Current version, nothing to do.
-        return doc;
+    if (isFaceUiDoc(doc)) {
+        return {
+            ...doc,
+            schema: FACE_UI_SCHEMA,
+            'schema-version': FACE_UI_SCHEMA_VERSION,
+        };
     }
     // Future migrations will go here
-    // if (version === 'ui@2') { ... }
+    // if (doc.schema === 'face' && doc['schema-version'] === 2) { ... }
     if (options.strict)
-        throw new Error(`Unsupported Face UI version: ${version}`);
+        throw new Error('Unrecognized Face UI document format.');
     return null;
 }

@@ -31,6 +31,7 @@ import {
   type UserfaceProofFailOn,
 } from './proof';
 import { createReadinessReport, renderReadinessReportMarkdown } from './readiness';
+import { isFaceUiDoc } from './face-ui/schema';
 import type { BudgetMode, ValidateMode, ValidationReport, Violation } from './rules/types';
 
 // ---------------------------------------------------------------------------
@@ -266,7 +267,7 @@ function assertLibraryCliEnabled(command: string): void {
   if (isLibraryCliEnabled()) return;
   process.stderr.write(
     `Error: "${command}" is not part of the public engine CLI yet.\n` +
-    'This release only exposes local component analysis, validation, registry, ui@1, and MCP workflows.\n'
+    'This release only exposes local component analysis, validation, registry, face document, and MCP workflows.\n'
   );
   process.exit(1);
 }
@@ -537,7 +538,7 @@ async function cmdMaterialize(path: string, args: string[], config: any = {}) {
   try {
     doc = JSON.parse(readFileSync(abs, 'utf-8'));
   } catch (e: any) {
-    process.stderr.write(`Error reading ui@1 document: ${e.message}\n`);
+    process.stderr.write(`Error reading face document: ${e.message}\n`);
     process.exit(1);
   }
 
@@ -1109,7 +1110,7 @@ async function cmdCompositionValidate(targetPath: string, args: string[], config
   try {
     doc = JSON.parse(readFileSync(absPath, 'utf-8'));
   } catch (e: any) {
-    process.stderr.write(`Error reading ui@1 document: ${e.message}\n`);
+    process.stderr.write(`Error reading face document: ${e.message}\n`);
     process.exit(1);
   }
 
@@ -1195,18 +1196,18 @@ async function changedGuardTargetPaths(cwd: string): Promise<{ paths: string[]; 
       }
       try {
         const doc = JSON.parse(readFileSync(resolve(cwd, path), 'utf-8'));
-        if (doc?.version === 'ui@1' && doc?.root) {
+        if (isFaceUiDoc(doc)) {
           paths.add(path);
           continue;
         }
       } catch {
-        // Ignore non-ui JSON or deleted paths in changed-file discovery.
+        // Ignore non-face JSON or deleted paths in changed-file discovery.
       }
       try {
         readComponentFiles(cwd, dirname(path));
         paths.add(dirname(path));
       } catch {
-        // Ignore JSON files that are not ui@1 documents or component contracts.
+        // Ignore JSON files that are not face documents or component contracts.
         if (isGuardedInput) unresolvedInputs.add(path);
       }
     }
@@ -1337,7 +1338,7 @@ async function cmdGuardUnsafe(args: string[], _config: any = {}) {
       confidence: 1,
       category: 'contract',
       location: { file: changedTargets.unresolvedInputs[0] },
-      fixHint: 'Run guard with an explicit ui@1 document or component path affected by this registry/config/token/style change.',
+      fixHint: 'Run guard with an explicit face document or component path affected by this registry/config/token/style change.',
     }));
   }
 
@@ -1357,12 +1358,12 @@ async function cmdGuardUnsafe(args: string[], _config: any = {}) {
           confidence: 1,
           category: 'contract',
           location: { file: targetPath },
-          fixHint: 'Check that the target path exists and is a readable ui@1 JSON document.',
+          fixHint: 'Check that the target path exists and is a readable face JSON document.',
         }));
         continue;
       }
 
-      if (doc?.version !== 'ui@1' || !doc?.root) {
+      if (!isFaceUiDoc(doc)) {
         try {
           const report = await validateComponentSourceTarget(dirname(targetPath), sourceValidationOptions);
           validationReports.push(report);
@@ -1372,7 +1373,7 @@ async function cmdGuardUnsafe(args: string[], _config: any = {}) {
         } catch {
           // Report a clear unsupported-target violation below.
         }
-        const message = `${targetPath} is not a ui@1 document`;
+        const message = `${targetPath} is not a face document`;
         summaries.push(message);
         compositionReports.push(singleViolationReport(targetPath, {
           ruleId: 'guard/unsupported-target',
@@ -1381,7 +1382,7 @@ async function cmdGuardUnsafe(args: string[], _config: any = {}) {
           confidence: 1,
           category: 'contract',
           location: { file: targetPath },
-          fixHint: 'Pass a ui@1 JSON document, component source file, or component directory to guard.',
+          fixHint: 'Pass a face JSON document, component source file, or component directory to guard.',
         }));
         continue;
       }
@@ -1445,7 +1446,7 @@ async function cmdGuardUnsafe(args: string[], _config: any = {}) {
     },
     composition: compositionReports.length === 1
       ? checkFromValidationReport(compositionReports[0])
-      : mergedReportCheck(compositionReports, 'No ui@1 composition documents checked'),
+      : mergedReportCheck(compositionReports, 'No face composition documents checked'),
     validation: validationReports.length === 1
       ? checkFromValidationReport(validationReports[0])
       : mergedReportCheck(validationReports, 'No component source targets checked'),
@@ -1760,12 +1761,12 @@ Usage:
   userface analyze  <path>                  Analyze a component
   userface validate <path>                  Validate a component (quality gate)
   userface readiness [--root dir]           Analyze repo readiness for AI UI acceptance
-  userface guard [path...] [--changed]      Validate ui@1 changes and emit Userface Proof
+  userface guard [path...] [--changed]      Validate face document changes and emit Userface Proof
   userface trust [path...] [--offline]      Emit local data-boundary Userface Proof
   userface proof-schema                     Print userface-proof@1 JSON Schema
   userface states   <path> [--face f.json]  Generate visual states
-  userface materialize <path> [--output p] [--framework f] Materialize ui@1 document to React/Vue/HTML code
-  userface composition-validate <path> [--registry-dir d] [--registry-manifest p] [--enforce-registry-boundary] [--patterns p] Validate ui@1 composition
+  userface materialize <path> [--output p] [--framework f] Materialize face document to React/Vue/HTML code
+  userface composition-validate <path> [--registry-dir d] [--registry-manifest p] [--enforce-registry-boundary] [--patterns p] Validate face composition
   userface diff --base <old.json> --head <new.json>  Diff face.json contracts
   userface render   <path> --props '{...}'  Render with props (SSR)
   userface test     --dir <path>            Test all components
@@ -1779,7 +1780,7 @@ Options:
   --props <json>     Props as JSON string (for render)
   --dir <path>       Directory of components (for test/registry)
   --components-dir <path> Component registry root (for readiness)
-  --ui-doc <path>    Representative ui@1 first-screen document (for readiness)
+  --ui-doc <path>    Representative face first-screen document (for readiness)
   --face <path>      Path to face.json with manual states (for states)
   --format <type>    Output format: json (default), markdown/summary, github-annotations where supported
   --proof <path>     Write Userface Proof JSON (for guard)

@@ -1,5 +1,5 @@
 /**
- * StatefulFaceUi — React component that renders ui@1 documents with local state management.
+ * StatefulFaceUi — React component that renders face schema v1 documents with local state management.
  *
  * Supports:
  * - `doc.state` — local state accessible via `$ref: "state.key"`
@@ -12,7 +12,7 @@ import type { FaceUiRenderEnv, FaceUiRegistry, FaceJsonValue } from './types';
 import { renderFaceUiToReact } from './react';
 
 interface StatefulFaceUiProps {
-  /** The ui@1 document to render */
+  /** The face schema v1 document to render */
   doc: any;
   /** Component registry (library + user components) */
   registry: FaceUiRegistry;

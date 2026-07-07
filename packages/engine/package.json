@@ -2,7 +2,7 @@
   "name": "@userface/engine",
   "version": "0.1.0",
   "private": false,
-  "description": "Component contracts, validation, registry scanning, ui@1 composition, code generation, and MCP tooling for AI-assisted UI work.",
+  "description": "Component contracts, validation, registry scanning, face composition, code generation, and MCP tooling for AI-assisted UI work.",
   "license": "MIT",
   "type": "module",
   "engines": {

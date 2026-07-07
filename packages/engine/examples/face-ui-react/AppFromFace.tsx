@@ -33,11 +33,10 @@ export function AppFromFace(props: { doc: FaceUiDoc }) {
       registry={registry}
       actions={{
         dispatch: (action: string, args: any) => {
-          if (action === 'log') console.log('[ui@1 action]', args);
+          if (action === 'log') console.log('[face action]', args);
         },
       }}
     />
   );
 }
-
 

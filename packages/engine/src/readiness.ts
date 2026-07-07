@@ -5,6 +5,7 @@ import { basename, join, relative, resolve } from 'node:path';
 import { scanRegistry, type RegistryEntry } from './registry';
 import { createUserfaceProof, type UserfaceProof } from './proof';
 import { validateComposition } from './face-ui/compositionValidator';
+import { isFaceUiDoc } from './face-ui/schema';
 import type { Violation } from './rules/types';
 
 export const USERFACE_READINESS_SCHEMA = 'userface-readiness@1' as const;
@@ -300,11 +301,11 @@ function findUiDocuments(root: string, maxResults: number): string[] {
       if (shouldSkipDefaultUiDocument(root, abs)) continue;
       try {
         const parsed = JSON.parse(readFileSync(abs, 'utf-8'));
-        if (parsed?.version === 'ui@1' && parsed.root) {
+        if (isFaceUiDoc(parsed)) {
           results.push(relative(root, abs));
         }
       } catch {
-        // Not a JSON ui@1 document.
+        // Not a JSON face document.
       }
     }
   };
@@ -379,7 +380,7 @@ function runCompositionReadiness(
           confidence: 1,
           category: 'contract',
           location: { file: uiDocument },
-          fixHint: 'Fix the ui@1 document so guard can validate it.',
+          fixHint: 'Fix the face document so guard can validate it.',
         }],
         violationsTotal: 1,
         violationsShown: 1,
@@ -402,10 +403,10 @@ function runCompositionReadiness(
     violations,
     status,
     summary: reports.length === 0
-      ? 'No ui@1 documents were available for composition validation.'
+      ? 'No face documents were available for composition validation.'
       : violations.length > 0
-        ? `${violations.length} composition violation(s) found across ${reports.length} ui@1 document(s).`
-        : `${reports.length} ui@1 document(s) passed composition readiness.`,
+        ? `${violations.length} composition violation(s) found across ${reports.length} face document(s).`
+        : `${reports.length} face document(s) passed composition readiness.`,
     summaries,
   };
 }
@@ -450,7 +451,7 @@ function nextStepsFromChecks(checks: UserfaceReadinessCheck[]): string[] {
     .filter((item) => item.action)
     .map((item) => item.action as string);
   if (steps.length === 0) {
-    steps.push('Run userface guard on a representative ui@1 change and attach the generated proof to the PR.');
+    steps.push('Run userface guard on a representative face document change and attach the generated proof to the PR.');
   }
   return Array.from(new Set(steps)).slice(0, 6);
 }
@@ -484,11 +485,11 @@ function buildPilotVerdict(params: {
     requiredFixes.add('Pass --components-dir or add a conventional components directory before the pilot.');
   }
   if (params.uiDocuments.length === 0) {
-    blockers.push('No representative ui@1 first-screen document was discovered.');
-    requiredFixes.add('Create or materialize one representative ui@1 first-screen document.');
+    blockers.push('No representative face first-screen document was discovered.');
+    requiredFixes.add('Create or materialize one representative face first-screen document.');
   }
   if (params.compositionReadiness.status === 'failed') {
-    blockers.push('The representative ui@1 document fails composition validation.');
+    blockers.push('The representative face document fails composition validation.');
     requiredFixes.add('Fix composition violations before running the acceptance pilot.');
   }
   if (params.firstScreenStatus === 'failed') {
@@ -499,7 +500,7 @@ function buildPilotVerdict(params: {
     requiredFixes.add('Add face.json contracts or TypeScript props for the pilot components.');
   }
   if (params.pilotTarget.used > 0 && params.pilotTarget.contractCoverage < 1) {
-    requiredFixes.add('Add face.json contracts for the components used by representative ui@1 documents.');
+    requiredFixes.add('Add face.json contracts for the components used by representative face documents.');
   }
 
   for (const check of params.checks) {
@@ -634,7 +635,7 @@ function renderPreviewReadiness(
   if (components.length === 0 || uiDocuments.length === 0) {
     return {
       status: 'warning',
-      summary: 'Preview evidence needs both a component registry and a representative ui@1 document.',
+      summary: 'Preview evidence needs both a component registry and a representative face document.',
       requiredEvidence,
     };
   }
@@ -712,11 +713,11 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
     components.length === 0
       ? check('contracts', 'Component contracts', 'not_run', 0, 'No components were available for contract coverage.')
       : pilotTarget.used > 0 && pilotTarget.unresolved.length > 0
-        ? check('contracts', 'Pilot target contracts', 'failed', 25, `${pilotTarget.unresolved.length} component(s) used by ui@1 documents were not found in the registry.`, 'Fix ui@1 component names or registry discovery before treating AI UI as accepted.')
+        ? check('contracts', 'Pilot target contracts', 'failed', 25, `${pilotTarget.unresolved.length} component(s) used by face documents were not found in the registry.`, 'Fix face component names or registry discovery before treating AI UI as accepted.')
         : pilotTarget.used > 0 && pilotTarget.contractCoverage >= 1
           ? check('contracts', 'Pilot target contracts', 'passed', 100, `${pilotTarget.contracted}/${pilotTarget.used} pilot target component(s) have face.json contracts.`)
           : pilotTarget.used > 0
-            ? check('contracts', 'Pilot target contracts', 'failed', 25, `${pilotTarget.contracted}/${pilotTarget.used} pilot target component(s) have face.json contracts.`, 'Add face.json contracts for the components used by representative ui@1 documents.')
+            ? check('contracts', 'Pilot target contracts', 'failed', 25, `${pilotTarget.contracted}/${pilotTarget.used} pilot target component(s) have face.json contracts.`, 'Add face.json contracts for the components used by representative face documents.')
             : contractCoverage >= 0.7
         ? check('contracts', 'Component contracts', 'passed', 100, `${contracted}/${components.length} components have face.json contracts.`)
         : contractCoverage >= 0.3
@@ -732,19 +733,19 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
       ? check('token_style', 'Token/style risks', 'passed', 90, 'Token/style signal is present or not blocking for this readiness pass.')
       : check('token_style', 'Token/style risks', tokenStyleRisks.status, tokenStyleRisks.status === 'failed' ? 30 : 60, tokenStyleRisks.risks[0]?.summary || 'Token/style readiness needs review.', tokenStyleRisks.risks[0]?.action),
     uiDocuments.length > 0
-      ? check('ui_documents', 'ui@1 documents', 'passed', 100, `${uiDocuments.length} ui@1 document(s) discovered.`)
-      : check('ui_documents', 'ui@1 documents', 'warning', 55, 'No ui@1 documents were discovered.', 'Use Userface to create or materialize at least one representative ui@1 document for the pilot.'),
+      ? check('ui_documents', 'Face documents', 'passed', 100, `${uiDocuments.length} face document(s) discovered.`)
+      : check('ui_documents', 'Face documents', 'warning', 55, 'No face documents were discovered.', 'Use Userface to create or materialize at least one representative face document for the pilot.'),
     compositionReadiness.status === 'passed'
       ? check('composition', 'Composition gate', 'passed', 100, compositionReadiness.summary)
       : compositionReadiness.status === 'not_run'
-        ? check('composition', 'Composition gate', 'warning', 55, compositionReadiness.summary, 'Create a representative ui@1 document and run userface guard --offline.')
+        ? check('composition', 'Composition gate', 'warning', 55, compositionReadiness.summary, 'Create a representative face document and run userface guard --offline.')
         : check('composition', 'Composition gate', compositionReadiness.status, compositionReadiness.status === 'failed' ? 25 : 65, compositionReadiness.summary, 'Fix composition violations before selling this repo as pilot-ready.'),
     firstScreenStatus === 'passed'
       ? check('first_screen', 'First-screen feasibility', 'passed', 100, `First-screen candidate: ${firstScreenCandidate}.`)
       : firstScreenStatus === 'failed'
-        ? check('first_screen', 'First-screen feasibility', 'failed', 25, `First-screen candidate ${firstScreenCandidate} fails composition readiness.`, 'Fix the first-screen ui@1 document before the pilot.')
-        : check('first_screen', 'First-screen feasibility', 'warning', 55, 'No first-screen ui@1 candidate was discovered.', 'Create or materialize one first-screen ui@1 document for the pilot demo.'),
-    check('preview', 'Preview readiness', previewReadiness.status, previewReadiness.status === 'passed' ? 90 : previewReadiness.status === 'failed' ? 25 : 55, previewReadiness.summary, previewReadiness.status === 'passed' ? undefined : 'Run the desktop validation path after components and ui@1 documents exist.'),
+        ? check('first_screen', 'First-screen feasibility', 'failed', 25, `First-screen candidate ${firstScreenCandidate} fails composition readiness.`, 'Fix the first-screen face document before the pilot.')
+        : check('first_screen', 'First-screen feasibility', 'warning', 55, 'No first-screen face candidate was discovered.', 'Create or materialize one face first-screen document for the pilot demo.'),
+    check('preview', 'Preview readiness', previewReadiness.status, previewReadiness.status === 'passed' ? 90 : previewReadiness.status === 'failed' ? 25 : 55, previewReadiness.summary, previewReadiness.status === 'passed' ? undefined : 'Run the desktop validation path after components and face documents exist.'),
     components.length > 0 && repo.framework === 'react'
       ? check('guard', 'Offline guard', 'passed', 100, 'Offline guard can run locally with zero model/network egress.')
       : check('guard', 'Offline guard', 'failed', 0, 'Offline guard needs a compatible React component registry before it can prove AI UI changes.', 'Fix framework/component discovery first, then run userface guard --offline.'),
@@ -816,7 +817,7 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
     },
     summaries: [
       recommendation.summary,
-      `${components.length} component(s), ${contracted} contracted, ${uiDocuments.length} ui@1 document(s).`,
+      `${components.length} component(s), ${contracted} contracted, ${uiDocuments.length} face document(s).`,
     ],
   });
 
@@ -857,7 +858,7 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
       ...(firstScreenCandidate ? { candidate: firstScreenCandidate } : {}),
       summary: firstScreenCandidate
         ? `Use ${firstScreenCandidate} as the first-screen readiness target.`
-        : 'No first-screen ui@1 candidate was discovered.',
+        : 'No first-screen face candidate was discovered.',
     },
     pilot,
     composition: {
@@ -872,7 +873,7 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
       offlineCore: true,
       canRun: components.length > 0 && repo.framework === 'react',
       reason: components.length > 0 && repo.framework === 'react'
-        ? 'Local guard can validate ui@1 composition against the discovered registry without model/network egress.'
+        ? 'Local guard can validate face composition against the discovered registry without model/network egress.'
         : 'Guard needs a compatible React component registry before it can prove generated UI.',
     },
     proof,

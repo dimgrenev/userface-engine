@@ -4,7 +4,7 @@ import { createFaceUiRegistry } from './registry';
 import { renderFaceUiToReact } from './react';
 
 export type FaceUiProps = {
-  /** UI document in format `ui@1`. */
+  /** Face document in schema `face` version 1. */
   doc: FaceUiDoc;
   /**
    * Editable props/state for the UI document (from face.currentState.props, etc).
@@ -65,4 +65,3 @@ export function FaceUi(props: FaceUiProps): React.ReactElement | null {
 
   return renderFaceUiToReact(doc, env) as any;
 }
-

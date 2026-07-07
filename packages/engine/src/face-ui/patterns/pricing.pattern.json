@@ -3,14 +3,24 @@
   "id": "pricing",
   "name": "Pricing Pattern",
   "purpose": "Pricing, plan comparison, checkout option and commercial CTA surfaces with clear primary action hierarchy.",
-
   "zones": {
-    "summary": { "description": "Plan, product or license summary.", "required": false },
-    "options": { "description": "Billing cadence, coverage, format, weight or plan choices.", "required": false },
-    "cta": { "description": "Primary purchase, access or comparison action.", "required": true },
-    "details": { "description": "Included features, price metadata or legal notes.", "required": false }
+    "summary": {
+      "description": "Plan, product or license summary.",
+      "required": false
+    },
+    "options": {
+      "description": "Billing cadence, coverage, format, weight or plan choices.",
+      "required": false
+    },
+    "cta": {
+      "description": "Primary purchase, access or comparison action.",
+      "required": true
+    },
+    "details": {
+      "description": "Included features, price metadata or legal notes.",
+      "required": false
+    }
   },
-
   "layout": {
     "direction": "column",
     "spacing": "section",
@@ -18,88 +28,215 @@
     "ctaAlignment": "stretch",
     "responsive": "single-column-on-mobile"
   },
-
   "requires": [
-    { "type": "PriceButton", "minCount": 1 }
+    {
+      "type": "PriceButton",
+      "minCount": 1
+    }
   ],
-
   "recommends": [
-    { "type": "Text", "zone": "summary" },
-    { "type": "ButtonPrice", "zone": "options" },
-    { "type": "Badge", "zone": "summary" },
-    { "type": "Separator", "zone": "details" }
+    {
+      "type": "Text",
+      "zone": "summary"
+    },
+    {
+      "type": "ButtonPrice",
+      "zone": "options"
+    },
+    {
+      "type": "Badge",
+      "zone": "summary"
+    },
+    {
+      "type": "Separator",
+      "zone": "details"
+    }
   ],
-
   "forbids": [
-    { "nested": ["PriceButton", "Button"], "reason": "Pricing CTAs already own the button boundary; do not nest another interactive control." },
-    { "nested": ["ButtonPrice", "Button"], "reason": "Compact price choices are button-backed UF blocks; nested controls break activation semantics." }
+    {
+      "nested": [
+        "PriceButton",
+        "Button"
+      ],
+      "reason": "Pricing CTAs already own the button boundary; do not nest another interactive control."
+    },
+    {
+      "nested": [
+        "ButtonPrice",
+        "Button"
+      ],
+      "reason": "Compact price choices are button-backed UF blocks; nested controls break activation semantics."
+    }
   ],
-
   "componentSelection": {
-    "faceUiPrimitives": ["Button", "Text", "Card", "Badge", "Separator", "Tabs", "SegmentedControl", "Radio", "Switcher", "Select", "Table"],
+    "faceUiPrimitives": [
+      "Button",
+      "Text",
+      "Card",
+      "Badge",
+      "Separator",
+      "Tabs",
+      "SegmentedControl",
+      "Radio",
+      "Switcher",
+      "Select",
+      "Table"
+    ],
     "ufProductBlocks": [
       {
         "name": "PriceButton",
         "contract": "packages/uf/components/PriceButton.json",
         "context": "commerce",
-        "whenToUse": ["Primary pricing, checkout, access or compare-plan CTA with a label plus price/value line"],
-        "whenNotToUse": ["Generic app actions without commercial context; use Face UI Button"]
+        "whenToUse": [
+          "Primary pricing, checkout, access or compare-plan CTA with a label plus price/value line"
+        ],
+        "whenNotToUse": [
+          "Generic app actions without commercial context; use Face UI Button"
+        ]
       },
       {
         "name": "ButtonPrice",
         "contract": "packages/uf/components/ButtonPrice.json",
         "context": "commerce",
-        "whenToUse": ["Compact pricing options such as billing cadence, coverage, format or weight choices"],
-        "whenNotToUse": ["Standalone purchase CTA; use PriceButton"]
+        "whenToUse": [
+          "Compact pricing options such as billing cadence, coverage, format or weight choices"
+        ],
+        "whenNotToUse": [
+          "Standalone purchase CTA; use PriceButton"
+        ]
       }
     ],
-    "chooseFaceUiWhen": ["The action is a generic button or the pricing text is plain explanatory copy", "The screen does not need a product-owned pricing CTA or compact price-choice anatomy"],
-    "chooseUfWhen": ["The surface already matches a font-commerce purchase, pricing option or checkout access pattern", "The component needs the UF pricing label/value pairing locked by a co-located contract"]
+    "chooseFaceUiWhen": [
+      "The action is a generic button or the pricing text is plain explanatory copy",
+      "The screen does not need a product-owned pricing CTA or compact price-choice anatomy"
+    ],
+    "chooseUfWhen": [
+      "The surface already matches a font-commerce purchase, pricing option or checkout access pattern",
+      "The component needs the UF pricing label/value pairing locked by a co-located contract"
+    ]
   },
-
   "skeleton": {
-    "version": "ui@1",
+    "schema": "face",
+    "schema-version": 1,
     "root": {
       "type": "Card",
       "children": [
-        { "type": "Text", "props": { "variant": "h3", "text": "Pro license" }, "key": "title" },
-        { "type": "Text", "props": { "variant": "muted", "text": "Commercial license for one product." }, "key": "description" },
-        { "type": "ButtonPrice", "props": { "label": "Monthly", "price": "$12", "active": true }, "key": "monthly" },
-        { "type": "ButtonPrice", "props": { "label": "Yearly", "price": "$96" }, "key": "yearly" },
-        { "type": "PriceButton", "props": { "label": "Get access", "priceText": "$12", "variant": "primary" }, "key": "cta" }
+        {
+          "type": "Text",
+          "props": {
+            "variant": "h3",
+            "text": "Pro license"
+          },
+          "key": "title"
+        },
+        {
+          "type": "Text",
+          "props": {
+            "variant": "muted",
+            "text": "Commercial license for one product."
+          },
+          "key": "description"
+        },
+        {
+          "type": "ButtonPrice",
+          "props": {
+            "label": "Monthly",
+            "price": "$12",
+            "active": true
+          },
+          "key": "monthly"
+        },
+        {
+          "type": "ButtonPrice",
+          "props": {
+            "label": "Yearly",
+            "price": "$96"
+          },
+          "key": "yearly"
+        },
+        {
+          "type": "PriceButton",
+          "props": {
+            "label": "Get access",
+            "priceText": "$12",
+            "variant": "primary"
+          },
+          "key": "cta"
+        }
       ]
     }
   },
-
   "variants": [
     {
       "name": "single-cta",
       "description": "Single pricing action without option controls.",
-      "layout": { "optionLayout": "none" },
-      "requires": [{ "type": "PriceButton", "minCount": 1 }]
+      "layout": {
+        "optionLayout": "none"
+      },
+      "requires": [
+        {
+          "type": "PriceButton",
+          "minCount": 1
+        }
+      ]
     },
     {
       "name": "option-stack",
       "description": "Stacked compact price choices before a purchase action.",
       "requires": [
-        { "type": "ButtonPrice", "minCount": 2 },
-        { "type": "PriceButton", "minCount": 1 }
+        {
+          "type": "ButtonPrice",
+          "minCount": 2
+        },
+        {
+          "type": "PriceButton",
+          "minCount": 1
+        }
       ]
     }
   ],
-
   "examples": [
     {
       "name": "Font checkout option",
       "skeleton": {
-        "version": "ui@1",
+        "schema": "face",
+        "schema-version": 1,
         "root": {
           "type": "Card",
           "children": [
-            { "type": "Text", "props": { "variant": "h3", "text": "Desktop license" }, "key": "title" },
-            { "type": "ButtonPrice", "props": { "label": "Basic", "price": "$12", "active": true }, "key": "basic" },
-            { "type": "ButtonPrice", "props": { "label": "Extended", "price": "$36" }, "key": "extended" },
-            { "type": "PriceButton", "props": { "label": "Add to cart", "priceText": "$12" }, "key": "cta" }
+            {
+              "type": "Text",
+              "props": {
+                "variant": "h3",
+                "text": "Desktop license"
+              },
+              "key": "title"
+            },
+            {
+              "type": "ButtonPrice",
+              "props": {
+                "label": "Basic",
+                "price": "$12",
+                "active": true
+              },
+              "key": "basic"
+            },
+            {
+              "type": "ButtonPrice",
+              "props": {
+                "label": "Extended",
+                "price": "$36"
+              },
+              "key": "extended"
+            },
+            {
+              "type": "PriceButton",
+              "props": {
+                "label": "Add to cart",
+                "priceText": "$12"
+              },
+              "key": "cta"
+            }
           ]
         }
       }

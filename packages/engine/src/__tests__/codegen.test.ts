@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { generateCode, generateReactCode, generateVueCode, generateHtmlCode } from '../face-ui/codegen';
 
 const sampleDoc = {
-  version: 'ui@1',
+  schema: 'face',
+  'schema-version': 1,
   root: {
     type: 'Card',
     props: { variant: 'outlined' },
@@ -25,8 +26,8 @@ const sampleDoc = {
 describe('face-ui codegen', () => {
   describe('generateCode (unified)', () => {
     it('throws on invalid documents', () => {
-      expect(() => generateCode({ version: 'ui@2', root: {} })).toThrow('Invalid ui@1 document');
-      expect(() => generateCode({ version: 'ui@1' })).toThrow('Invalid ui@1 document');
+      expect(() => generateCode({ schema: 'face', 'schema-version': 2, root: {} })).toThrow('Invalid face document');
+      expect(() => generateCode({ schema: 'face', 'schema-version': 1 })).toThrow('Invalid face document');
       expect(() => generateCode(null)).toThrow();
     });
 
@@ -63,7 +64,11 @@ describe('face-ui codegen', () => {
     });
 
     it('handles leaf nodes', () => {
-      const doc = { version: 'ui@1', root: { type: 'Divider', props: {} } };
+      const doc = {
+        schema: 'face',
+        'schema-version': 1,
+        root: { type: 'Divider', props: {} },
+      };
       const code = generateReactCode(doc);
       expect(code).toContain('<Divider');
       expect(code).toContain('/>');
@@ -71,7 +76,8 @@ describe('face-ui codegen', () => {
 
     it('handles $ref values', () => {
       const doc = {
-        version: 'ui@1',
+        schema: 'face',
+        'schema-version': 1,
         root: { type: 'Text', props: { text: { $ref: 'user.name' } } },
       };
       const code = generateReactCode(doc);

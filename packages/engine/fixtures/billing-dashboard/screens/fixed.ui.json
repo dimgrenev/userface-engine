@@ -1,5 +1,6 @@
 {
-  "version": "ui@1",
+  "schema": "face",
+  "schema-version": 1,
   "meta": {
     "name": "Fixed billing dashboard"
   },

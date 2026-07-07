@@ -3,7 +3,7 @@
 This folder is shipped as reference for users of `@userface/engine`.
 
 ## What it shows
-- `face.ui@1.json`: a minimal UI tree document (`version: "ui@1"`)
+- `face.json`: a minimal face schema v1 UI tree document
 - `AppFromFace.tsx`: React usage with a component registry + actions
 
 ## How to use in your app
@@ -17,5 +17,4 @@ import { FaceUi, createFaceUiRegistry } from '@userface/engine/face-ui';
 ```
 
 Then pass `registry` (or `components`) that maps `node.type` → your React component.
-
 

@@ -1,39 +1,125 @@
 {
-  "version": "ui@1",
+  "schema": "face",
+  "schema-version": 1,
   "meta": {
     "id": "recipe/settings",
     "name": "Settings Page",
     "description": "User/app settings page with sections, toggles, and save action",
-    "tags": ["b2b", "settings", "preferences"]
+    "tags": [
+      "b2b",
+      "settings",
+      "preferences"
+    ]
   },
   "root": {
     "type": "Panel",
-    "props": { "title": "Settings" },
+    "props": {
+      "title": "Settings"
+    },
     "children": [
       {
         "type": "Panel",
         "key": "profile-section",
-        "props": { "title": "Profile" },
+        "props": {
+          "title": "Profile"
+        },
         "children": [
-          { "type": "Input", "key": "name", "props": { "label": "Display Name", "value": { "$ref": "settings.displayName" }, "onChange": { "$action": "settings.update" } } },
-          { "type": "Input", "key": "email", "props": { "label": "Email", "type": "email", "value": { "$ref": "settings.email" }, "onChange": { "$action": "settings.update" } } }
+          {
+            "type": "Input",
+            "key": "name",
+            "props": {
+              "label": "Display Name",
+              "value": {
+                "$ref": "settings.displayName"
+              },
+              "onChange": {
+                "$action": "settings.update"
+              }
+            }
+          },
+          {
+            "type": "Input",
+            "key": "email",
+            "props": {
+              "label": "Email",
+              "type": "email",
+              "value": {
+                "$ref": "settings.email"
+              },
+              "onChange": {
+                "$action": "settings.update"
+              }
+            }
+          }
         ]
       },
       {
         "type": "Panel",
         "key": "preferences-section",
-        "props": { "title": "Preferences" },
+        "props": {
+          "title": "Preferences"
+        },
         "children": [
-          { "type": "Switcher", "key": "dark-mode", "props": { "label": "Dark Mode", "checked": { "$ref": "settings.darkMode" }, "onChange": { "$action": "settings.toggleDarkMode" } } },
-          { "type": "Switcher", "key": "notifications", "props": { "label": "Email Notifications", "checked": { "$ref": "settings.emailNotifications" }, "onChange": { "$action": "settings.toggleNotifications" } } },
-          { "type": "Select", "key": "language", "props": { "label": "Language", "options": { "$ref": "settings.languageOptions" }, "value": { "$ref": "settings.language" }, "onChange": { "$action": "settings.updateLanguage" } } }
+          {
+            "type": "Switcher",
+            "key": "dark-mode",
+            "props": {
+              "label": "Dark Mode",
+              "checked": {
+                "$ref": "settings.darkMode"
+              },
+              "onChange": {
+                "$action": "settings.toggleDarkMode"
+              }
+            }
+          },
+          {
+            "type": "Switcher",
+            "key": "notifications",
+            "props": {
+              "label": "Email Notifications",
+              "checked": {
+                "$ref": "settings.emailNotifications"
+              },
+              "onChange": {
+                "$action": "settings.toggleNotifications"
+              }
+            }
+          },
+          {
+            "type": "Select",
+            "key": "language",
+            "props": {
+              "label": "Language",
+              "options": {
+                "$ref": "settings.languageOptions"
+              },
+              "value": {
+                "$ref": "settings.language"
+              },
+              "onChange": {
+                "$action": "settings.updateLanguage"
+              }
+            }
+          }
         ]
       },
       {
         "type": "Panel",
         "key": "actions",
         "children": [
-          { "type": "Button", "key": "save", "props": { "text": "Save Changes", "type": "submit", "variant": "accent", "onClick": { "$action": "settings.save" } } }
+          {
+            "type": "Button",
+            "key": "save",
+            "props": {
+              "text": "Save Changes",
+              "type": "submit",
+              "variant": "accent",
+              "onClick": {
+                "$action": "settings.save"
+              }
+            }
+          }
         ]
       }
     ]

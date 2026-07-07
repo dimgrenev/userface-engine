@@ -1,3 +1,5 @@
+import { FaceUiDocSchema } from './schema';
+
 function isActionRef(v) {
     return !!v && typeof v === 'object' && typeof v.$action === 'string';
 }
@@ -232,13 +234,15 @@ ${template}
 `;
 }
 export function generateCode(doc, options = {}) {
-    if ((doc === null || doc === void 0 ? void 0 : doc.version) !== 'ui@1' || !doc.root) {
-        throw new Error('Invalid ui@1 document');
+    const parsed = FaceUiDocSchema.safeParse(doc);
+    if (!parsed.success || !parsed.data.root) {
+        throw new Error('Invalid face document');
     }
+    const normalizedDoc = parsed.data;
     const fw = options.framework || 'react';
     if (fw === 'vue')
-        return generateVueCode(doc, options);
+        return generateVueCode(normalizedDoc, options);
     if (fw === 'html')
-        return generateHtmlCode(doc, options);
-    return generateReactCode(doc, options);
+        return generateHtmlCode(normalizedDoc, options);
+    return generateReactCode(normalizedDoc, options);
 }

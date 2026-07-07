@@ -67,8 +67,8 @@ Required evidence:
 - passed: Library contract expansion - Library contract coverage is acceptable for this readiness pass.
 - passed: Registry diagnostics - Component registry scan produced no diagnostics.
 - passed: Token/style risks - Token/style signal is present or not blocking for this readiness pass.
-- passed: ui@1 documents - 1 ui@1 document(s) discovered.
-- passed: Composition gate - 1 ui@1 document(s) passed composition readiness.
+- passed: Face documents - 1 face document(s) discovered.
+- passed: Composition gate - 1 face document(s) passed composition readiness.
 - passed: First-screen feasibility - First-screen candidate: screens/fixed.ui.json.
 - passed: Preview readiness - Preview evidence can be attached after guard passes and desktop/CI render validation runs.
 - passed: Offline guard - Offline guard can run locally with zero model/network egress.
@@ -77,4 +77,4 @@ Required evidence:
 
 Repo is ready for an AI UI acceptance pilot.
 
-- Run userface guard on a representative ui@1 change and attach the generated proof to the PR.
+- Run userface guard on a representative face document change and attach the generated proof to the PR.

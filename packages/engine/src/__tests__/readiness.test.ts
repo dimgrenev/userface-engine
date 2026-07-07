@@ -35,7 +35,8 @@ function createFixture(): string {
     states: [{ name: 'Default', props: { variant: 'primary' } }],
   }, null, 2));
   writeFileSync(join(tmpRoot, 'src/screens/home.json'), JSON.stringify({
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     root: {
       type: 'Button',
       props: { variant: 'primary' },
@@ -89,7 +90,8 @@ function createExternalStyleFixture(): string {
     '',
   ].join('\n'));
   writeFileSync(join(tmpRoot, 'screens/account.json'), JSON.stringify({
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     root: {
       type: 'Card',
       props: { title: 'Account' },
@@ -134,7 +136,8 @@ function createConfiguredReadinessFixture(): string {
     ],
   }, null, 2));
   writeFileSync(join(tmpRoot, 'screens/home.ui.json'), JSON.stringify({
-    version: 'ui@1',
+    schema: 'face',
+    'schema-version': 1,
     root: {
       type: 'Hero',
       props: { title: 'Build UI' },
@@ -209,16 +212,18 @@ describe('readiness report', () => {
     expect(report.proof.egress.modelCalls).toBe(0);
   });
 
-  it('keeps default ui@1 discovery focused on product screens, not fixtures or dependencies', () => {
+  it('keeps default face document discovery focused on product screens, not fixtures or dependencies', () => {
     const root = createFixture();
     mkdirSync(join(root, 'fixtures'), { recursive: true });
     mkdirSync(join(root, 'node_modules/@demo/package/screens'), { recursive: true });
     writeFileSync(join(root, 'fixtures/broken.json'), JSON.stringify({
-      version: 'ui@1',
+      schema: 'face',
+      'schema-version': 1,
       root: { type: 'MissingFixtureComponent' },
     }, null, 2));
     writeFileSync(join(root, 'node_modules/@demo/package/screens/dependency.json'), JSON.stringify({
-      version: 'ui@1',
+      schema: 'face',
+      'schema-version': 1,
       root: { type: 'DependencyComponent' },
     }, null, 2));
 
@@ -322,7 +327,7 @@ describe('readiness report', () => {
     expect(report.firstScreen.candidate).toBe('screens/home.ui.json');
   });
 
-  it('uses readiness registry defaults when guard validates a ui@1 document', () => {
+  it('uses readiness registry defaults when guard validates a face document', () => {
     const root = createConfiguredReadinessFixture();
     const result = runCli(['guard', 'screens/home.ui.json', '--offline', '--format', 'json'], root);
     const proof = JSON.parse(result.stdout);

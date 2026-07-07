@@ -272,11 +272,11 @@ class UserfaceEngineMcpServer {
       {
         name: 'ui_materialize',
         description:
-          'Materialize a ui@1 JSON document into framework code (e.g. React JSX, Vue, HTML). Returns the generated code.',
+          'Materialize a face schema v1 JSON document into framework code (e.g. React JSX, Vue, HTML). Returns the generated code.',
         inputSchema: {
           type: 'object',
           properties: {
-            doc: { type: 'object', description: 'The ui@1 JSON document object' },
+            doc: { type: 'object', description: 'The face schema v1 JSON document object' },
             componentName: { type: 'string', description: 'Name for the generated component (default: GeneratedComponent)' },
             framework: { type: 'string', enum: ['react', 'vue', 'html'], description: 'Target framework (default: react)' },
           },
@@ -286,11 +286,11 @@ class UserfaceEngineMcpServer {
       {
         name: 'composition_validate',
         description:
-          'Validate a ui@1 composition document. Checks structural rules (nesting, interactive-in-interactive), contract compliance against component registry, $ref/$action resolution, and optional pattern matching (form, dashboard, crud-table).',
+          'Validate a face composition document. Checks structural rules (nesting, interactive-in-interactive), contract compliance against component registry, $ref/$action resolution, and optional pattern matching (form, dashboard, crud-table).',
         inputSchema: {
           type: 'object',
           properties: {
-            doc: { type: 'object', description: 'The ui@1 JSON document to validate' },
+            doc: { type: 'object', description: 'The face schema v1 JSON document to validate' },
             registryDir: { type: 'string', description: 'Directory to scan for component registry (for contract validation)' },
             registryManifestPath: { type: 'string', description: 'Project-relative or cwd-contained path to a default-private UF component registry manifest for opt-in public boundary validation' },
             enforceRegistryBoundary: { type: 'boolean', description: 'When true, only Face UI components and public UF manifest components pass the registry-boundary rule' },
