@@ -88,6 +88,7 @@ function hasFlag(args: string[], flag: string): boolean {
 }
 
 function normalizeFailOn(value: string | undefined): UserfaceProofFailOn {
+  if (value === 'any') return 'info';
   return value === 'info' || value === 'warning' || value === 'error' ? value : 'error';
 }
 
@@ -1790,7 +1791,7 @@ Options:
   --write, --save    Persist readiness artifacts under .userface/readiness
                      or guard artifacts under .userface/proofs
   --no-write         Disable automatic readiness artifact persistence in TTY mode
-  --fail-on <level>  Fail on severity: error, warning, info (for validate/guard/composition-validate)
+  --fail-on <level>  Fail on severity: error, warning, info (alias: any) (for validate/guard/composition-validate)
   --offline          Record zero model/network egress proof (for guard/trust)
   --help             Show this help
   --version          Show version

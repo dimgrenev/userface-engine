@@ -336,6 +336,31 @@ describe('engine CLI and MCP registry-boundary defaults', () => {
     expect(boundaryComponents(report)).toEqual(['PrivatePanel']);
   });
 
+  it('keeps composition-validate exit 0 for sub-threshold violations and exits 1 with --fail-on any', () => {
+    const fixture = makeBoundaryFixture();
+    const baseArgs = [
+      'composition-validate',
+      'screen.ui.json',
+      '--registry-manifest',
+      fixture.manifestPath,
+      '--enforce-registry-boundary',
+    ];
+
+    // Warning-severity violations stay below the default (error) threshold.
+    const detector = runCliRaw(fixture.root, baseArgs);
+    expect(detector.status, detector.stderr || detector.stdout).toBe(0);
+    expect(boundaryComponents(JSON.parse(detector.stdout))).toEqual(['PrivatePanel']);
+
+    // Same result when the threshold is explicitly set above the found severity.
+    const errorOnly = runCliRaw(fixture.root, [...baseArgs, '--fail-on', 'error']);
+    expect(errorOnly.status, errorOnly.stderr || errorOnly.stdout).toBe(0);
+
+    // --fail-on any gates on every violation severity.
+    const gated = runCliRaw(fixture.root, [...baseArgs, '--fail-on', 'any']);
+    expect(gated.status, gated.stderr || gated.stdout).toBe(1);
+    expect(boundaryComponents(JSON.parse(gated.stdout))).toEqual(['PrivatePanel']);
+  });
+
   it('emits Userface Proof and fails guard when configured violations block the UI', () => {
     const fixture = makeBoundaryFixture();
     const proofPath = join(fixture.root, 'userface-proof.json');

@@ -59,6 +59,11 @@
       "import": "./dist/esm/transpiler.js",
       "require": "./dist/cjs/transpiler.js"
     },
+    "./storybook": {
+      "types": "./dist/types/storybook/index.d.ts",
+      "import": "./dist/esm/storybook/index.js",
+      "require": "./dist/cjs/storybook/index.js"
+    },
     "./schemas/userface-proof@1.json": "./dist/schemas/userface-proof@1.json",
     "./package.json": "./package.json"
   },
