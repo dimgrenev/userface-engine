@@ -8,7 +8,7 @@
     "version": 1
   },
   "repo": {
-    "rootHash": "sha256:b56dcccfea309bed6ea7a6ddaafd09b428d8efa91d6bc27480b5ee97cc3d85b8"
+    "rootHash": "sha256:f6e24a49c3394ccd1946218ae6f864cdc7ce7c2feb0631e3f0a29473d2df21e3"
   },
   "target": {
     "kind": "pr_gate",

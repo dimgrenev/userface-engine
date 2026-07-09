@@ -162,7 +162,7 @@
   },
   "proof": {
     "schema": "userface-proof@1",
-    "id": "ufp_929414dd3c7a31319773",
+    "id": "ufp_7d062cdee06cd9938054",
     "status": "passed",
     "createdAt": "2026-01-01T00:00:00.000Z",
     "renderer": {
@@ -170,7 +170,7 @@
       "version": 1
     },
     "repo": {
-      "rootHash": "sha256:a646efcaa78f419595d6b7dbd2f38a1275ce393a9c3f6fb4574451fb80beecdc"
+      "rootHash": "sha256:33dc2cf7078422c4351bf4bdf356286777a2106e87d0f882934881a66747d8a4"
     },
     "target": {
       "kind": "readiness",
