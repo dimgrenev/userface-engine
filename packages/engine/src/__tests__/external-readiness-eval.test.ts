@@ -21,7 +21,9 @@ const target = {
   sha: 'a'.repeat(40),
   componentsDir: 'packages/react/src/components',
   expected: {
+    status: 'partial',
     minScore: 75,
+    maxScore: 100,
     minComponents: 10,
     maxComponents: 20,
     minProps: 30,
@@ -70,6 +72,8 @@ describe('external React readiness release gate', () => {
       expect(entry.expected.minComponents).toBeGreaterThan(0);
       expect(entry.expected.maxComponents).toBeGreaterThanOrEqual(entry.expected.minComponents);
       expect(entry.expected.minProps).toBeGreaterThan(0);
+      expect(entry.expected.status).toBe('blocked');
+      expect(entry.expected.maxScore).toBeLessThanOrEqual(55);
     }
   });
 
@@ -82,7 +86,7 @@ describe('external React readiness release gate', () => {
       mode: 'local',
       metrics: { components: 15, props: 45, styleStatus: 'passed' },
       proof: { modelCalls: 0, filesSent: 0, bytesSent: 0, network: false },
-      assertions: { passed: 11, total: 11 },
+      assertions: { passed: 12, total: 12 },
       failures: [],
     });
   });

@@ -90,9 +90,14 @@ describe('userface umbrella CLI engine forwarding', () => {
 
     const result = runUserface(tempRoot, ['readiness', '--root', '.', '--format', 'json']);
 
-    expect(result.status, result.stderr || result.stdout).toBe(0);
+    expect(result.status, result.stderr || result.stdout).toBe(1);
     const report = JSON.parse(result.stdout);
     expect(report.schemaVersion).toBe('userface-readiness@1');
+    expect(report.status).toBe('blocked');
+    expect(report.pilot).toEqual(expect.objectContaining({
+      verdict: 'blocked',
+      canRunFirstScreenPilot: false,
+    }));
     expect(report.repo.framework).toBe('react');
     expect(report.components.discovered).toBe(1);
     expect(report.components.contracted).toBe(1);

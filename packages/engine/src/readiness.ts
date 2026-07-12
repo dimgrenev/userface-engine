@@ -465,9 +465,30 @@ function check(id: string, label: string, status: UserfaceReadinessCheckStatus, 
   };
 }
 
-function averageScore(checks: UserfaceReadinessCheck[]): number {
-  if (checks.length === 0) return 0;
-  return Math.round(checks.reduce((sum, item) => sum + item.score, 0) / checks.length);
+const READINESS_CHECK_WEIGHTS: Record<string, number> = {
+  framework: 0.08,
+  typescript: 0.04,
+  components: 0.12,
+  contracts: 0.18,
+  library_contracts: 0.02,
+  registry_diagnostics: 0.05,
+  token_style: 0.09,
+  ui_documents: 0.08,
+  composition: 0.12,
+  first_screen: 0.10,
+  preview: 0.07,
+  guard: 0.05,
+};
+
+function readinessScore(checks: UserfaceReadinessCheck[]): number {
+  let weightedScore = 0;
+  let totalWeight = 0;
+  for (const item of checks) {
+    const weight = READINESS_CHECK_WEIGHTS[item.id] || 0;
+    weightedScore += item.score * weight;
+    totalWeight += weight;
+  }
+  return totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 0;
 }
 
 function statusFromChecks(checks: UserfaceReadinessCheck[]): UserfaceReadinessStatus {
@@ -824,7 +845,13 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
           : check('contracts', 'Component contracts', 'failed', 25, `${contracted}/${components.length} components have face.json contracts.`, 'Generate or curate face.json contracts before treating AI UI as accepted.'),
     components.length > 0 && pilotTarget.used > 0 && pilotTarget.contractCoverage >= 1 && contractCoverage < 0.3
       ? check('library_contracts', 'Library contract expansion', 'passed', 85, `${contracted}/${components.length} total components have face.json contracts; pilot target is covered. Expand high-traffic contracts after the paid pilot.`)
-      : check('library_contracts', 'Library contract expansion', components.length > 0 ? 'passed' : 'not_run', components.length > 0 ? 90 : 0, components.length > 0 ? 'Library contract coverage is acceptable for this readiness pass.' : 'Library contract expansion did not run.'),
+      : components.length === 0
+        ? check('library_contracts', 'Library contract expansion', 'not_run', 0, 'Library contract expansion did not run.')
+        : contracted === 0
+          ? check('library_contracts', 'Library contract expansion', 'not_run', 0, 'No contracted component baseline exists yet.')
+          : contractCoverage >= 0.3
+            ? check('library_contracts', 'Library contract expansion', 'passed', 90, 'Library contract coverage is acceptable for this readiness pass.')
+            : check('library_contracts', 'Library contract expansion', 'warning', 45, `${contracted}/${components.length} total components have face.json contracts.`, 'Expand contracts to the highest-traffic components after the pilot target is covered.'),
     diagnostics === 0
       ? check('registry_diagnostics', 'Registry diagnostics', components.length > 0 ? 'passed' : 'not_run', components.length > 0 ? 100 : 0, components.length > 0 ? 'Component registry scan produced no diagnostics.' : 'Registry diagnostics did not run.')
       : check('registry_diagnostics', 'Registry diagnostics', 'warning', 65, `${diagnostics} registry diagnostic(s) found.`, 'Fix malformed face.json files or component entry detection warnings.'),
@@ -833,24 +860,22 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
       : check('token_style', 'Token/style risks', tokenStyleRisks.status, tokenStyleRisks.status === 'failed' ? 30 : 60, tokenStyleRisks.risks[0]?.summary || 'Token/style readiness needs review.', tokenStyleRisks.risks[0]?.action),
     uiDocuments.length > 0
       ? check('ui_documents', 'Face documents', 'passed', 100, `${uiDocuments.length} face document(s) discovered.`)
-      : check('ui_documents', 'Face documents', 'warning', 55, 'No face documents were discovered.', 'Use Userface to create or materialize at least one representative face document for the pilot.'),
+      : check('ui_documents', 'Face documents', 'warning', 0, 'No face documents were discovered.', 'Use Userface to create or materialize at least one representative face document for the pilot.'),
     compositionReadiness.status === 'passed'
       ? check('composition', 'Composition gate', 'passed', 100, compositionReadiness.summary)
       : compositionReadiness.status === 'not_run'
-        ? check('composition', 'Composition gate', 'warning', 55, compositionReadiness.summary, 'Create a representative face document and run userface guard --offline.')
+        ? check('composition', 'Composition gate', 'warning', 0, compositionReadiness.summary, 'Create a representative face document and run userface guard --offline.')
         : check('composition', 'Composition gate', compositionReadiness.status, compositionReadiness.status === 'failed' ? 25 : 65, compositionReadiness.summary, 'Fix composition violations before selling this repo as pilot-ready.'),
     firstScreenStatus === 'passed'
       ? check('first_screen', 'First-screen feasibility', 'passed', 100, `First-screen candidate: ${firstScreenCandidate}.`)
       : firstScreenStatus === 'failed'
         ? check('first_screen', 'First-screen feasibility', 'failed', 25, `First-screen candidate ${firstScreenCandidate} fails composition readiness.`, 'Fix the first-screen face document before the pilot.')
-        : check('first_screen', 'First-screen feasibility', 'warning', 55, 'No first-screen face candidate was discovered.', 'Create or materialize one face first-screen document for the pilot demo.'),
-    check('preview', 'Preview readiness', previewReadiness.status, previewReadiness.status === 'passed' ? 90 : previewReadiness.status === 'failed' ? 25 : 55, previewReadiness.summary, previewReadiness.status === 'passed' ? undefined : 'Run the desktop validation path after components and face documents exist.'),
+        : check('first_screen', 'First-screen feasibility', 'warning', 0, 'No first-screen face candidate was discovered.', 'Create or materialize one face first-screen document for the pilot demo.'),
+    check('preview', 'Preview readiness', previewReadiness.status, previewReadiness.status === 'passed' ? 90 : previewReadiness.status === 'failed' ? 25 : components.length > 0 && uiDocuments.length > 0 ? 55 : 0, previewReadiness.summary, previewReadiness.status === 'passed' ? undefined : 'Run the desktop validation path after components and face documents exist.'),
     components.length > 0 && repo.framework === 'react'
       ? check('guard', 'Offline guard', 'passed', 100, 'Offline guard can run locally with zero model/network egress.')
       : check('guard', 'Offline guard', 'failed', 0, 'Offline guard needs a compatible React component registry before it can prove AI UI changes.', 'Fix framework/component discovery first, then run userface guard --offline.'),
   ];
-  const status = statusFromChecks(checks);
-  const score = averageScore(checks);
   const pilot = buildPilotVerdict({
     repo,
     components,
@@ -862,6 +887,9 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
     firstScreenStatus,
     checks,
   });
+  const checkStatus = statusFromChecks(checks);
+  const status: UserfaceReadinessStatus = pilot.verdict === 'blocked' ? 'blocked' : checkStatus;
+  const score = readinessScore(checks);
   const recommendation = {
     summary: summarizeRecommendation(status),
     nextSteps: nextStepsFromChecks(checks),

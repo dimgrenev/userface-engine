@@ -107,10 +107,16 @@ function validateManifest(manifest) {
       throw new Error(`Target ${target.id} has an unsafe componentsDir`);
     }
     const expected = target.expected || {};
-    for (const key of ['minScore', 'minComponents', 'maxComponents', 'minProps']) {
+    if (!['blocked', 'partial', 'ready'].includes(expected.status)) {
+      throw new Error(`Target ${target.id} has invalid expected status`);
+    }
+    for (const key of ['minScore', 'maxScore', 'minComponents', 'maxComponents', 'minProps']) {
       if (!Number.isFinite(expected[key]) || expected[key] < 0) {
         throw new Error(`Target ${target.id} has invalid ${key}`);
       }
+    }
+    if (expected.minScore > expected.maxScore) {
+      throw new Error(`Target ${target.id} has an invalid score range`);
     }
     if (expected.minComponents > expected.maxComponents) {
       throw new Error(`Target ${target.id} has an invalid component range`);
@@ -136,7 +142,8 @@ function runChecked(command, args, options = {}) {
     },
   });
   if (result.error) throw result.error;
-  if (result.status !== 0) {
+  const acceptedStatuses = options.acceptedStatuses || [0];
+  if (!acceptedStatuses.includes(result.status)) {
     const detail = String(result.stderr || result.stdout || '').trim().slice(0, 2_000);
     throw new Error(`${command} exited ${result.status}${detail ? `: ${detail}` : ''}`);
   }
@@ -173,8 +180,9 @@ function evaluateReadiness(target, report, mode, durationMs) {
   const expected = target.expected;
   const assertions = [
     assertion('schema', report?.schemaVersion === 'userface-readiness@1', 'userface-readiness@1', report?.schemaVersion),
-    assertion('status', ['partial', 'ready'].includes(report?.status), 'partial|ready', report?.status),
+    assertion('status', report?.status === expected.status, expected.status, report?.status),
     assertion('score', report?.score >= expected.minScore, `>=${expected.minScore}`, report?.score),
+    assertion('score-max', report?.score <= expected.maxScore, `<=${expected.maxScore}`, report?.score),
     assertion('framework', report?.repo?.framework === 'react', 'react', report?.repo?.framework),
     assertion('commit', report?.proof?.repo?.commit === target.sha, target.sha, report?.proof?.repo?.commit),
     assertion('components-min', components.discovered >= expected.minComponents, `>=${expected.minComponents}`, components.discovered),
@@ -322,7 +330,7 @@ function run(options) {
           '--components-dir', target.componentsDir,
           '--format', 'json',
           '--no-write',
-        ], { timeout: 120_000 });
+        ], { timeout: 120_000, acceptedStatuses: [0, 1] });
         const result = evaluateReadiness(target, JSON.parse(stdout), mode, Date.now() - targetStartedAt);
         results.push(result);
         process.stderr.write(`[external-readiness] ${target.id}: ${result.status} (${result.metrics.components} components, ${result.metrics.props} props)\n`);

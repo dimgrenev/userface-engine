@@ -7,7 +7,9 @@
       "sha": "1faff10ac26ae17f09944d418c6949b93fc6b566",
       "componentsDir": "packages/radix-ui-themes/src/components",
       "expected": {
-        "minScore": 75,
+        "status": "blocked",
+        "minScore": 40,
+        "maxScore": 55,
         "minComponents": 55,
         "maxComponents": 70,
         "minProps": 30
@@ -19,7 +21,9 @@
       "sha": "e503f8d9f403b7dac71ee586857037d791e7ee8c",
       "componentsDir": "packages/react/src/components",
       "expected": {
-        "minScore": 75,
+        "status": "blocked",
+        "minScore": 40,
+        "maxScore": 55,
         "minComponents": 110,
         "maxComponents": 130,
         "minProps": 130
@@ -31,7 +35,9 @@
       "sha": "de85421db7bb5d40104802730c2a7408077f7d9c",
       "componentsDir": "packages/@mantine/core/src/components",
       "expected": {
-        "minScore": 75,
+        "status": "blocked",
+        "minScore": 40,
+        "maxScore": 55,
         "minComponents": 280,
         "maxComponents": 330,
         "minProps": 1500
@@ -43,7 +49,9 @@
       "sha": "f8bcd7cc8b14d03706efe384b06ad3fe7701df30",
       "componentsDir": "packages/react-core/src/components",
       "expected": {
-        "minScore": 75,
+        "status": "blocked",
+        "minScore": 40,
+        "maxScore": 55,
         "minComponents": 320,
         "maxComponents": 380,
         "minProps": 2400
@@ -55,7 +63,9 @@
       "sha": "3cdaa6eb2f0da27aca8598cb752c32d840e06940",
       "componentsDir": "apps/v4/registry/bases/base/ui",
       "expected": {
-        "minScore": 75,
+        "status": "blocked",
+        "minScore": 40,
+        "maxScore": 55,
         "minComponents": 55,
         "maxComponents": 70,
         "minProps": 200

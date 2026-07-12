@@ -298,6 +298,9 @@ describe('readiness report', () => {
     expect(report.tokenStyleRisks.status).toBe('passed');
     expect(report.checks.find((check) => check.id === 'framework')?.status).toBe('passed');
     expect(report.checks.find((check) => check.id === 'guard')?.status).toBe('passed');
+    expect(report.status).toBe('blocked');
+    expect(report.score).toBeLessThanOrEqual(50);
+    expect(report.pilot.verdict).toBe('blocked');
   });
 
   it('blocks repos without framework and component discovery', () => {
