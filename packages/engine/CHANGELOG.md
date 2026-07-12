@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Added the provider-neutral `mergeGateEvidence@1` contract and public
+  `@userface/engine/merge-gate` verifier.
+- Added `userface merge-gate verify` with plain, JSON, GitHub Actions, and
+  GitLab CI output modes. The command fails closed on tampered evidence, stale
+  review revisions, inconsistent approvals, changed files, path traversal, and
+  symlinks.
+
 All notable changes to `@userface/engine` will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).

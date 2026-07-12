@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://userface.dev/schemas/merge-gate-evidence@1.json",
+  "title": "Userface merge gate evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "producer", "createdAt", "subject", "review", "integrity"],
+  "properties": {
+    "schemaVersion": { "const": "mergeGateEvidence@1" },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "contractVersion"],
+      "properties": {
+        "name": { "const": "Userface" },
+        "contractVersion": { "const": 1 }
+      }
+    },
+    "createdAt": { "type": "number", "exclusiveMinimum": 0 },
+    "subject": { "$ref": "#/$defs/subject" },
+    "review": { "$ref": "#/$defs/review" },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "digest"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "digest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "algorithm", "keyId", "signature"],
+      "properties": {
+        "schemaVersion": { "const": "mergeGateAttestation@1" },
+        "algorithm": { "const": "ed25519" },
+        "keyId": { "type": "string", "pattern": "^[a-zA-Z0-9._:-]{1,128}$" },
+        "signature": { "type": "string", "pattern": "^[a-zA-Z0-9_-]{64,256}$" }
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": { "type": ["string", "null"] },
+    "nullableNumber": { "type": ["number", "null"] },
+    "nullableBoolean": { "type": ["boolean", "null"] },
+    "hashOrNull": { "type": ["string", "null"] },
+    "stringArray": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 10000
+    },
+    "principal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principalId", "kind"],
+      "properties": {
+        "principalId": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "kind": { "enum": ["agent", "user", "system", "unknown"] },
+        "role": { "enum": ["viewer", "contributor", "maintainer", "owner"] }
+      }
+    },
+    "subjectFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "action", "beforeHash", "afterHash", "additions", "deletions"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "action": { "enum": ["write", "edit", "delete", "restore"] },
+        "beforeHash": { "$ref": "#/$defs/hashOrNull" },
+        "afterHash": { "$ref": "#/$defs/hashOrNull" },
+        "additions": { "type": ["integer", "null"], "minimum": 0 },
+        "deletions": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validationId", "renderJobId", "status", "score", "valid", "passed", "pendingFix", "staleReason", "violations"],
+      "properties": {
+        "validationId": { "$ref": "#/$defs/nullableString" },
+        "renderJobId": { "$ref": "#/$defs/nullableString" },
+        "status": { "$ref": "#/$defs/nullableString" },
+        "score": { "$ref": "#/$defs/nullableNumber" },
+        "valid": { "$ref": "#/$defs/nullableBoolean" },
+        "passed": { "$ref": "#/$defs/nullableBoolean" },
+        "pendingFix": { "type": "boolean" },
+        "staleReason": { "$ref": "#/$defs/nullableString" },
+        "violations": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "validationRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["validationRunId", "checkKind", "status", "trigger", "renderJobId", "commandId", "score", "artifactCount", "diagnosticCount", "staleReason"],
+      "properties": {
+        "validationRunId": { "type": "string", "minLength": 1 },
+        "checkKind": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "trigger": { "type": "string", "minLength": 1 },
+        "renderJobId": { "$ref": "#/$defs/nullableString" },
+        "commandId": { "$ref": "#/$defs/nullableString" },
+        "score": { "$ref": "#/$defs/nullableNumber" },
+        "artifactCount": { "type": "integer", "minimum": 0 },
+        "diagnosticCount": { "type": "integer", "minimum": 0 },
+        "staleReason": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "reason", "beforeHash", "afterHash", "currentHash"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "reason": { "type": "string", "minLength": 1 },
+        "beforeHash": { "$ref": "#/$defs/hashOrNull" },
+        "afterHash": { "$ref": "#/$defs/hashOrNull" },
+        "currentHash": { "$ref": "#/$defs/hashOrNull" }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["surface", "status", "affectedTargetIds"],
+      "properties": {
+        "surface": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "minLength": 1 },
+        "affectedTargetIds": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["changeSetId", "files", "validation", "validationRuns", "conflicts", "surfaces"],
+      "properties": {
+        "changeSetId": { "type": "string", "minLength": 1 },
+        "files": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/subjectFile" } },
+        "validation": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/validation" }] },
+        "validationRuns": { "type": "array", "items": { "$ref": "#/$defs/validationRun" } },
+        "conflicts": { "type": "array", "items": { "$ref": "#/$defs/conflict" } },
+        "surfaces": { "type": "array", "items": { "$ref": "#/$defs/surface" } }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "requiredApprovals", "minimumReviewerRole", "allowRequesterApproval", "requireSignedMergeGate", "policyHash", "source"],
+      "properties": {
+        "mode": { "enum": ["advisory", "required"] },
+        "requiredApprovals": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "minimumReviewerRole": { "enum": ["viewer", "contributor", "maintainer", "owner"] },
+        "allowRequesterApproval": { "type": "boolean" },
+        "requireSignedMergeGate": { "type": "boolean" },
+        "policyHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "source": { "enum": ["default", "workspace_policy"] }
+      }
+    },
+    "blocker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "evidenceRefs"],
+      "properties": {
+        "code": { "enum": ["validation_missing", "validation_not_passed", "validation_stale", "conflicts_present", "approvals_missing", "changes_requested", "rejected"] },
+        "message": { "type": "string", "minLength": 1 },
+        "evidenceRefs": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decisionId", "decision", "subjectRevision", "reviewer", "policyHash", "evidenceRefs", "decidedAt"],
+      "properties": {
+        "decisionId": { "type": "string", "minLength": 1 },
+        "decision": { "enum": ["approved", "changes_requested", "rejected"] },
+        "subjectRevision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "reviewer": { "$ref": "#/$defs/principal" },
+        "policyHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "comment": { "type": "string" },
+        "evidenceRefs": { "$ref": "#/$defs/stringArray" },
+        "decidedAt": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewId", "changeSetId", "subjectRevision", "policy", "author", "state", "gateStatus", "mergeEligible", "approvalCount", "requiredApprovals", "blockers", "decisions"],
+      "properties": {
+        "reviewId": { "type": "string", "minLength": 1 },
+        "changeSetId": { "type": "string", "minLength": 1 },
+        "subjectRevision": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "policy": { "$ref": "#/$defs/policy" },
+        "author": { "$ref": "#/$defs/principal" },
+        "requestedBy": { "$ref": "#/$defs/principal" },
+        "state": { "enum": ["pending", "approved", "changes_requested", "rejected", "superseded"] },
+        "gateStatus": { "enum": ["advisory", "pending", "passed", "blocked"] },
+        "mergeEligible": { "type": "boolean" },
+        "approvalCount": { "type": "integer", "minimum": 0 },
+        "requiredApprovals": { "type": "integer", "minimum": 0, "maximum": 5 },
+        "blockers": { "type": "array", "items": { "$ref": "#/$defs/blocker" } },
+        "decisions": { "type": "array", "items": { "$ref": "#/$defs/decision" } }
+      }
+    }
+  }
+}

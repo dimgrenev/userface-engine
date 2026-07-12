@@ -1746,6 +1746,71 @@ async function cmdSync(args: string[], config: any = {}) {
   }
 }
 
+async function cmdMergeGate(args: string[]) {
+  const subcommand = args[0];
+  if (subcommand !== 'verify') {
+    process.stderr.write(`Unknown merge-gate subcommand: ${subcommand || '<missing>'}\nUsage: userface merge-gate verify [evidence.json] [--root dir] [--format plain|json|github|gitlab]\n`);
+    process.exitCode = 1;
+    return;
+  }
+  const valueFlags = new Set(['--root', '--format', '--output', '--summary', '--public-key']);
+  const positional = nonFlagArgs(args.slice(1), valueFlags);
+  const cwd = process.cwd();
+  const evidencePath = resolve(cwd, positional[0] || 'userface.merge-gate.json');
+  const root = resolve(cwd, flagValue(args, '--root') || '.');
+  const rawFormat = flagValue(args, '--format') || (process.env.GITHUB_ACTIONS === 'true'
+    ? 'github'
+    : process.env.GITLAB_CI === 'true'
+      ? 'gitlab'
+      : 'plain');
+  if (rawFormat !== 'plain' && rawFormat !== 'json' && rawFormat !== 'github' && rawFormat !== 'gitlab') {
+    throw new Error('--format must be plain, json, github, or gitlab');
+  }
+  const {
+    renderUserfaceMergeGateVerification,
+    renderUserfaceMergeGateVerificationMarkdown,
+    verifyUserfaceMergeGateEvidenceFile,
+  } = await import('./merge-gate');
+  const publicKeyPath = flagValue(args, '--public-key');
+  const trustedPublicKey = publicKeyPath
+    ? readFileSync(resolve(cwd, publicKeyPath))
+    : process.env.USERFACE_MERGE_GATE_PUBLIC_KEY || undefined;
+  const result = verifyUserfaceMergeGateEvidenceFile(evidencePath, {
+    root,
+    requireSignature: hasFlag(args, '--require-signature'),
+    ...(trustedPublicKey ? { trustedPublicKey } : {}),
+  });
+  const rendered = renderUserfaceMergeGateVerification(result, rawFormat);
+  const markdown = renderUserfaceMergeGateVerificationMarkdown(result);
+  const outputPath = flagValue(args, '--output');
+  if (outputPath) {
+    const target = resolve(cwd, outputPath);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, rendered, 'utf8');
+  }
+  const summaryPath = flagValue(args, '--summary');
+  if (summaryPath) {
+    const target = resolve(cwd, summaryPath);
+    mkdirSync(dirname(target), { recursive: true });
+    writeFileSync(target, markdown, 'utf8');
+  }
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    writeFileSync(process.env.GITHUB_STEP_SUMMARY, markdown, { encoding: 'utf8', flag: 'a' });
+  }
+  if (process.env.GITHUB_OUTPUT) {
+    const outputs = [
+      `merge_eligible=${result.mergeEligible}`,
+      `evidence_id=${result.evidenceId || ''}`,
+      `review_id=${result.reviewId || ''}`,
+      `subject_revision=${result.subjectRevision || ''}`,
+      `authenticity=${result.authenticity}`,
+    ].join('\n');
+    writeFileSync(process.env.GITHUB_OUTPUT, `${outputs}\n`, { encoding: 'utf8', flag: 'a' });
+  }
+  process.stdout.write(rendered);
+  process.exitCode = result.exitCode;
+}
+
 // ---------------------------------------------------------------------------
 // Usage
 // ---------------------------------------------------------------------------
@@ -1764,6 +1829,7 @@ Usage:
   userface readiness [--root dir]           Analyze repo readiness for AI UI acceptance
   userface guard [path...] [--changed]      Validate face document changes and emit Userface Proof
   userface trust [path...] [--offline]      Emit local data-boundary Userface Proof
+  userface merge-gate verify [evidence]     Verify version-bound review evidence for CI
   userface proof-schema                     Print userface-proof@1 JSON Schema
   userface states   <path> [--face f.json]  Generate visual states
   userface materialize <path> [--output p] [--framework f] Materialize face document to React/Vue/HTML code
@@ -1783,11 +1849,14 @@ Options:
   --components-dir <path> Component registry root (for readiness)
   --ui-doc <path>    Representative face first-screen document (for readiness)
   --face <path>      Path to face.json with manual states (for states)
-  --format <type>    Output format: json (default), markdown/summary, github-annotations where supported
+  --format <type>    Output format: json, markdown/summary, github-annotations, plain, github, or gitlab where supported
   --proof <path>     Write Userface Proof JSON (for guard)
-  --summary <path>   Write Userface Proof Markdown summary (for guard/trust)
+  --summary <path>   Write Markdown summary (for guard/trust/merge-gate)
   --preview-artifact <path[,path]> Attach hashed preview evidence artifact(s) to guard proof
-  --output <path>    Write JSON report/proof (for readiness/trust)
+  --output <path>    Write JSON report/proof or rendered merge-gate result
+  --root <path>      Workspace checkout root (for readiness/merge-gate)
+  --public-key <path> Trusted Ed25519 public key (for merge-gate)
+  --require-signature Require verified merge-gate attestation
   --write, --save    Persist readiness artifacts under .userface/readiness
                      or guard artifacts under .userface/proofs
   --no-write         Disable automatic readiness artifact persistence in TTY mode
@@ -1892,6 +1961,9 @@ const targetPath = positional[0];
         break;
       case 'trust':
         await cmdTrust(args, config);
+        break;
+      case 'merge-gate':
+        await cmdMergeGate(args);
         break;
       case 'proof-schema':
         process.stdout.write(`${JSON.stringify(USERFACE_PROOF_JSON_SCHEMA, null, 2)}\n`);

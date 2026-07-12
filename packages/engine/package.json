@@ -64,7 +64,13 @@
       "import": "./dist/esm/storybook/index.js",
       "require": "./dist/cjs/storybook/index.js"
     },
+    "./merge-gate": {
+      "types": "./dist/types/merge-gate.d.ts",
+      "import": "./dist/esm/merge-gate.js",
+      "require": "./dist/cjs/merge-gate.js"
+    },
     "./schemas/userface-proof@1.json": "./dist/schemas/userface-proof@1.json",
+    "./schemas/merge-gate-evidence@1.json": "./dist/schemas/merge-gate-evidence@1.json",
     "./package.json": "./package.json"
   },
   "files": [

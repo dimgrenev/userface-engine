@@ -12,6 +12,8 @@
 /* eslint-disable no-console */
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 
 const ENGINE = path.resolve(__dirname, '..');
@@ -93,6 +95,84 @@ check('dist/types/face-ui/types.d.ts exists', fileExists('dist/types/face-ui/typ
 console.log('\n5. Bundler subpath:');
 check('dist/esm/bundler/vfsBundler.js exists', fileExists('dist/esm/bundler/vfsBundler.js'));
 check('dist/types/bundler/vfsBundler.d.ts exists', fileExists('dist/types/bundler/vfsBundler.d.ts'));
+
+console.log('\n5a. Merge gate subpath:');
+check('dist/esm/merge-gate.js exists', fileExists('dist/esm/merge-gate.js'));
+check('dist/cjs/merge-gate.js exists', fileExists('dist/cjs/merge-gate.js'));
+check('dist/types/merge-gate.d.ts exists', fileExists('dist/types/merge-gate.d.ts'));
+check('dist/schemas/merge-gate-evidence@1.json exists', fileExists('dist/schemas/merge-gate-evidence@1.json'));
+let mergeGate = null;
+try {
+  mergeGate = require(path.join(DIST, 'cjs', 'merge-gate.js'));
+  check('merge gate verifier exported', typeof mergeGate.verifyUserfaceMergeGateEvidence === 'function');
+  check('merge gate evidence builder exported', typeof mergeGate.createUserfaceMergeGateEvidence === 'function');
+} catch (e) {
+  check(`CJS merge gate require failed: ${e.message}`, false);
+}
+
+if (mergeGate) {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'userface-engine-merge-gate-'));
+  try {
+    const sourcePath = path.join(fixtureRoot, 'src', 'App.tsx');
+    const content = 'export const App = () => <main>Billing</main>;\n';
+    fs.mkdirSync(path.dirname(sourcePath), { recursive: true });
+    fs.writeFileSync(sourcePath, content, 'utf8');
+    const hash = crypto.createHash('sha256').update(content).digest('hex');
+    const policyHash = crypto.createHash('sha256').update('smoke-policy').digest('hex');
+    const subject = {
+      changeSetId: 'changeset_smoke',
+      files: [{ path: 'src/App.tsx', action: 'edit', beforeHash: null, afterHash: hash, additions: 1, deletions: 0 }],
+      validation: { validationId: 'validation_smoke', renderJobId: null, status: 'passed', score: 100, valid: true, passed: true, pendingFix: false, staleReason: null, violations: [] },
+      validationRuns: [],
+      conflicts: [],
+      surfaces: [],
+    };
+    const subjectRevision = mergeGate.computeUserfaceMergeGateSubjectRevision(subject);
+    const evidence = mergeGate.createUserfaceMergeGateEvidence({
+      schemaVersion: 'mergeGateEvidence@1',
+      producer: { name: 'Userface', contractVersion: 1 },
+      createdAt: 1,
+      subject,
+      review: {
+        reviewId: 'review_smoke',
+        changeSetId: 'changeset_smoke',
+        subjectRevision,
+        policy: { mode: 'advisory', requiredApprovals: 0, minimumReviewerRole: 'contributor', allowRequesterApproval: true, requireSignedMergeGate: false, policyHash, source: 'default' },
+        author: { principalId: 'userface-agent:smoke', kind: 'agent' },
+        state: 'pending',
+        gateStatus: 'advisory',
+        mergeEligible: true,
+        approvalCount: 0,
+        requiredApprovals: 0,
+        blockers: [],
+        decisions: [],
+      },
+    });
+    const evidencePath = path.join(fixtureRoot, 'merge-gate.json');
+    fs.writeFileSync(evidencePath, JSON.stringify(evidence, null, 2), 'utf8');
+    const pass = spawnSync(process.execPath, [cliPath, 'merge-gate', 'verify', evidencePath, '--root', fixtureRoot, '--format', 'json'], { encoding: 'utf8', timeout: 5000 });
+    check('merge-gate verify exits 0 for matching checkout', pass.status === 0);
+    check('merge-gate verify emits machine-readable pass', JSON.parse(pass.stdout || '{}').mergeEligible === true);
+    const keys = crypto.generateKeyPairSync('ed25519');
+    evidence.review.policy.requireSignedMergeGate = true;
+    evidence.integrity.digest = mergeGate.computeUserfaceMergeGateEvidenceDigest(evidence);
+    const signedEvidence = mergeGate.signUserfaceMergeGateEvidence(evidence, keys.privateKey);
+    fs.writeFileSync(evidencePath, JSON.stringify(signedEvidence, null, 2), 'utf8');
+    const publicKeyPath = path.join(fixtureRoot, 'merge-gate.pub.pem');
+    fs.writeFileSync(publicKeyPath, keys.publicKey.export({ format: 'pem', type: 'spki' }));
+    const signedPass = spawnSync(process.execPath, [cliPath, 'merge-gate', 'verify', evidencePath, '--root', fixtureRoot, '--public-key', publicKeyPath, '--require-signature', '--format', 'json'], { encoding: 'utf8', timeout: 5000 });
+    check('merge-gate verify accepts pinned Ed25519 attestation', signedPass.status === 0);
+    check('merge-gate verify reports verified authenticity', JSON.parse(signedPass.stdout || '{}').authenticity === 'verified');
+    fs.writeFileSync(sourcePath, 'changed after review\n', 'utf8');
+    const block = spawnSync(process.execPath, [cliPath, 'merge-gate', 'verify', evidencePath, '--root', fixtureRoot, '--format', 'github'], { encoding: 'utf8', timeout: 5000 });
+    check('merge-gate verify exits 1 for changed checkout', block.status === 1);
+    check('merge-gate verify emits GitHub file annotation', /::error file=src\/App\.tsx/.test(block.stdout || ''));
+  } catch (e) {
+    check(`merge-gate CLI smoke failed: ${e.message}`, false);
+  } finally {
+    fs.rmSync(fixtureRoot, { recursive: true, force: true });
+  }
+}
 
 console.log('\n6. Browser runtime:');
 check('src/browser/userface-engine.js exists', fileExists('src/browser/userface-engine.js'));

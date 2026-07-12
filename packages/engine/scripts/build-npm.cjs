@@ -80,6 +80,10 @@ function main() {
     path.join(ENGINE_ROOT, 'src', 'userface-proof.schema.json'),
     path.join(ENGINE_ROOT, 'dist', 'schemas', 'userface-proof@1.json')
   );
+  fs.copyFileSync(
+    path.join(ENGINE_ROOT, 'src', 'merge-gate-evidence.schema.json'),
+    path.join(ENGINE_ROOT, 'dist', 'schemas', 'merge-gate-evidence@1.json')
+  );
   console.log('[engine:npm] copied public schemas');
 
   // Make CLI binary executable.

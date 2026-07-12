@@ -42,6 +42,7 @@ npx userface states src/components/Button
 npx userface composition-validate dashboard.ui.json --registry-dir src/components
 npx userface materialize dashboard.ui.json --framework react
 npx userface diff --base old.face.json --head new.face.json
+npx userface merge-gate verify userface.merge-gate.json --root .
 npx userface test --dir src/components
 npx userface mcp-serve
 ```
@@ -54,6 +55,60 @@ Output rules:
 - machine-readable commands write JSON to stdout
 - logs and diagnostics go to stderr
 - validation exits non-zero only when the selected `--fail-on` threshold is hit
+
+### Version-bound merge gate
+
+The Userface app exports `userface.merge-gate.json` from the current ChangeSet
+review. The public Engine verifies the evidence envelope, subject revision,
+review policy and decisions, then hashes every changed file in the CI checkout.
+It exits `0` only when that exact checkout is merge eligible.
+
+GitHub Actions:
+
+```yaml
+name: Userface merge gate
+on: [pull_request]
+permissions:
+  contents: read
+jobs:
+  userface-merge-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npx --yes @userface/engine@0.1.0 merge-gate verify userface.merge-gate.json --root . --format github
+```
+
+GitLab CI:
+
+```yaml
+userface_merge_gate:
+  image: node:22
+  stage: test
+  script:
+    - npx --yes @userface/engine@0.1.0 merge-gate verify userface.merge-gate.json --root . --format json --output userface-merge-gate-report.json
+  artifacts:
+    when: always
+    paths:
+      - userface-merge-gate-report.json
+```
+
+Configure the resulting job as a required check. No GitHub or GitLab token is
+passed to the desktop app; the CI provider derives pass/fail from the verifier's
+process exit code.
+
+For an enterprise review policy, set `requireSignedMergeGate: true` and expose
+the organization-pinned Ed25519 public key as a protected CI variable:
+
+```sh
+USERFACE_MERGE_GATE_PUBLIC_KEY="$PINNED_PUBLIC_KEY" \
+npx --yes @userface/engine@0.1.0 merge-gate verify \
+  userface.merge-gate.json \
+  --root . \
+  --require-signature
+```
+
+The verifier then rejects unsigned evidence, unknown keys, and altered
+signatures. Keep the private signing key outside the repository.
 
 ## SDK
 
