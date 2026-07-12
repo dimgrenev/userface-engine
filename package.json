@@ -12,6 +12,7 @@
     "build": "pnpm --dir packages/engine build",
     "test": "pnpm build && pnpm exec vitest run --config vitest.config.ts --root .",
     "smoke": "pnpm --dir packages/engine smoke",
+    "eval:external-react": "pnpm build && node scripts/evals/external-react-readiness.cjs",
     "pack:packages": "node scripts/npm/pack-public-packages-dry.mjs",
     "smoke:public-cli": "pnpm build && node scripts/npm/smoke-public-cli-pack.mjs",
     "check": "pnpm test && pnpm smoke && pnpm run pack:packages && pnpm run smoke:public-cli",

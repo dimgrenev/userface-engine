@@ -100,8 +100,13 @@ function detectFramework(entry: string): RegistryEntry['framework'] {
   return 'unknown';
 }
 
-function componentNameFromEntry(entry: string): string {
-  return basename(entry, extname(entry));
+function componentNameFromEntry(entry: string, dir?: string): string {
+  const name = basename(entry, extname(entry));
+  return name.toLowerCase() === 'index' && dir ? basename(dir) : name;
+}
+
+function isIndexEntry(entry: string): boolean {
+  return basename(entry, extname(entry)).toLowerCase() === 'index';
 }
 
 // ---------------------------------------------------------------------------
@@ -204,7 +209,7 @@ function scanComponentEntry(
   entry: string,
   relativePathMode: 'directory' | 'entry',
 ): RegistryEntry | null {
-  const name = componentNameFromEntry(entry);
+  const name = componentNameFromEntry(entry, dir);
 
   if (useCache) {
     const mtime = getDirMtime(dir);
@@ -254,14 +259,20 @@ function scanComponentDir(dir: string, root: string, useCache: boolean): Registr
   const entries = findEntriesInDir(dir);
   if (entries.length === 0) return [];
 
-  const exactEntry = entries.find((entry) => componentNameFromEntry(entry) === basename(dir));
-  if (exactEntry && entries.length === 1) {
+  const concreteEntries = entries.filter((entry) => !isIndexEntry(entry));
+  const indexEntry = entries.find(isIndexEntry);
+  if (concreteEntries.length === 0 && indexEntry) {
+    const component = scanComponentEntry(dir, root, useCache, indexEntry, 'directory');
+    return component ? [component] : [];
+  }
+  const exactEntry = concreteEntries.find((entry) => componentNameFromEntry(entry, dir) === basename(dir));
+  if (exactEntry && concreteEntries.length === 1) {
     const component = scanComponentEntry(dir, root, useCache, exactEntry, 'directory');
     return component ? [component] : [];
   }
 
-  return entries
-    .map((entry) => scanComponentEntry(dir, root, useCache, entry, entries.length === 1 ? 'directory' : 'entry'))
+  return concreteEntries
+    .map((entry) => scanComponentEntry(dir, root, useCache, entry, concreteEntries.length === 1 ? 'directory' : 'entry'))
     .filter((entry): entry is RegistryEntry => Boolean(entry));
 }
 
@@ -284,7 +295,7 @@ export function scanRegistry(dir: string, options: ScanOptions = {}): RegistryIn
   });
   const components: RegistryEntry[] = [];
 
-  for (const entry of findEntriesInDir(root)) {
+  for (const entry of findEntriesInDir(root).filter((candidate) => !isIndexEntry(candidate))) {
     const component = scanComponentEntry(root, root, useCache, entry, 'entry');
     if (component) components.push(component);
   }

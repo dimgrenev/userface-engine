@@ -2,8 +2,11 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createReadinessReport, renderReadinessReportMarkdown } from '../readiness';
+
+vi.mock('../registry', async () => import('../registry.ts'));
+vi.mock('../fs-helpers', async () => import('../fs-helpers.ts'));
 
 let tmpRoot: string | null = null;
 
@@ -256,6 +259,45 @@ describe('readiness report', () => {
     expect(report.pilot.summary).toContain('limited first-screen pilot');
     expect(report.pilot.requiredFixes.join('\n')).toContain('face.json');
     expect(report.checks.find((check) => check.id === 'contracts')?.status).toBe('failed');
+  });
+
+  it('detects a React design-system package inside a monorepo and ignores prop sidecars', () => {
+    tmpRoot = mkdtempSync(join(tmpdir(), 'userface-readiness-monorepo-'));
+    writeFileSync(join(tmpRoot, 'package.json'), JSON.stringify({
+      private: true,
+      workspaces: ['packages/*'],
+    }));
+    const packageRoot = join(tmpRoot, 'packages/ui');
+    const componentsRoot = join(packageRoot, 'src/components');
+    mkdirSync(join(packageRoot, 'src/styles'), { recursive: true });
+    mkdirSync(componentsRoot, { recursive: true });
+    writeFileSync(join(packageRoot, 'package.json'), JSON.stringify({
+      name: '@fixture/ui',
+      peerDependencies: { react: '^19.0.0' },
+    }));
+    writeFileSync(join(packageRoot, 'tsconfig.json'), JSON.stringify({ compilerOptions: { jsx: 'react-jsx' } }));
+    writeFileSync(join(packageRoot, 'src/styles/index.css'), ':root { --space-1: 4px; }\n');
+    writeFileSync(join(componentsRoot, 'Button.tsx'), [
+      'export interface ButtonProps { tone?: "solid" | "ghost"; }',
+      'export function Button(props: ButtonProps) { return null; }',
+    ].join('\n'));
+    writeFileSync(join(componentsRoot, 'Button.props.tsx'), 'export type ButtonProps = { tone?: "solid" | "ghost" };\n');
+
+    const report = createReadinessReport({
+      root: tmpRoot,
+      componentsDir: 'packages/ui/src/components',
+    });
+
+    expect(report.repo).toMatchObject({
+      framework: 'react',
+      typescript: true,
+    });
+    expect(report.repo.frameworkMeta).toContain('packages/ui');
+    expect(report.components.discovered).toBe(1);
+    expect(report.components.sample[0]).toMatchObject({ name: 'Button', props: 1 });
+    expect(report.tokenStyleRisks.status).toBe('passed');
+    expect(report.checks.find((check) => check.id === 'framework')?.status).toBe('passed');
+    expect(report.checks.find((check) => check.id === 'guard')?.status).toBe('passed');
   });
 
   it('blocks repos without framework and component discovery', () => {

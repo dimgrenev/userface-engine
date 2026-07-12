@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clearRegistryCache, scanRegistry } from '../registry.ts';
 
 vi.mock('../fs-helpers', async () => import('../fs-helpers.ts'));
+vi.mock('../propParsingHelpers', async () => import('../propParsingHelpers.ts'));
 
 const tempRoots: string[] = [];
 
@@ -120,6 +121,10 @@ describe('scanRegistry', () => {
     mkdirSync(domainDir, { recursive: true });
     writeFileSync(join(domainDir, 'ChatInput.tsx'), 'export function ChatInput(props: { disabled?: boolean }) { return null; }\n');
     writeFileSync(join(domainDir, 'ChatMessage.tsx'), 'export function ChatMessage(props: { role: "user" | "assistant" }) { return null; }\n');
+    writeFileSync(join(domainDir, 'ChatMessage.props.tsx'), 'export type ChatMessageProps = { role: "user" | "assistant" };\n');
+    writeFileSync(join(domainDir, 'Chat.context.tsx'), 'export const ChatContext = null;\n');
+    writeFileSync(join(domainDir, 'ChatUtils.tsx'), 'export function formatChat() { return null; }\n');
+    writeFileSync(join(domainDir, 'index.tsx'), 'export * from "./ChatInput"; export * from "./ChatMessage";\n');
     writeFileSync(join(domainDir, 'ChatMessage.test.tsx'), 'export function ChatMessageTest() { return null; }\n');
     writeFileSync(join(domainDir, 'ChatMessage.json'), JSON.stringify({
       name: 'ChatMessage',
@@ -140,6 +145,21 @@ describe('scanRegistry', () => {
       relativePath: join('Chat', 'ChatMessage.tsx'),
       entry: 'ChatMessage.tsx',
       hasFaceJson: true,
+    });
+  });
+
+  it('uses the directory name for an index-only component entry', () => {
+    const root = makeTempRegistry();
+    const indexOnlyDir = join(root, 'IndexOnly');
+    mkdirSync(indexOnlyDir, { recursive: true });
+    writeFileSync(join(indexOnlyDir, 'index.tsx'), 'export function IndexOnly() { return null; }\n');
+
+    const index = scanRegistry(root, { cache: false });
+
+    expect(index.components.map(c => c.name)).toEqual(['IndexOnly', 'Shallow']);
+    expect(index.components.find(c => c.name === 'IndexOnly')).toMatchObject({
+      relativePath: 'IndexOnly',
+      entry: 'index.tsx',
     });
   });
 
@@ -185,6 +205,30 @@ describe('scanRegistry', () => {
     ]);
   });
 
+  it('extracts a conservative prop signal from modern destructured wrappers', () => {
+    const root = makeTempRegistry();
+    const wrapperDir = join(root, 'Button');
+    mkdirSync(wrapperDir, { recursive: true });
+    writeFileSync(join(wrapperDir, 'Button.tsx'), [
+      'function Button({',
+      '  className,',
+      '  variant = "default",',
+      '  size = "md",',
+      '  ...props',
+      '}: React.ComponentProps<"button"> & VariantProps<typeof variants>) {',
+      '  return <button className={className} {...props} />;',
+      '}',
+    ].join('\n'));
+
+    const index = scanRegistry(root, { cache: false });
+
+    expect(index.components.find(c => c.name === 'Button')?.props).toEqual([
+      expect.objectContaining({ name: 'className', type: 'any', required: false }),
+      expect.objectContaining({ name: 'variant', type: 'string', required: false }),
+      expect.objectContaining({ name: 'size', type: 'string', required: false }),
+    ]);
+  });
+
   it('honors recursive maxDepth boundary', () => {
     const root = makeTempRegistry();
 
@@ -211,6 +255,9 @@ describe('scanRegistry', () => {
     mkdirSync(componentWithTestDir, { recursive: true });
     writeFileSync(join(componentWithTestDir, 'WithTest.test.tsx'), 'export function WithTestSpec() { return null; }\n');
     writeFileSync(join(componentWithTestDir, 'WithTest.tsx'), 'export function WithTest() { return null; }\n');
+    const mockDir = join(componentWithTestDir, '__mocks__');
+    mkdirSync(mockDir, { recursive: true });
+    writeFileSync(join(mockDir, 'WithTest.tsx'), 'export function MockWithTest() { return null; }\n');
 
     const testOnlyDir = join(root, 'TestOnly');
     mkdirSync(testOnlyDir, { recursive: true });

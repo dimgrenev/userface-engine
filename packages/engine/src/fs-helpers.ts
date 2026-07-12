@@ -19,6 +19,7 @@ const IGNORED_DISCOVERY_DIRS = new Set([
   '.userface',
   '__tests__',
   '__fixtures__',
+  '__mocks__',
   'test',
   'tests',
   'fixtures',
@@ -29,8 +30,17 @@ function isTestLikeSource(fileName: string): boolean {
   return /\.(test|spec|stories|story)\.(tsx|jsx|vue|svelte)$/.test(fileName);
 }
 
+function isComponentSidecarSource(fileName: string): boolean {
+  const stem = fileName.replace(COMPONENT_EXTS, '');
+  return /\.(props|context|types?)$/i.test(stem)
+    || /(?:Utils?|Utilities|Helpers?)$/i.test(stem)
+    || /^types?$/i.test(stem);
+}
+
 function isComponentEntryCandidate(fileName: string): boolean {
-  return COMPONENT_EXTS.test(fileName) && !isTestLikeSource(fileName);
+  return COMPONENT_EXTS.test(fileName)
+    && !isTestLikeSource(fileName)
+    && !isComponentSidecarSource(fileName);
 }
 
 export interface ComponentFiles {

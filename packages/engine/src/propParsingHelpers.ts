@@ -300,6 +300,79 @@ function parseInterfaceBodyRaw(
   return props;
 }
 
+function splitTopLevelCommaList(value: string): string[] {
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
+  let quote = '';
+  for (let index = 0; index < value.length; index++) {
+    const char = value[index];
+    const previous = value[index - 1];
+    if (quote) {
+      current += char;
+      if (char === quote && previous !== '\\') quote = '';
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      current += char;
+      continue;
+    }
+    if (char === '{' || char === '[' || char === '(') depth++;
+    if (char === '}' || char === ']' || char === ')') depth--;
+    if (char === ',' && depth === 0) {
+      if (current.trim()) parts.push(current.trim());
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) parts.push(current.trim());
+  return parts;
+}
+
+function inferDestructuredPropType(defaultValue: string | undefined): string {
+  const value = String(defaultValue || '').trim();
+  if (/^['"`]/.test(value)) return 'string';
+  if (/^-?\d+(?:\.\d+)?$/.test(value)) return 'number';
+  if (/^(true|false)$/.test(value)) return 'boolean';
+  if (/^\[/.test(value)) return 'array';
+  if (/^\{/.test(value)) return 'object';
+  return 'any';
+}
+
+function extractDestructuredComponentProps(code: string): ComponentProp[] {
+  const props = new Map<string, ComponentProp>();
+  const signaturePatterns = [
+    /function\s+[A-Z][A-Za-z0-9_$]*\s*\(\s*\{/g,
+    /(?:const|let)\s+[A-Z][A-Za-z0-9_$]*\s*=\s*(?:React\.)?(?:forwardRef\s*)?\(\s*\{/g,
+  ];
+
+  for (const pattern of signaturePatterns) {
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(code)) !== null) {
+      const braceStart = code.indexOf('{', match.index);
+      const block = extractBraceBlock(code, braceStart);
+      if (!block) continue;
+      for (const segment of splitTopLevelCommaList(block.body)) {
+        const candidate = segment.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/g, '').trim();
+        if (!candidate || candidate.startsWith('...')) continue;
+        const propMatch = candidate.match(/^(?:['"]([^'"]+)['"]|([A-Za-z_$][A-Za-z0-9_$]*))(?:\s*:\s*[A-Za-z_$][A-Za-z0-9_$]*)?(?:\s*=\s*([\s\S]+))?$/);
+        const name = String(propMatch?.[1] || propMatch?.[2] || '').trim();
+        if (!name || props.has(name)) continue;
+        props.set(name, {
+          name,
+          type: inferDestructuredPropType(propMatch?.[3]),
+          required: false,
+          description: `${name} prop inferred from component destructuring`,
+        });
+      }
+      pattern.lastIndex = Math.max(pattern.lastIndex, block.end);
+    }
+  }
+  return [...props.values()];
+}
+
 // ---------------------------------------------------------------------------
 // Consolidated prop extraction from TypeScript source
 // ---------------------------------------------------------------------------
@@ -393,6 +466,10 @@ export function extractPropsFromCode(code: string): ComponentProp[] {
         i++;
       }
     }
+  }
+
+  for (const inferred of extractDestructuredComponentProps(code)) {
+    if (!props.some((prop) => prop.name === inferred.name)) props.push(inferred);
   }
 
   return props;

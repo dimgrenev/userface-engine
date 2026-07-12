@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { basename, join, relative, resolve } from 'node:path';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 import { scanRegistry, type RegistryEntry } from './registry';
 import { createUserfaceProof, type UserfaceProof } from './proof';
 import { validateComposition } from './face-ui/compositionValidator';
@@ -152,26 +152,69 @@ function dependenciesFromPackageJson(pkg: Record<string, unknown> | null): Recor
   return result;
 }
 
-function detectFramework(root: string): UserfaceReadinessReport['repo'] {
-  const pkg = readPackageJson(root);
+function findNearestPackageRoot(root: string, start: string | undefined): string | null {
+  const boundary = resolve(root);
+  let current = resolve(start || root);
+  while (current === boundary || current.startsWith(`${boundary}/`) || current.startsWith(`${boundary}\\`)) {
+    if (existsSync(join(current, 'package.json'))) return current;
+    if (current === boundary) break;
+    current = dirname(current);
+  }
+  return existsSync(join(boundary, 'package.json')) ? boundary : null;
+}
+
+function detectFramework(
+  root: string,
+  componentRoot: string | undefined,
+  components: RegistryEntry[],
+): UserfaceReadinessReport['repo'] {
+  const packageRoot = findNearestPackageRoot(root, componentRoot) || root;
+  const pkg = readPackageJson(packageRoot);
   const deps = dependenciesFromPackageJson(pkg);
-  const typescript = existsSync(join(root, 'tsconfig.json')) || Object.keys(deps).some((name) => name === 'typescript');
+  const typescript = existsSync(join(root, 'tsconfig.json'))
+    || existsSync(join(packageRoot, 'tsconfig.json'))
+    || Object.keys(deps).some((name) => name === 'typescript')
+    || components.some((component) => component.entry.endsWith('.tsx'));
+  const packageScope = packageRoot === root ? '' : ` in ${relative(root, packageRoot)}`;
+  const packageManager = detectPackageManager(root) === 'unknown'
+    ? detectPackageManager(packageRoot)
+    : detectPackageManager(root);
   if (deps.next) {
-    return { root, framework: 'react', frameworkMeta: `next@${deps.next}`, typescript, packageManager: detectPackageManager(root) };
+    return { root, framework: 'react', frameworkMeta: `next@${deps.next}${packageScope}`, typescript, packageManager };
   }
   if (deps.react) {
-    return { root, framework: 'react', frameworkMeta: `react@${deps.react}`, typescript, packageManager: detectPackageManager(root) };
+    return { root, framework: 'react', frameworkMeta: `react@${deps.react}${packageScope}`, typescript, packageManager };
   }
   if (deps.vue) {
-    return { root, framework: 'vue', frameworkMeta: `vue@${deps.vue}`, typescript, packageManager: detectPackageManager(root) };
+    return { root, framework: 'vue', frameworkMeta: `vue@${deps.vue}${packageScope}`, typescript, packageManager };
   }
   if (deps.svelte) {
-    return { root, framework: 'svelte', frameworkMeta: `svelte@${deps.svelte}`, typescript, packageManager: detectPackageManager(root) };
+    return { root, framework: 'svelte', frameworkMeta: `svelte@${deps.svelte}${packageScope}`, typescript, packageManager };
   }
   if (deps['@angular/core']) {
-    return { root, framework: 'angular', frameworkMeta: `angular@${deps['@angular/core']}`, typescript, packageManager: detectPackageManager(root) };
+    return { root, framework: 'angular', frameworkMeta: `angular@${deps['@angular/core']}${packageScope}`, typescript, packageManager };
   }
-  return { root, framework: 'unknown', typescript, packageManager: detectPackageManager(root) };
+  const knownComponents = components.filter((component) => component.framework !== 'unknown');
+  const frameworkCounts = new Map<RegistryEntry['framework'], number>();
+  for (const component of knownComponents) {
+    frameworkCounts.set(component.framework, (frameworkCounts.get(component.framework) || 0) + 1);
+  }
+  const [dominantFramework, dominantCount] = [...frameworkCounts.entries()]
+    .sort((left, right) => right[1] - left[1])[0] || ['unknown', 0];
+  if (
+    dominantFramework !== 'unknown'
+    && dominantCount > 0
+    && dominantCount / Math.max(1, knownComponents.length) >= 0.8
+  ) {
+    return {
+      root,
+      framework: dominantFramework,
+      frameworkMeta: `${dominantFramework} inferred from ${dominantCount}/${knownComponents.length} registry entries`,
+      typescript,
+      packageManager,
+    };
+  }
+  return { root, framework: 'unknown', typescript, packageManager };
 }
 
 function detectPackageManager(root: string): NonNullable<UserfaceReadinessReport['repo']['packageManager']> {
@@ -572,28 +615,83 @@ function classifyComponentReadiness(root: string, components: RegistryEntry[]) {
   };
 }
 
-function detectTokenStyleRisks(root: string): UserfaceReadinessReport['tokenStyleRisks'] {
-  const pkg = readPackageJson(root);
+function findPackageStyleSignals(root: string, maxResults = 12): string[] {
+  const results: string[] = [];
+  const ignored = new Set([
+    'node_modules', '.git', '.next', 'dist', 'build', 'coverage', '.turbo',
+    '__tests__', '__stories__', '__mocks__', 'test', 'tests', 'fixtures', 'examples',
+  ]);
+  const visit = (dir: string, depth: number) => {
+    if (depth > 6 || results.length >= maxResults) return;
+    let entries: string[];
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (results.length >= maxResults) break;
+      const abs = join(dir, entry);
+      let stat;
+      try {
+        stat = statSync(abs);
+      } catch {
+        continue;
+      }
+      if (stat.isDirectory()) {
+        if (!ignored.has(entry)) visit(abs, depth + 1);
+        continue;
+      }
+      const rel = relative(root, abs).replace(/\\/g, '/');
+      const isStyleFile = /\.(css|scss|sass)$/.test(entry);
+      const isTokenOrThemeModule = /(?:^|[./_-])(tokens?|theme)(?:[./_-]|$)/i.test(rel)
+        && /\.(ts|tsx|js|jsx|json|css|scss|sass)$/.test(entry)
+        && !/\.(test|spec|story|stories)\./.test(entry);
+      const isStyleEntrypoint = /(?:^|\/)styles?\/index\.(ts|tsx|js|jsx|css|scss|sass)$/.test(rel);
+      if (isStyleFile || isTokenOrThemeModule || isStyleEntrypoint) results.push(rel);
+    }
+  };
+  visit(root, 0);
+  return results;
+}
+
+function detectTokenStyleRisks(root: string, componentRoot?: string): UserfaceReadinessReport['tokenStyleRisks'] {
+  const packageRoot = findNearestPackageRoot(root, componentRoot) || root;
+  const roots = [...new Set([root, packageRoot])];
+  const pkg = readPackageJson(packageRoot);
   const deps = dependenciesFromPackageJson(pkg);
-  const tokenFiles = [
+  const tokenCandidates = [
     'tokens.json',
     'design-tokens.json',
     'src/tokens.ts',
     'src/theme.ts',
     'src/styles/tokens.css',
+    'src/styles/index.css',
     'src/app/globals.css',
     'app/globals.css',
     'styles/globals.css',
-  ].filter((path) => existsSync(join(root, path)));
+  ];
+  const tokenFiles = roots.flatMap((candidateRoot) => tokenCandidates
+    .filter((path) => existsSync(join(candidateRoot, path)))
+    .map((path) => join(candidateRoot, path)));
+  const packageStyleSignals = findPackageStyleSignals(packageRoot);
+  const dependencyStyleSignals = Object.keys(deps).filter((name) => (
+    /(?:tokens?|theme|styles?|styled-system|tailwind)/i.test(name)
+  ));
   const hasTailwind = [
     'tailwind.config.js',
     'tailwind.config.cjs',
     'tailwind.config.mjs',
     'tailwind.config.ts',
-  ].some((path) => existsSync(join(root, path))) || Boolean(deps.tailwindcss);
+  ].some((path) => roots.some((candidateRoot) => existsSync(join(candidateRoot, path)))) || Boolean(deps.tailwindcss);
   const risks: UserfaceReadinessReport['tokenStyleRisks']['risks'] = [];
 
-  if (tokenFiles.length === 0 && !hasTailwind) {
+  if (
+    tokenFiles.length === 0
+    && packageStyleSignals.length === 0
+    && dependencyStyleSignals.length === 0
+    && !hasTailwind
+  ) {
     risks.push({
       id: 'style/no-token-signal',
       label: 'Token/style signal',
@@ -602,12 +700,13 @@ function detectTokenStyleRisks(root: string): UserfaceReadinessReport['tokenStyl
       action: 'Point readiness at the design-system package or add token/style metadata before claiming visual acceptance.',
     });
   }
-  if (tokenFiles.length > 4) {
+  const styleSignalCount = tokenFiles.length + packageStyleSignals.length + dependencyStyleSignals.length;
+  if (styleSignalCount > 12) {
     risks.push({
       id: 'style/multiple-style-entrypoints',
       label: 'Style entrypoints',
       severity: 'info',
-      summary: `${tokenFiles.length} style/token entrypoint(s) found; pilot should name the authoritative source.`,
+      summary: `${styleSignalCount} style/token signal(s) found; pilot should name the authoritative source.`,
       action: 'Choose the canonical token/style source for guard and preview validation.',
     });
   }
@@ -658,9 +757,9 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
   const createdAt = new Date().toISOString();
   const recursive = options.recursive !== false;
   const maxDepth = Math.max(1, options.maxDepth || 8);
-  const repo = detectFramework(root);
   const componentScan = detectComponentsRoot(root, options.componentsDir, recursive, maxDepth);
   const components = componentScan?.index.components || [];
+  const repo = detectFramework(root, componentScan?.root, components);
   const contracted = components.filter((component) => component.hasFaceJson).length;
   const contractCoverage = components.length > 0 ? contracted / components.length : 0;
   const reactComponents = components.filter((component) => component.framework === 'react').length;
@@ -692,7 +791,7 @@ export function createReadinessReport(options: CreateReadinessReportOptions = {}
   const registryManifestPath = findRegistryManifest(root, componentScan?.root);
   const compositionReadiness = runCompositionReadiness(root, uiDocuments, components, registryManifestPath);
   const componentReadiness = classifyComponentReadiness(root, components);
-  const tokenStyleRisks = detectTokenStyleRisks(root);
+  const tokenStyleRisks = detectTokenStyleRisks(root, componentScan?.root);
   const previewReadiness = renderPreviewReadiness(components, uiDocuments, compositionReadiness.status);
   const firstScreenCandidate = uiDocuments[0];
   const firstScreenStatus: UserfaceReadinessCheckStatus = firstScreenCandidate
