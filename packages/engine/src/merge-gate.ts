@@ -203,7 +203,15 @@ export type UserfaceMergeGateVerificationIssueCode =
   | 'file_not_regular'
   | 'file_too_large'
   | 'file_hash_missing'
-  | 'file_hash_mismatch';
+  | 'file_hash_mismatch'
+  | 'file_state_unavailable'
+  | 'before_file_missing'
+  | 'before_file_unexpected'
+  | 'before_file_not_regular'
+  | 'before_file_too_large'
+  | 'before_file_hash_missing'
+  | 'before_file_hash_mismatch'
+  | 'before_file_state_unavailable';
 
 export interface UserfaceMergeGateVerificationIssue {
   code: UserfaceMergeGateVerificationIssueCode;
@@ -229,6 +237,28 @@ export interface UserfaceMergeGateVerificationResult {
 
 export interface VerifyUserfaceMergeGateEvidenceOptions {
   root: string;
+  maxFileBytes?: number;
+  requireSignature?: boolean;
+  trustedPublicKey?: string | Buffer | KeyObject;
+  trustedPublicKeys?: Record<string, string | Buffer | KeyObject>;
+}
+
+export type UserfaceMergeGateResolvedFileState =
+  | { kind: 'missing' }
+  | {
+      kind: 'file';
+      sizeBytes: number;
+      sha256: string;
+    }
+  | {
+      kind: 'symlink' | 'directory' | 'submodule' | 'other' | 'unreadable';
+      sizeBytes?: number;
+    };
+
+export interface VerifyUserfaceMergeGateRemoteEvidenceOptions {
+  headFileStates: Readonly<Record<string, UserfaceMergeGateResolvedFileState>>;
+  baseFileStates?: Readonly<Record<string, UserfaceMergeGateResolvedFileState>>;
+  requireBaseFileStates?: boolean;
   maxFileBytes?: number;
   requireSignature?: boolean;
   trustedPublicKey?: string | Buffer | KeyObject;
@@ -791,6 +821,150 @@ function verifySubjectFiles(
   return { issues, checkedFileCount };
 }
 
+function readResolvedFileState(
+  states: Readonly<Record<string, UserfaceMergeGateResolvedFileState>> | undefined,
+  portablePath: string,
+): UserfaceMergeGateResolvedFileState | null {
+  if (!states || !Object.prototype.hasOwnProperty.call(states, portablePath)) return null;
+  const value = states[portablePath] as unknown;
+  if (!isRecord(value)) return null;
+  const kind = String(value.kind || '');
+  if (kind === 'missing') return { kind: 'missing' };
+  if (kind === 'file') {
+    const sizeBytes = Number(value.sizeBytes);
+    const hash = String(value.sha256 || '').trim();
+    if (!Number.isInteger(sizeBytes) || sizeBytes < 0 || !SHA256_HEX_PATTERN.test(hash)) return null;
+    return { kind: 'file', sizeBytes, sha256: hash };
+  }
+  if (kind === 'symlink'
+    || kind === 'directory'
+    || kind === 'submodule'
+    || kind === 'other'
+    || kind === 'unreadable') {
+    const sizeBytes = Number(value.sizeBytes);
+    return {
+      kind,
+      ...(Number.isInteger(sizeBytes) && sizeBytes >= 0 ? { sizeBytes } : {}),
+    };
+  }
+  return null;
+}
+
+function verifyRemoteHeadFileState(
+  file: UserfaceMergeGateSubjectFile,
+  state: UserfaceMergeGateResolvedFileState | null,
+  maxFileBytes: number,
+): UserfaceMergeGateVerificationIssue[] {
+  const portablePath = file.path;
+  if (!state) {
+    return [issue('file_state_unavailable', `Head file state is unavailable: ${portablePath}`, portablePath)];
+  }
+  if (file.action === 'delete') {
+    return state.kind === 'missing'
+      ? []
+      : [issue('file_unexpected', `Deleted file still exists at head revision: ${portablePath}`, portablePath)];
+  }
+  if (!SHA256_HEX_PATTERN.test(String(file.afterHash || ''))) {
+    return [issue('file_hash_missing', `Reviewed head file hash is missing or invalid: ${portablePath}`, portablePath)];
+  }
+  if (state.kind === 'missing') {
+    return [issue('file_missing', `Expected file is missing at head revision: ${portablePath}`, portablePath)];
+  }
+  if (state.kind === 'symlink') {
+    return [issue('symlink_not_allowed', `Symlinks are not allowed in merge gate paths: ${portablePath}`, portablePath)];
+  }
+  if (state.kind === 'unreadable') {
+    return [issue('file_state_unavailable', `Head file cannot be inspected: ${portablePath}`, portablePath)];
+  }
+  if (state.kind !== 'file') {
+    return [issue('file_not_regular', `Expected a regular file at head revision: ${portablePath}`, portablePath)];
+  }
+  if (state.sizeBytes > maxFileBytes) {
+    return [issue('file_too_large', `Head file exceeds merge gate verification limit: ${portablePath}`, portablePath)];
+  }
+  if (state.sha256 !== file.afterHash) {
+    return [issue('file_hash_mismatch', `Head file differs from the reviewed state: ${portablePath}`, portablePath)];
+  }
+  return [];
+}
+
+function verifyRemoteBaseFileState(
+  file: UserfaceMergeGateSubjectFile,
+  state: UserfaceMergeGateResolvedFileState | null,
+  maxFileBytes: number,
+): UserfaceMergeGateVerificationIssue[] {
+  const portablePath = file.path;
+  if (!state) {
+    return [issue('before_file_state_unavailable', `Base file state is unavailable: ${portablePath}`, portablePath)];
+  }
+  if (file.action === 'write') {
+    if (file.beforeHash !== null) {
+      return [issue('before_file_hash_mismatch', `New file unexpectedly declares a base hash: ${portablePath}`, portablePath)];
+    }
+    return state.kind === 'missing'
+      ? []
+      : [issue('before_file_unexpected', `New file already exists at base revision: ${portablePath}`, portablePath)];
+  }
+  if (!SHA256_HEX_PATTERN.test(String(file.beforeHash || ''))) {
+    return [issue('before_file_hash_missing', `Reviewed base file hash is missing or invalid: ${portablePath}`, portablePath)];
+  }
+  if (state.kind === 'missing') {
+    return [issue('before_file_missing', `Expected file is missing at base revision: ${portablePath}`, portablePath)];
+  }
+  if (state.kind === 'unreadable') {
+    return [issue('before_file_state_unavailable', `Base file cannot be inspected: ${portablePath}`, portablePath)];
+  }
+  if (state.kind !== 'file') {
+    return [issue('before_file_not_regular', `Expected a regular file at base revision: ${portablePath}`, portablePath)];
+  }
+  if (state.sizeBytes > maxFileBytes) {
+    return [issue('before_file_too_large', `Base file exceeds merge gate verification limit: ${portablePath}`, portablePath)];
+  }
+  if (state.sha256 !== file.beforeHash) {
+    return [issue('before_file_hash_mismatch', `Base file differs from the reviewed starting state: ${portablePath}`, portablePath)];
+  }
+  return [];
+}
+
+function verifySubjectRemoteFileStates(
+  subject: UserfaceMergeGateSubject,
+  options: VerifyUserfaceMergeGateRemoteEvidenceOptions,
+): { issues: UserfaceMergeGateVerificationIssue[]; checkedFileCount: number } {
+  const issues: UserfaceMergeGateVerificationIssue[] = [];
+  const maxFileBytes = Number.isFinite(options.maxFileBytes)
+    ? Math.max(1, Number(options.maxFileBytes))
+    : USERFACE_MERGE_GATE_DEFAULT_MAX_FILE_BYTES;
+  const verifyBase = options.requireBaseFileStates === true || options.baseFileStates !== undefined;
+  const seen = new Set<string>();
+  let checkedFileCount = 0;
+  for (const file of subject.files) {
+    const portablePath = String(file.path || '').trim();
+    if (!isPortableWorkspacePath(portablePath) || !FILE_ACTIONS.has(file.action)) {
+      issues.push(issue('path_invalid', `Invalid portable workspace path: ${portablePath || '<empty>'}`, portablePath || undefined));
+      continue;
+    }
+    if (seen.has(portablePath)) {
+      issues.push(issue('path_duplicate', `Duplicate merge gate path: ${portablePath}`, portablePath));
+      continue;
+    }
+    seen.add(portablePath);
+    checkedFileCount += 1;
+    issues.push(...verifyRemoteHeadFileState(
+      file,
+      readResolvedFileState(options.headFileStates, portablePath),
+      maxFileBytes,
+    ));
+    if (verifyBase) {
+      issues.push(...verifyRemoteBaseFileState(
+        file,
+        readResolvedFileState(options.baseFileStates, portablePath),
+        maxFileBytes,
+      ));
+    }
+  }
+  return { issues, checkedFileCount };
+}
+
 function emptyResult(issues: UserfaceMergeGateVerificationIssue[]): UserfaceMergeGateVerificationResult {
   return {
     schemaVersion: 'mergeGateVerification@1',
@@ -810,7 +984,10 @@ function emptyResult(issues: UserfaceMergeGateVerificationIssue[]): UserfaceMerg
 
 function verifyEvidenceAttestation(
   evidence: UserfaceMergeGateEvidence,
-  options: VerifyUserfaceMergeGateEvidenceOptions,
+  options: Pick<
+    VerifyUserfaceMergeGateEvidenceOptions,
+    'requireSignature' | 'trustedPublicKey' | 'trustedPublicKeys'
+  >,
 ): {
   authenticity: UserfaceMergeGateVerificationResult['authenticity'];
   issues: UserfaceMergeGateVerificationIssue[];
@@ -866,9 +1043,16 @@ function verifyEvidenceAttestation(
   }
 }
 
-export function verifyUserfaceMergeGateEvidence(
+function verifyUserfaceMergeGateEvidenceCore(
   value: unknown,
-  options: VerifyUserfaceMergeGateEvidenceOptions,
+  options: Pick<
+    VerifyUserfaceMergeGateEvidenceOptions,
+    'requireSignature' | 'trustedPublicKey' | 'trustedPublicKeys'
+  >,
+  verifyFiles: (evidence: UserfaceMergeGateEvidence) => {
+    issues: UserfaceMergeGateVerificationIssue[];
+    checkedFileCount: number;
+  },
 ): UserfaceMergeGateVerificationResult {
   const structuralIssues = validateEvidencePayload(value);
   if (structuralIssues.length > 0 || !isRecord(value) || !isRecord(value.integrity)) {
@@ -896,7 +1080,7 @@ export function verifyUserfaceMergeGateEvidence(
   issues.push(...validateReviewConsistency(evidence));
   const attestation = verifyEvidenceAttestation(evidence, options);
   issues.push(...attestation.issues);
-  const files = verifySubjectFiles(evidence.subject, options);
+  const files = verifyFiles(evidence);
   issues.push(...files.issues);
   if (!evidence.review.mergeEligible) {
     issues.push(issue(
@@ -921,6 +1105,28 @@ export function verifyUserfaceMergeGateEvidence(
     checkedFileCount: files.checkedFileCount,
     issues,
   };
+}
+
+export function verifyUserfaceMergeGateEvidence(
+  value: unknown,
+  options: VerifyUserfaceMergeGateEvidenceOptions,
+): UserfaceMergeGateVerificationResult {
+  return verifyUserfaceMergeGateEvidenceCore(
+    value,
+    options,
+    (evidence) => verifySubjectFiles(evidence.subject, options),
+  );
+}
+
+export function verifyUserfaceMergeGateEvidenceAgainstFileStates(
+  value: unknown,
+  options: VerifyUserfaceMergeGateRemoteEvidenceOptions,
+): UserfaceMergeGateVerificationResult {
+  return verifyUserfaceMergeGateEvidenceCore(
+    value,
+    options,
+    (evidence) => verifySubjectRemoteFileStates(evidence.subject, options),
+  );
 }
 
 export function verifyUserfaceMergeGateEvidenceFile(

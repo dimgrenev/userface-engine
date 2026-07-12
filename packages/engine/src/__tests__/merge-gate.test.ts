@@ -19,9 +19,11 @@ import {
   renderUserfaceMergeGateVerificationMarkdown,
   signUserfaceMergeGateEvidence,
   verifyUserfaceMergeGateEvidence,
+  verifyUserfaceMergeGateEvidenceAgainstFileStates,
   verifyUserfaceMergeGateEvidenceFile,
   type UserfaceMergeGateEvidence,
   type UserfaceMergeGateEvidencePayload,
+  type UserfaceMergeGateResolvedFileState,
   type UserfaceMergeGateSubject,
 } from '../merge-gate';
 
@@ -386,6 +388,125 @@ describe('Userface portable merge gate', () => {
     writeWorkspaceFile(root, 'src/Legacy.tsx', 'legacy');
     const result = verifyUserfaceMergeGateEvidence(evidence, { root });
     expect(result.issues.map((entry) => entry.code)).toContain('file_unexpected');
+  });
+
+  it('verifies exact remote base and head states for edit, write, and delete actions', () => {
+    const root = workspace();
+    const subject = passingSubject(root);
+    const created = 'export const NewPanel = () => <aside />;\n';
+    const removed = 'export const Legacy = true;\n';
+    subject.files.push(
+      {
+        path: 'src/NewPanel.tsx',
+        action: 'write',
+        beforeHash: null,
+        afterHash: sha256(created),
+        additions: 1,
+        deletions: 0,
+      },
+      {
+        path: 'src/Legacy.tsx',
+        action: 'delete',
+        beforeHash: sha256(removed),
+        afterHash: null,
+        additions: 0,
+        deletions: 1,
+      },
+    );
+    const evidence = createUserfaceMergeGateEvidence(evidencePayload(root, { subject }));
+    const headFileStates: Record<string, UserfaceMergeGateResolvedFileState> = {
+      'src/App.tsx': {
+        kind: 'file',
+        sizeBytes: 58,
+        sha256: subject.files[0].afterHash!,
+      },
+      'src/NewPanel.tsx': {
+        kind: 'file',
+        sizeBytes: Buffer.byteLength(created),
+        sha256: sha256(created),
+      },
+      'src/Legacy.tsx': { kind: 'missing' },
+    };
+    const baseFileStates: Record<string, UserfaceMergeGateResolvedFileState> = {
+      'src/App.tsx': {
+        kind: 'file',
+        sizeBytes: 3,
+        sha256: subject.files[0].beforeHash!,
+      },
+      'src/NewPanel.tsx': { kind: 'missing' },
+      'src/Legacy.tsx': {
+        kind: 'file',
+        sizeBytes: Buffer.byteLength(removed),
+        sha256: sha256(removed),
+      },
+    };
+
+    expect(verifyUserfaceMergeGateEvidenceAgainstFileStates(evidence, {
+      headFileStates,
+      baseFileStates,
+      requireBaseFileStates: true,
+    })).toMatchObject({
+      valid: true,
+      mergeEligible: true,
+      checkedFileCount: 3,
+      issues: [],
+    });
+  });
+
+  it.each([
+    ['missing head resolution', {}, undefined, 'file_state_unavailable'],
+    ['head hash mismatch', { 'src/App.tsx': { kind: 'file', sizeBytes: 1, sha256: sha256('wrong') } }, undefined, 'file_hash_mismatch'],
+    ['head symlink', { 'src/App.tsx': { kind: 'symlink' } }, undefined, 'symlink_not_allowed'],
+    ['missing base resolution', null, {}, 'before_file_state_unavailable'],
+    ['base hash mismatch', null, { 'src/App.tsx': { kind: 'file', sizeBytes: 1, sha256: sha256('wrong') } }, 'before_file_hash_mismatch'],
+  ] as const)('fails closed for remote %s', (_label, headOverride, baseOverride, expectedCode) => {
+    const root = workspace();
+    const subject = passingSubject(root);
+    const evidence = createUserfaceMergeGateEvidence(evidencePayload(root, { subject }));
+    const headFileStates = headOverride === null
+      ? {
+          'src/App.tsx': {
+            kind: 'file' as const,
+            sizeBytes: 58,
+            sha256: subject.files[0].afterHash!,
+          },
+        }
+      : headOverride;
+    const baseFileStates = baseOverride === undefined
+      ? undefined
+      : baseOverride;
+    const result = verifyUserfaceMergeGateEvidenceAgainstFileStates(evidence, {
+      headFileStates,
+      ...(baseFileStates !== undefined ? { baseFileStates } : {}),
+      ...(baseFileStates !== undefined ? { requireBaseFileStates: true } : {}),
+    });
+    expect(result.issues.map((entry) => entry.code)).toContain(expectedCode);
+    expect(result.mergeEligible).toBe(false);
+  });
+
+  it('keeps policy-required signatures mandatory for remote file-state verification', () => {
+    const root = workspace();
+    const subject = passingSubject(root);
+    const payload = evidencePayload(root, { subject });
+    payload.review.policy.requireSignedMergeGate = true;
+    const unsigned = createUserfaceMergeGateEvidence(payload);
+    const state = {
+      'src/App.tsx': {
+        kind: 'file' as const,
+        sizeBytes: 58,
+        sha256: subject.files[0].afterHash!,
+      },
+    };
+    expect(verifyUserfaceMergeGateEvidenceAgainstFileStates(unsigned, {
+      headFileStates: state,
+    }).issues.map((entry) => entry.code)).toContain('signature_required');
+
+    const keys = generateKeyPairSync('ed25519');
+    const signed = signUserfaceMergeGateEvidence(unsigned, keys.privateKey, 'managed-service-key');
+    expect(verifyUserfaceMergeGateEvidenceAgainstFileStates(signed, {
+      headFileStates: state,
+      trustedPublicKeys: { 'managed-service-key': keys.publicKey },
+    })).toMatchObject({ valid: true, mergeEligible: true, authenticity: 'verified' });
   });
 
   it.each([

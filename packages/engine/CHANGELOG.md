@@ -8,6 +8,9 @@
   GitLab CI output modes. The command fails closed on tampered evidence, stale
   review revisions, inconsistent approvals, changed files, path traversal, and
   symlinks.
+- Added `verifyUserfaceMergeGateEvidenceAgainstFileStates()` for hosted GitHub,
+  GitLab, and other provider adapters that verify exact base/head object states
+  without exposing provider credentials to the Engine.
 
 All notable changes to `@userface/engine` will be documented in this file.
 

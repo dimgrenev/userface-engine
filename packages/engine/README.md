@@ -110,6 +110,28 @@ npx --yes @userface/engine@0.1.0 merge-gate verify \
 The verifier then rejects unsigned evidence, unknown keys, and altered
 signatures. Keep the private signing key outside the repository.
 
+Hosted provider adapters can verify the same evidence without checking out the
+repository. They resolve each reviewed path at the PR base and head commits,
+then call the provider-neutral API:
+
+```ts
+import {
+  verifyUserfaceMergeGateEvidenceAgainstFileStates,
+} from '@userface/engine/merge-gate';
+
+const result = verifyUserfaceMergeGateEvidenceAgainstFileStates(evidence, {
+  baseFileStates,
+  headFileStates,
+  requireBaseFileStates: true,
+  trustedPublicKeys,
+});
+```
+
+Each state is `missing`, `file` with its SHA-256/size, `symlink`, `non_regular`,
+`too_large`, or `unreadable`. Missing state, wrong hash, unavailable base state,
+symlink, oversized file, and non-regular objects fail closed. The Engine does
+not perform network requests or receive provider credentials.
+
 ## SDK
 
 ```ts
