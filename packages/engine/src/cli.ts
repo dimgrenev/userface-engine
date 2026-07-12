@@ -481,7 +481,7 @@ Next steps:
 `);
 }
 
-async function cmdAnalyze(path: string, config: any = {}) {
+async function cmdAnalyze(path: string, _config: any = {}) {
   const engine = createProjectEngine();
   const cwd = process.cwd();
   const { files, entry } = readComponentFiles(cwd, path);
@@ -489,7 +489,7 @@ async function cmdAnalyze(path: string, config: any = {}) {
   process.stdout.write(JSON.stringify(spec, null, 2) + '\n');
 }
 
-async function cmdStates(path: string, args: string[], config: any = {}) {
+async function cmdStates(path: string, args: string[], _config: any = {}) {
   const engine = createProjectEngine();
   const cwd = process.cwd();
   const { files, entry } = readComponentFiles(cwd, path);
@@ -511,7 +511,7 @@ async function cmdStates(path: string, args: string[], config: any = {}) {
   process.stdout.write(JSON.stringify(states, null, 2) + '\n');
 }
 
-async function cmdRender(path: string, args: string[], config: any = {}) {
+async function cmdRender(path: string, args: string[], _config: any = {}) {
   const engine = createProjectEngine();
   const cwd = process.cwd();
   const { files, entry } = readComponentFiles(cwd, path);
@@ -530,7 +530,7 @@ async function cmdRender(path: string, args: string[], config: any = {}) {
   process.stdout.write(JSON.stringify(result, null, 2) + '\n');
 }
 
-async function cmdMaterialize(path: string, args: string[], config: any = {}) {
+async function cmdMaterialize(path: string, args: string[], _config: any = {}) {
   const { generateCode } = await import('./face-ui/codegen');
   const cwd = process.cwd();
   const abs = resolve(cwd, path);
@@ -613,7 +613,7 @@ async function cmdDoctor(args: string[], config: any = {}) {
   }
 }
 
-async function cmdTest(args: string[], config: any = {}) {
+async function cmdTest(args: string[], _config: any = {}) {
   const engine = createProjectEngine();
   const cwd = process.cwd();
   const dir = flagValue(args, '--dir') || args[0] || '.';
@@ -1642,7 +1642,7 @@ async function cmdUpdate(args: string[], config: any = {}) {
   }
 }
 
-async function cmdLogin(args: string[], config: any = {}) {
+async function cmdLogin(args: string[], _config: any = {}) {
   assertLibraryCliEnabled('login');
   const { storeToken } = await import('./auth/tokenStorage');
   const token = String(process.env.USERFACE_TOKEN || '').trim();
@@ -1654,7 +1654,7 @@ async function cmdLogin(args: string[], config: any = {}) {
   process.stderr.write(`Token saved to keychain.\n`);
 }
 
-async function cmdLogout(args: string[], config: any = {}) {
+async function cmdLogout(args: string[], _config: any = {}) {
   assertLibraryCliEnabled('logout');
   const { deleteToken } = await import('./auth/tokenStorage');
   const deleted = await deleteToken();

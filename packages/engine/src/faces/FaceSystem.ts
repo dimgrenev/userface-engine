@@ -48,7 +48,7 @@ export class FaceSystem implements IFaceSystem {
    */
   async generateFace(files: FileEntry[], config?: Partial<FaceGeneratorConfig>): Promise<FaceGenerationResult> {
     try {
-      const result = await this.generator.generateFace(files);
+      const result = await this.generator.generateFace(files, config);
       
       if (result.success && result.face) {
         // Автоматически сохраняем сгенерированный Face

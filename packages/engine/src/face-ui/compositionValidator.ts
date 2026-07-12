@@ -13,7 +13,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { FaceUiDoc, FaceUiNode, FaceUiValue, FaceUiChild } from './types';
+import type { FaceUiDoc, FaceUiNode } from './types';
 import type { Violation, ValidationReport, ValidationScores, BudgetMode } from '../rules/types';
 import type { RegistryEntry } from '../registry';
 import { loadRegistryManifest } from '../registryManifest';
@@ -388,7 +388,7 @@ function checkStructural(
   const violations: Violation[] = [];
   const nodes = collectAllNodes(doc.root);
 
-  for (const { node, path, depth, parentTypes } of nodes) {
+  for (const { node, depth, parentTypes } of nodes) {
     if (depth > maxDepth) {
       violations.push({
         ruleId: 'composition/max-depth',

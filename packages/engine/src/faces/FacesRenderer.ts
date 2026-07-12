@@ -49,8 +49,6 @@ export default ${componentName};
    * Генерирует Vue компонент из Face
    */
   generateVueComponent(face: ComponentFace, props: Record<string, any>): string {
-    const componentName = face.name;
-    const propsDefinition = this.generateVuePropsDefinition(face.props);
     const template = this.generateVueTemplate(face, props);
     const script = this.generateVueScript(face, props);
     const styles = this.generateVueStyles(face.styles);
@@ -163,7 +161,7 @@ ${content}
   </div>`;
   }
   
-  private generateVueScript(face: ComponentFace, props: Record<string, any>): string {
+  private generateVueScript(face: ComponentFace, _props: Record<string, any>): string {
     const propsDefinition = this.generateVuePropsDefinition(face.props);
     const imports = this.generateVueImports(face);
     
@@ -174,7 +172,7 @@ ${propsDefinition}
     `.trim();
   }
   
-  private generateSvelteScript(face: ComponentFace, props: Record<string, any>): string {
+  private generateSvelteScript(face: ComponentFace, _props: Record<string, any>): string {
     const exports = face.props.map(prop => {
       const defaultValue = prop.defaultValue !== undefined 
         ? ` = ${JSON.stringify(prop.defaultValue)}` 

@@ -289,14 +289,14 @@ export class CoreEngine {
       // В Node.js окружении всегда используем простой парсинг
       if (typeof window === 'undefined') {
         engineLog('🖥️ Running in Node.js environment, using simple parsing');
-        parseResult = this.parseCodeSimple(mainFile.content, framework);
+        parseResult = this.parseCodeSimple(mainFile.content);
       } else {
         try {
           parseResult = await this.parseCode(mainFile.content, framework);
         } catch (parseError) {
           engineWarn('⚠️ Parse code failed, using fallback:', parseError);
           // Fallback к простому парсингу
-          parseResult = this.parseCodeSimple(mainFile.content, framework);
+          parseResult = this.parseCodeSimple(mainFile.content);
         }
       }
       
@@ -416,8 +416,6 @@ export class CoreEngine {
       const sourceToCheck = originalEntrySource || String(spec.code || '');
       const hasRelativeImports = /^\s*import\s+.+from\s+['"]\.{1,2}\//m.test(sourceToCheck);
       const bundlerFn = (this as any).bundler as ((entryPath: string, vfs: Record<string, any>) => any) | undefined;
-      const vfsMap = (this as any).vfs as Record<string, any> | undefined;
-
       let iifeCode = '';
       let isIIFE = false;
 
@@ -692,7 +690,7 @@ export class CoreEngine {
     // В Node.js окружении всегда используем простую логику
     if (typeof window === 'undefined') {
       engineLog('🖥️ Running in Node.js environment, using simple parsing');
-      return this.parseCodeSimple(code, framework);
+      return this.parseCodeSimple(code);
     }
 
     // В браузере используем transformer только если доступен
@@ -706,16 +704,16 @@ export class CoreEngine {
         return { props, interfaces, cleanCode };
       } catch (error) {
         engineLog('⚠️ Transformer failed, falling back to simple parsing:', error);
-        return this.parseCodeSimple(code, framework);
+        return this.parseCodeSimple(code);
       }
     }
 
     // Fallback к простому парсингу
     engineLog('⚠️ No transformer available, using fallback parsing');
-    return this.parseCodeSimple(code, framework);
+    return this.parseCodeSimple(code);
   }
 
-  private parseCodeSimple(code: string, framework: string): { props: ComponentProp[]; interfaces: string[]; cleanCode: string } {
+  private parseCodeSimple(code: string): { props: ComponentProp[]; interfaces: string[]; cleanCode: string } {
     engineLog('🔄 Using simple parsing logic');
 
     // ВАЖНО: Сначала извлечь props и интерфейсы из исходного кода (до очистки)
@@ -1292,7 +1290,6 @@ export class CoreEngine {
       
       // 2) Node.js: используем пакет "sass", если доступен
       try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
         const sass = (typeof require !== 'undefined') ? require('sass') : null;
         if (sass) {
           let out: string = '';
@@ -1326,9 +1323,7 @@ export class CoreEngine {
   private simpleHash(input: string): number {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
-      // eslint-disable-next-line no-bitwise
       hash = ((hash << 5) - hash) + input.charCodeAt(i);
-      // eslint-disable-next-line no-bitwise
       hash |= 0;
     }
     return hash >>> 0;
@@ -1802,9 +1797,7 @@ export class CoreEngine {
       // 3. Создаем рендер через минимальные фреймворк-адаптеры
       logs.push(`🎨 Step 3: Creating render via adapter...`);
       let html: string;
-      let adapterName = 'mock';
       try {
-        adapterName = framework + '-adapter';
         const adapterHtml = await this.renderViaAdapter(framework, analysis.code, props, analysis.styles);
         html = adapterHtml || this.createFallbackRender(framework, analysis.name, props);
         if (!adapterHtml) {
@@ -1981,16 +1974,16 @@ export class CoreEngine {
   /**
    * Безопасное выполнение компонента
    */
-  private async executeComponentSafely(code: string, framework: string, props: any, analysis: ComponentSpec): Promise<string> {
+  private async executeComponentSafely(code: string, framework: string, props: any): Promise<string> {
     const logs: string[] = [];
     
     try {
       // Очищаем код от потенциально опасных конструкций
-      const { code: cleanCode } = this.sanitizeCode(code, framework);
+      this.sanitizeCode(code, framework);
       logs.push(`🧹 Code sanitized`);
       
       // Создаем изолированную функцию
-      const isolatedFunction = this.createIsolatedFunction(cleanCode, framework, props);
+      const isolatedFunction = this.createIsolatedFunction(framework, props);
       logs.push(`🔒 Isolated function created`);
       
       // Выполняем с таймаутом
@@ -2055,7 +2048,7 @@ export class CoreEngine {
       if (result.hasCommonJS) blocked.push('commonjs');
 
       working = result.cleanCode;
-    } catch (e) {
+    } catch {
       // В случае ошибки санитизатора — оставляем working как есть
     }
 
@@ -2129,28 +2122,7 @@ export class CoreEngine {
   /**
    * Создание изолированной функции
    */
-  private createIsolatedFunction(code: string, framework: string, props: any): () => string {
-    // Создаем безопасную среду выполнения
-    const safeGlobals = {
-      console: {
-        log: () => {},
-        warn: () => {},
-        error: () => {},
-        info: () => {}
-      },
-      JSON: JSON,
-      Math: Math,
-      Date: Date,
-      Array: Array,
-      Object: Object,
-      String: String,
-      Number: Number,
-      Boolean: Boolean,
-      RegExp: RegExp,
-      React: {},
-      ReactDOM: { renderToString: () => '<div>Mock React Render</div>' }
-    };
-    
+  private createIsolatedFunction(framework: string, props: any): () => string {
     // Для React компонентов
     if (framework === 'react') {
       return () => {
@@ -2474,7 +2446,6 @@ export class CoreEngine {
     // Анализируем результаты
     const totalTests = results.length;
     const passedTests = results.filter(r => r.success === true).length;
-    const failedTests = results.filter(r => r.success === false).length;
     const sandboxUsed = results.filter(r => r.usedSandbox).length;
     
     // Проверяем regression тесты (должны пройти)

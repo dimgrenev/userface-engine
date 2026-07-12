@@ -108,7 +108,7 @@ export class BabelTransformer implements ITransformer {
     try {
       this.babel.parse(code, { sourceType: 'module' });
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -159,7 +159,7 @@ export class ZodValidator implements IValidator {
     return this.zod.object(schemaObject);
   }
 
-  private createPropSchema(prop: any): any {
+  private createPropSchema(_prop: any): any {
     // Implementation depends on Zod API
     return this.zod.any();
   }
@@ -301,7 +301,7 @@ ${ensureIIFE(code)}
     }
   }
 
-  private findSourceFile(componentName: string, framework: string): { name: string; content: string } | null {
+  private findSourceFile(_componentName: string, _framework: string): { name: string; content: string } | null {
     return null;
   }
 }

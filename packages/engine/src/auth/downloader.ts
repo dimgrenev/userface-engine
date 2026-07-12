@@ -33,7 +33,6 @@ export async function downloadAndExtractLibrary(
 
     // 1. Download to temp file
     if (!response.body) throw new Error('No response body');
-    // @ts-ignore - node-fetch body types don't exactly match stream/promises
     await pipeline(response.body, createWriteStream(tempFile));
 
     // 2. Extract tarball

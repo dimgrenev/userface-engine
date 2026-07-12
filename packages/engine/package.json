@@ -138,7 +138,7 @@
     "build": "node ./scripts/build-npm.cjs",
     "test": "vitest run --root ../.. packages/engine/src/__tests__ packages/engine/src/storybook/__tests__",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src/ --ext .ts,.tsx",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 0",
     "format": "prettier --write 'src/**/*.{ts,tsx,js}'",
     "smoke": "node ./scripts/smoke-test.cjs",
     "pack:dry": "npm pack --dry-run",
@@ -150,6 +150,7 @@
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
     "eslint": "^10.0.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3"
   }

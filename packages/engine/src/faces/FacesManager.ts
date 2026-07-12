@@ -373,7 +373,7 @@ class IndexedDBFaceStorage {
  * Система событий для Face
  */
 class FaceEventEmitter {
-  private listeners = new Map<keyof FaceSystemEvents, Function[]>();
+  private listeners = new Map<keyof FaceSystemEvents, Array<(data: any) => void>>();
   
   on<K extends keyof FaceSystemEvents>(
     event: K,

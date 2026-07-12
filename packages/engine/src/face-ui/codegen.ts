@@ -241,7 +241,7 @@ function generateHtmlNode(node: FaceUiNode, depth: number): string {
   return `${indent}<${tagName}${fullProps}>\n${childrenStr}\n${indent}</${tagName}>`;
 }
 
-export function generateHtmlCode(doc: any, options: CodegenOptions = {}): string {
+export function generateHtmlCode(doc: any, _options: CodegenOptions = {}): string {
   const root = doc.root as FaceUiNode;
   const template = generateHtmlNode(root, 2);
 

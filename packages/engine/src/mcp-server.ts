@@ -954,7 +954,7 @@ class UserfaceEngineMcpServer {
 // Transport: line-delimited JSON over stdin/stdout
 // ---------------------------------------------------------------------------
 
-export function startServer(config: any = {}): void {
+export function startServer(_config: any = {}): void {
   // Redirect console to stderr so stdout stays clean for JSON-RPC
   console.log = (...args: any[]) => process.stderr.write(args.join(' ') + '\n');
   console.warn = (...args: any[]) => process.stderr.write(args.join(' ') + '\n');

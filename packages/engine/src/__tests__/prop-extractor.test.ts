@@ -8,7 +8,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 import * as babelParser from '@babel/parser';
 
 // prop-extractor.js is a browser script-tag asset and intentionally has no ESM export.
@@ -82,10 +81,7 @@ describe('PropExtractor — Babel mock canary', () => {
       }
     `;
     const astResult = extractAST(code);
-    const regexResult = extractRegex(code);
-
     const astVariant = astResult.find((p: any) => p.name === 'variant');
-    const regexVariant = regexResult.find((p: any) => p.name === 'variant');
 
     // AST must resolve ButtonVariant → ['primary', 'secondary', 'danger']
     expect(astVariant).toBeDefined();
@@ -301,9 +297,11 @@ describe('PropExtractor — AST path', () => {
         }
       `;
       const props = extractAST(code);
-      const key = props.find((p: any) => p.name === 'key');
-      // 'key' is filtered out since it's a React reserved name
-      // Let's use a different prop name
+      expect(props.find((p: any) => p.name === 'key')).toMatchObject({
+        name: 'key',
+        type: 'string',
+        required: true,
+      });
     });
 
     it('handles keyof T via interface prop', () => {

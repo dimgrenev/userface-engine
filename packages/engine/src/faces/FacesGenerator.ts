@@ -15,13 +15,37 @@ import {
   PropType,
   StyleType
 } from './types';
-import { VFSEntry } from '../core-engine';
 
 // Тип для отдельного файла
 interface FileEntry {
   name: string;
   content: string;
   path?: string; // Добавляем path для совместимости
+}
+
+function mergeGeneratorConfig(
+  base: Partial<FaceGeneratorConfig> = {},
+  override: Partial<FaceGeneratorConfig> = {},
+): Partial<FaceGeneratorConfig> {
+  return {
+    ...base,
+    ...override,
+    ...(base.propAnalysis || override.propAnalysis ? {
+      propAnalysis: { ...base.propAnalysis, ...override.propAnalysis } as FaceGeneratorConfig['propAnalysis'],
+    } : {}),
+    ...(base.styleProcessing || override.styleProcessing ? {
+      styleProcessing: { ...base.styleProcessing, ...override.styleProcessing } as FaceGeneratorConfig['styleProcessing'],
+    } : {}),
+    ...(base.dependencyAnalysis || override.dependencyAnalysis ? {
+      dependencyAnalysis: { ...base.dependencyAnalysis, ...override.dependencyAnalysis } as FaceGeneratorConfig['dependencyAnalysis'],
+    } : {}),
+    ...(base.exampleGeneration || override.exampleGeneration ? {
+      exampleGeneration: { ...base.exampleGeneration, ...override.exampleGeneration } as FaceGeneratorConfig['exampleGeneration'],
+    } : {}),
+    ...(base.optimization || override.optimization ? {
+      optimization: { ...base.optimization, ...override.optimization } as FaceGeneratorConfig['optimization'],
+    } : {}),
+  };
 }
 
 /**
@@ -155,8 +179,6 @@ class CodeAnalyzer {
   
   private inferTypeFromUsage(code: string, propName: string): PropType {
     // Простая эвристика для определения типа по использованию
-    const usageRegex = new RegExp(`${propName}\\s*[.\\[]`, 'g');
-    
     if (code.includes(`${propName}.length`)) return 'array';
     if (code.includes(`${propName}.map`)) return 'array';
     if (code.includes(`${propName}.toString()`)) return 'string';
@@ -178,13 +200,13 @@ class CodeAnalyzer {
   }
   
   private extractJSDocComment(code: string, propName: string): string | undefined {
-    const commentRegex = new RegExp(`\/\*\*([^*]|\*(?!\/))*\*\/\s*${propName}`, 'g');
+    const escapedPropName = propName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const commentRegex = new RegExp(String.raw`\/\*\*([\s\S]*?)\*\/\s*${escapedPropName}`);
     const match = commentRegex.exec(code);
     
     if (match) {
-      return match[0]
-        .replace(/\/\*\*|\*\//g, '')
-        .replace(/\*\s*/g, '')
+      return match[1]
+        .replace(/^\s*\*\s?/gm, '')
         .trim();
     }
     
@@ -210,7 +232,7 @@ class CodeAnalyzer {
     return props;
   }
   
-  private parseVuePropsObject(propsObject: string): PropDefinition[] {
+  private parseVuePropsObject(_propsObject: string): PropDefinition[] {
     // Парсер для Vue props объекта
     const props: PropDefinition[] = [];
     // Упрощенная реализация
@@ -387,6 +409,7 @@ export class FacesGenerator {
     files: FileEntry[],
     config: Partial<FaceGeneratorConfig> = {}
   ): Promise<FaceGenerationResult> {
+    const effectiveConfig = mergeGeneratorConfig(this.config, config);
     const startTime = Date.now();
     const errors: string[] = [];
     const warnings: string[] = [];
@@ -404,10 +427,10 @@ export class FacesGenerator {
       
       // Анализируем компонент
       const componentName = this.extractComponentName(mainFile);
-      const props = await this.analyzeProps(mainFile, framework, config);
-      const styles = await this.analyzeStyles(files, config);
-      const dependencies = await this.analyzeDependencies(files, config);
-      const examples = await this.generateExamples(props, config);
+      const props = await this.analyzeProps(mainFile, framework, effectiveConfig);
+      const styles = await this.analyzeStyles(files, effectiveConfig);
+      const dependencies = await this.analyzeDependencies(files, effectiveConfig);
+      const examples = await this.generateExamples(props, effectiveConfig);
       
       // Создаем Face
       const face: ComponentFace = {
@@ -422,7 +445,6 @@ export class FacesGenerator {
         // Вкладываем сериализуемый snapshot схемы для валидации на рантайме
         // (PropsEditor и валидатор смогут регистрировать её напрямую)
         // Не расширяем типы здесь, оставляем как часть структуры при экспорте в JSON
-        // @ts-ignore – поле будет сохранено в JSON face файла
         schema: { kind: 'zod-like', props: props.map(p => ({
           name: p.name,
           type: p.type,
@@ -537,7 +559,7 @@ export class FacesGenerator {
   private async analyzeProps(
     file: FileEntry,
     framework: FrameworkType,
-    config: Partial<FaceGeneratorConfig>
+    _config: Partial<FaceGeneratorConfig>
   ): Promise<PropDefinition[]> {
     const content = file.content || '';
     
@@ -558,7 +580,7 @@ export class FacesGenerator {
   
   private async analyzeStyles(
     files: FileEntry[],
-    config: Partial<FaceGeneratorConfig>
+    _config: Partial<FaceGeneratorConfig>
   ): Promise<StyleDefinition[]> {
     const styles: StyleDefinition[] = [];
     
@@ -586,7 +608,7 @@ export class FacesGenerator {
   
   private async analyzeDependencies(
     files: FileEntry[],
-    config: Partial<FaceGeneratorConfig>
+    _config: Partial<FaceGeneratorConfig>
   ): Promise<DependencyDefinition[]> {
     const dependencies: DependencyDefinition[] = [];
     

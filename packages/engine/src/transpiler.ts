@@ -88,7 +88,6 @@ async function getEsbuild(): Promise<any> {
   // IMPORTANT: handle Node vs Browser differently:
   // - Browser: use wasmURL (served by app)
   // - Node: load wasm bytes from the installed package to avoid URL assumptions
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const esbuildWasm = _req('esbuild-wasm');
   if (!(esbuildWasm as any)._initialized) {
     // Deduplicate concurrent init: store the init promise so concurrent callers
@@ -424,7 +423,6 @@ export async function transpileVfsToIIFE(args: {
           // Vue: compile SFC to JS/TS module text using @vue/compiler-sfc (from esbuild-plugin-vue deps).
           if (ext === '.vue') {
             try {
-              // eslint-disable-next-line @typescript-eslint/no-var-requires
               const sfc = _req('@vue/compiler-sfc');
               const id = hashId(key);
               const parsed = sfc.parse(src, { filename: key });
@@ -488,7 +486,6 @@ export async function transpileVfsToIIFE(args: {
           // Svelte: compile to JS module using svelte/compiler.
           if (ext === '.svelte') {
             try {
-              // eslint-disable-next-line @typescript-eslint/no-var-requires
               const svelte = _req('svelte/compiler');
               const compiled = svelte.compile(src, {
                 filename: key,
