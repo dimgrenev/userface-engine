@@ -84,7 +84,6 @@
       "Separator",
       "Bar",
       "Navigation",
-      "Drawer",
       "Modal",
       "Markdown"
     ],
@@ -253,12 +252,16 @@
       }
     },
     {
-      "name": "drawer-detail",
-      "description": "Detail opens in a Drawer from the right edge. Good for wide detail content.",
+      "name": "edge-modal-detail",
+      "description": "Detail opens in a flush Modal from the right edge. Good for wide detail content.",
       "requires": [
         {
-          "type": "Drawer",
-          "minCount": 1
+          "type": "Modal",
+          "minCount": 1,
+          "props": {
+            "placement": "right",
+            "edge": "flush"
+          }
         }
       ],
       "layout": {
