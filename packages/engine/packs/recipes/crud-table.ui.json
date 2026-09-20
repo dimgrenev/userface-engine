@@ -42,11 +42,11 @@
             "type": "Button",
             "key": "create-btn",
             "props": {
-              "text": "Create New",
               "variant": "accent",
               "onClick": {
                 "$action": "modal.openCreate"
-              }
+              },
+              "children": "Create New"
             }
           }
         ]
@@ -108,22 +108,22 @@
             "type": "Button",
             "key": "save-btn",
             "props": {
-              "text": "Save",
               "type": "submit",
               "onClick": {
                 "$action": "form.submit"
-              }
+              },
+              "children": "Save"
             }
           },
           {
             "type": "Button",
             "key": "cancel-btn",
             "props": {
-              "text": "Cancel",
               "variant": "outline",
               "onClick": {
                 "$action": "modal.close"
-              }
+              },
+              "children": "Cancel"
             }
           }
         ]

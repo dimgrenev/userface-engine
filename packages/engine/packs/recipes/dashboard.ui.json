@@ -51,7 +51,7 @@
                 "type": "Text",
                 "key": "metric-users",
                 "props": {
-                  "text": {
+                  "children": {
                     "$ref": "stats.totalUsers"
                   }
                 }
@@ -60,7 +60,7 @@
                 "type": "Text",
                 "key": "metric-revenue",
                 "props": {
-                  "text": {
+                  "children": {
                     "$ref": "stats.revenue"
                   }
                 }

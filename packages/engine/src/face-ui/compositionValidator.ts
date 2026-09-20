@@ -162,6 +162,7 @@ const FALLBACK_FACE_UI_COMPONENT_TYPES = [
   'Markdown',
   'Media',
   'Menu',
+  'Meter',
   'Modal',
   'Navigation',
   'Overlay',

@@ -188,9 +188,9 @@
         {
           "type": "Button",
           "props": {
-            "text": "Submit",
             "variant": "accent",
-            "type": "submit"
+            "type": "submit",
+            "children": "Submit"
           },
           "key": "submit"
         }
@@ -231,7 +231,7 @@
               "type": "Text",
               "props": {
                 "variant": "h2",
-                "text": "Sign in"
+                "children": "Sign in"
               }
             },
             {
@@ -251,9 +251,9 @@
             {
               "type": "Button",
               "props": {
-                "text": "Sign in",
                 "variant": "accent",
-                "type": "submit"
+                "type": "submit",
+                "children": "Sign in"
               }
             }
           ]

@@ -91,7 +91,7 @@
             "key": "language",
             "props": {
               "label": "Language",
-              "options": {
+              "items": {
                 "$ref": "settings.languageOptions"
               },
               "value": {
@@ -112,12 +112,12 @@
             "type": "Button",
             "key": "save",
             "props": {
-              "text": "Save Changes",
               "type": "submit",
               "variant": "accent",
               "onClick": {
                 "$action": "settings.save"
-              }
+              },
+              "children": "Save Changes"
             }
           }
         ]

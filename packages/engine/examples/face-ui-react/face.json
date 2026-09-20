@@ -17,20 +17,20 @@
       {
         "type": "Text",
         "props": {
-          "text": "Hello from face schema v1"
+          "children": "Hello from face schema v1"
         }
       },
       {
         "type": "Button",
         "props": {
-          "text": "Click",
           "variant": "accent",
           "onClick": {
             "$action": "log",
             "args": {
               "msg": "clicked"
             }
-          }
+          },
+          "children": "Click"
         }
       }
     ]

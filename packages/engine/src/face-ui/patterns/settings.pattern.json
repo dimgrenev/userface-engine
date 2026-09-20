@@ -168,7 +168,7 @@
           "type": "Text",
           "props": {
             "variant": "h1",
-            "text": "Settings"
+            "children": "Settings"
           },
           "key": "title"
         },
@@ -176,7 +176,7 @@
           "type": "Text",
           "props": {
             "variant": "muted",
-            "text": "Manage your account preferences"
+            "children": "Manage your account preferences"
           },
           "key": "subtitle"
         },
@@ -188,7 +188,7 @@
               "type": "Text",
               "props": {
                 "variant": "h3",
-                "text": "Profile"
+                "children": "Profile"
               },
               "key": "profile-title"
             },
@@ -196,7 +196,7 @@
               "type": "Text",
               "props": {
                 "variant": "muted",
-                "text": "Your public profile information"
+                "children": "Your public profile information"
               },
               "key": "profile-desc"
             },
@@ -236,7 +236,7 @@
               "type": "Text",
               "props": {
                 "variant": "h3",
-                "text": "Notifications"
+                "children": "Notifications"
               },
               "key": "notif-title"
             },
@@ -244,7 +244,7 @@
               "type": "Text",
               "props": {
                 "variant": "muted",
-                "text": "Choose how you want to be notified"
+                "children": "Choose how you want to be notified"
               },
               "key": "notif-desc"
             },
@@ -283,7 +283,7 @@
               "type": "Text",
               "props": {
                 "variant": "h3",
-                "text": "Appearance"
+                "children": "Appearance"
               },
               "key": "appear-title"
             },
@@ -316,16 +316,16 @@
             {
               "type": "Button",
               "props": {
-                "text": "Cancel",
-                "variant": "ghost"
+                "variant": "ghost",
+                "children": "Cancel"
               },
               "key": "cancel"
             },
             {
               "type": "Button",
               "props": {
-                "text": "Save Changes",
-                "variant": "accent"
+                "variant": "accent",
+                "children": "Save Changes"
               },
               "key": "save"
             }
@@ -389,7 +389,7 @@
               "type": "Text",
               "props": {
                 "variant": "h1",
-                "text": "Account Settings"
+                "children": "Account Settings"
               },
               "key": "title"
             },
@@ -401,7 +401,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "Profile"
+                    "children": "Profile"
                   },
                   "key": "profile-title"
                 },
@@ -433,7 +433,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "Security"
+                    "children": "Security"
                   },
                   "key": "sec-title"
                 },
@@ -460,8 +460,8 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Update Password",
-                    "variant": "default"
+                    "variant": "default",
+                    "children": "Update Password"
                   },
                   "key": "update-pw"
                 }
@@ -475,7 +475,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "Danger Zone"
+                    "children": "Danger Zone"
                   },
                   "key": "danger-title"
                 },
@@ -483,7 +483,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "muted",
-                    "text": "Irreversible actions. Proceed with caution."
+                    "children": "Irreversible actions. Proceed with caution."
                   },
                   "key": "danger-desc"
                 },
@@ -494,8 +494,8 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Delete Account",
-                    "variant": "destructive"
+                    "variant": "destructive",
+                    "children": "Delete Account"
                   },
                   "key": "delete"
                 }
@@ -508,16 +508,16 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Cancel",
-                    "variant": "ghost"
+                    "variant": "ghost",
+                    "children": "Cancel"
                   },
                   "key": "cancel"
                 },
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Save",
-                    "variant": "accent"
+                    "variant": "accent",
+                    "children": "Save"
                   },
                   "key": "save"
                 }
@@ -539,7 +539,7 @@
               "type": "Text",
               "props": {
                 "variant": "h1",
-                "text": "Workspace Settings"
+                "children": "Workspace Settings"
               },
               "key": "title"
             },
@@ -551,7 +551,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "General"
+                    "children": "General"
                   },
                   "key": "gen-title"
                 },
@@ -591,7 +591,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "Members"
+                    "children": "Members"
                   },
                   "key": "mem-title"
                 },
@@ -622,8 +622,8 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Invite Member",
-                    "variant": "default"
+                    "variant": "default",
+                    "children": "Invite Member"
                   },
                   "key": "invite"
                 }
@@ -636,16 +636,16 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Cancel",
-                    "variant": "ghost"
+                    "variant": "ghost",
+                    "children": "Cancel"
                   },
                   "key": "cancel"
                 },
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Save Changes",
-                    "variant": "accent"
+                    "variant": "accent",
+                    "children": "Save Changes"
                   },
                   "key": "save"
                 }

@@ -54,7 +54,7 @@
         "key": "field-3",
         "props": {
           "label": "Role",
-          "options": {
+          "items": {
             "$ref": "form.roleOptions"
           },
           "value": {
@@ -86,23 +86,23 @@
             "type": "Button",
             "key": "submit",
             "props": {
-              "text": "Save",
               "type": "submit",
               "variant": "accent",
               "onClick": {
                 "$action": "form.submit"
-              }
+              },
+              "children": "Save"
             }
           },
           {
             "type": "Button",
             "key": "cancel",
             "props": {
-              "text": "Cancel",
               "variant": "outline",
               "onClick": {
                 "$action": "form.cancel"
-              }
+              },
+              "children": "Cancel"
             }
           }
         ]
