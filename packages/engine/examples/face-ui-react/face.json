@@ -6,11 +6,11 @@
     "description": "Minimal face schema v1 document that renders a small UI tree"
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
-      "left": "UI from face.json",
-      "right": {
-        "$ref": "props.right"
+      "title": "UI from face.json",
+      "description": {
+        "$ref": "props.subtitle"
       }
     },
     "children": [

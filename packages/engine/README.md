@@ -236,7 +236,7 @@ Face schema v1 is a declarative composition document.
   "schema": "face",
   "schema-version": 1,
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": { "title": "Settings" },
     "children": [
       {

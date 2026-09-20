@@ -1,0 +1,1872 @@
+{
+  "note": "Generated from the canonical Face UI package: for each component, the props its contract and its props type declare, the required props, the enum options, whether it takes children, and the native attributes its props type omits. Regenerate with FACE_UI_CONTRACTS_UPDATE=1 and a reachable Face UI checkout (FACE_UI_DIR, else <repo>/../face-ui); src/__tests__/face-ui-corpus.test.ts fails on drift whenever that checkout is reachable.",
+  "source": {
+    "repo": "face-ui",
+    "ref": "face-ui-10",
+    "generatedFrom": "7caceed"
+  },
+  "components": {
+    "Accordion": {
+      "props": [
+        "className",
+        "collapsible",
+        "defaultExpanded",
+        "disabled",
+        "expanded",
+        "headingLevel",
+        "icon",
+        "items",
+        "multiple",
+        "onExpandedChange"
+      ],
+      "required": [],
+      "enums": {
+        "headingLevel": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Avatar": {
+      "props": [
+        "fallback",
+        "fallbackDelay",
+        "name",
+        "src"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Badge": {
+      "props": [
+        "children",
+        "tone",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "fill",
+          "outline"
+        ],
+        "tone": [
+          "neutral",
+          "accent",
+          "positive",
+          "warning",
+          "destructive"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Bar": {
+      "props": [
+        "children",
+        "orientation"
+      ],
+      "required": [],
+      "enums": {
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": []
+    },
+    "Breadcrumb": {
+      "props": [
+        "className",
+        "items",
+        "labels",
+        "maxItems",
+        "membrane",
+        "separator"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Button": {
+      "props": [
+        "align",
+        "aria-expanded",
+        "chevron",
+        "children",
+        "copyText",
+        "disabled",
+        "fullWidth",
+        "icon",
+        "iconOnly",
+        "iconPosition",
+        "indent",
+        "loading",
+        "membrane",
+        "meta",
+        "onCopied",
+        "stretchText",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "default",
+          "primary",
+          "secondary",
+          "accent",
+          "outline",
+          "ghost",
+          "destructive"
+        ],
+        "iconPosition": [
+          "start",
+          "end"
+        ],
+        "chevron": [
+          "down",
+          "end"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Calendar": {
+      "props": [
+        "aria-describedby",
+        "aria-label",
+        "aria-labelledby",
+        "className",
+        "defaultValue",
+        "defaultViewDate",
+        "disabled",
+        "disabledDates",
+        "excludeDisabledDates",
+        "labels",
+        "locale",
+        "max",
+        "min",
+        "onViewDateChange",
+        "readOnly",
+        "selection",
+        "value",
+        "viewDate",
+        "weekStartsOn"
+      ],
+      "required": [],
+      "enums": {
+        "weekStartsOn": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "selection": [
+          "single",
+          "range"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Card": {
+      "props": [
+        "border",
+        "children",
+        "description",
+        "footer",
+        "footerAlign",
+        "fullWidth",
+        "hoverable",
+        "padding",
+        "radius",
+        "title",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "default",
+          "plain",
+          "code"
+        ],
+        "padding": [
+          "default",
+          "control",
+          "membrane",
+          "none"
+        ],
+        "radius": [
+          "md",
+          "lg",
+          "none"
+        ],
+        "footerAlign": [
+          "start",
+          "end",
+          "between"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "content",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "title"
+      ]
+    },
+    "Carousel": {
+      "props": [
+        "aria-label",
+        "autoPlay",
+        "autoPlayInterval",
+        "children",
+        "defaultIndex",
+        "index",
+        "labels",
+        "loop",
+        "onIndexChange",
+        "slidesPerView"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": true,
+      "deniedNative": [
+        "aria-roledescription",
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Checkbox": {
+      "props": [
+        "aria-describedby",
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "checked",
+        "className",
+        "defaultChecked",
+        "disabled",
+        "form",
+        "fullWidth",
+        "label",
+        "membrane",
+        "name",
+        "onCheckedChange",
+        "required",
+        "style",
+        "value"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Code": {
+      "props": [
+        "children",
+        "collapsed",
+        "collapsedLines",
+        "defaultCollapsed",
+        "highlightedLines",
+        "labels",
+        "language",
+        "onCollapsedChange",
+        "showLineNumbers",
+        "title",
+        "tokenizedLines"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "title"
+      ]
+    },
+    "Command": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "className",
+        "defaultOpen",
+        "defaultSearch",
+        "items",
+        "labels",
+        "onOpenChange",
+        "onSearchChange",
+        "onSelect",
+        "open",
+        "placeholder",
+        "search",
+        "surface"
+      ],
+      "required": [],
+      "enums": {
+        "surface": [
+          "auto",
+          "inline",
+          "dialog"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-activedescendant",
+        "aria-autocomplete",
+        "aria-controls",
+        "aria-expanded",
+        "aria-haspopup",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "dir",
+        "hidden",
+        "onChange",
+        "onSelect",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Date": {
+      "props": [
+        "className",
+        "clearable",
+        "closeOnSelect",
+        "defaultOpen",
+        "defaultValue",
+        "description",
+        "disabled",
+        "disabledDates",
+        "disabledTime",
+        "error",
+        "excludeDisabledDates",
+        "form",
+        "format",
+        "fullWidth",
+        "label",
+        "labelPosition",
+        "labels",
+        "locale",
+        "max",
+        "membrane",
+        "min",
+        "mode",
+        "name",
+        "onOpenChange",
+        "open",
+        "openTo",
+        "placeholder",
+        "presets",
+        "readOnly",
+        "required",
+        "selection",
+        "showNow",
+        "surface",
+        "timezone",
+        "value",
+        "valueFormat",
+        "weekStartsOn"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "weekStartsOn": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "surface": [
+          "auto",
+          "popover",
+          "sheet"
+        ],
+        "mode": [
+          "date",
+          "datetime",
+          "time",
+          "month",
+          "year",
+          "week"
+        ],
+        "openTo": [
+          "day",
+          "hours",
+          "minutes",
+          "month",
+          "year"
+        ],
+        "selection": [
+          "single",
+          "range"
+        ],
+        "valueFormat": [
+          "iso",
+          "date"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-activedescendant",
+        "aria-controls",
+        "aria-disabled",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-readonly",
+        "aria-required",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "formAction",
+        "formEncType",
+        "formMethod",
+        "formNoValidate",
+        "formTarget",
+        "onChange",
+        "popoverTarget",
+        "popoverTargetAction",
+        "role",
+        "type",
+        "value"
+      ]
+    },
+    "Icon": {
+      "props": [
+        "aria-label",
+        "name",
+        "title"
+      ],
+      "required": [
+        "name"
+      ],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Input": {
+      "props": [
+        "autoComplete",
+        "autoFocus",
+        "autoGrow",
+        "className",
+        "clearable",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "fullWidth",
+        "icon",
+        "iconPosition",
+        "label",
+        "labelPosition",
+        "labels",
+        "list",
+        "max",
+        "maxLength",
+        "membrane",
+        "min",
+        "minLength",
+        "multiline",
+        "multiple",
+        "name",
+        "onValueChange",
+        "pattern",
+        "placeholder",
+        "readOnly",
+        "required",
+        "rows",
+        "spellCheck",
+        "step",
+        "style",
+        "type",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "iconPosition": [
+          "start",
+          "end"
+        ],
+        "type": [
+          "text",
+          "email",
+          "number",
+          "date",
+          "password",
+          "search",
+          "tel",
+          "url",
+          "time",
+          "datetime-local",
+          "month",
+          "week"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "accept",
+        "alt",
+        "capture",
+        "checked",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "formAction",
+        "formEncType",
+        "formMethod",
+        "formNoValidate",
+        "formTarget",
+        "height",
+        "list",
+        "max",
+        "min",
+        "multiple",
+        "pattern",
+        "size",
+        "src",
+        "step",
+        "type",
+        "value",
+        "width"
+      ]
+    },
+    "Markdown": {
+      "props": [
+        "breaks",
+        "children",
+        "gfm",
+        "html",
+        "linkRel",
+        "linkTarget",
+        "membrane"
+      ],
+      "required": [],
+      "enums": {
+        "linkTarget": [
+          "_self",
+          "_blank"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "content",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Media": {
+      "props": [
+        "alt",
+        "aria-label",
+        "autoPlay",
+        "children",
+        "controls",
+        "decoding",
+        "fallback",
+        "height",
+        "hidden",
+        "loading",
+        "loop",
+        "membrane",
+        "muted",
+        "objectFit",
+        "onError",
+        "onLoad",
+        "onLoadedMetadata",
+        "onSuspend",
+        "playsInline",
+        "poster",
+        "src",
+        "type",
+        "variant",
+        "width"
+      ],
+      "required": [
+        "src"
+      ],
+      "enums": {
+        "type": [
+          "image",
+          "video",
+          "audio"
+        ],
+        "variant": [
+          "default",
+          "circle",
+          "thumbnail"
+        ],
+        "objectFit": [
+          "cover",
+          "contain",
+          "fill",
+          "none"
+        ],
+        "loading": [
+          "eager",
+          "lazy"
+        ],
+        "decoding": [
+          "async",
+          "sync",
+          "auto"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": []
+    },
+    "Menu": {
+      "props": [
+        "align",
+        "aria-label",
+        "children",
+        "className",
+        "defaultOpen",
+        "disabled",
+        "items",
+        "labels",
+        "onOpenChange",
+        "onSelect",
+        "open",
+        "openOn",
+        "side",
+        "sideOffset",
+        "surface"
+      ],
+      "required": [],
+      "enums": {
+        "openOn": [
+          "click",
+          "context"
+        ],
+        "surface": [
+          "auto",
+          "popover",
+          "sheet"
+        ],
+        "side": [
+          "bottom",
+          "left",
+          "right",
+          "top"
+        ],
+        "align": [
+          "center",
+          "end",
+          "start"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "aria-orientation",
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "hidden",
+        "onSelect",
+        "popover",
+        "role",
+        "suppressContentEditableWarning",
+        "tabIndex"
+      ]
+    },
+    "Meter": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "aria-valuetext",
+        "label",
+        "max",
+        "membrane",
+        "min",
+        "shape",
+        "showValue",
+        "tone",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "tone": [
+          "neutral",
+          "positive",
+          "warning",
+          "destructive"
+        ],
+        "shape": [
+          "linear",
+          "circle"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Modal": {
+      "props": [
+        "backdropClassName",
+        "children",
+        "className",
+        "closable",
+        "closeOnBackdropClick",
+        "defaultOpen",
+        "description",
+        "edge",
+        "footer",
+        "height",
+        "labels",
+        "onOpenChange",
+        "open",
+        "placement",
+        "portal",
+        "positionerClassName",
+        "role",
+        "scrollLock",
+        "title",
+        "trigger",
+        "width"
+      ],
+      "required": [],
+      "enums": {
+        "placement": [
+          "center",
+          "start",
+          "end",
+          "top",
+          "bottom"
+        ],
+        "edge": [
+          "inset",
+          "flush"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "content",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "hidden",
+        "popover",
+        "role",
+        "suppressContentEditableWarning",
+        "tabIndex",
+        "title"
+      ]
+    },
+    "Navigation": {
+      "props": [
+        "aria-label",
+        "defaultOpen",
+        "defaultValue",
+        "items",
+        "labels",
+        "onOpenChange",
+        "onValueChange",
+        "open",
+        "surface",
+        "trigger",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "surface": [
+          "auto",
+          "inline",
+          "sheet"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Overlay": {
+      "props": [
+        "align",
+        "children",
+        "closeDelay",
+        "content",
+        "defaultOpen",
+        "dir",
+        "interactive",
+        "open",
+        "openDelay",
+        "openOn",
+        "side",
+        "sideOffset"
+      ],
+      "required": [],
+      "enums": {
+        "side": [
+          "top",
+          "right",
+          "bottom",
+          "left"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ],
+        "openOn": [
+          "hover",
+          "click"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": []
+    },
+    "Pagination": {
+      "props": [
+        "className",
+        "defaultPage",
+        "disabled",
+        "labels",
+        "membrane",
+        "onPageChange",
+        "page",
+        "pageSize",
+        "siblingCount",
+        "total"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Panel": {
+      "props": [
+        "aria-label",
+        "collapsed",
+        "collapsedWidth",
+        "collapsible",
+        "defaultCollapsed",
+        "defaultExpanded",
+        "defaultOpen",
+        "defaultValue",
+        "expanded",
+        "items",
+        "labels",
+        "onCollapsedChange",
+        "onExpandedChange",
+        "onOpenChange",
+        "onValueChange",
+        "open",
+        "surface",
+        "trigger",
+        "value",
+        "width"
+      ],
+      "required": [],
+      "enums": {
+        "surface": [
+          "auto",
+          "inline",
+          "sheet"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Popover": {
+      "props": [
+        "align",
+        "children",
+        "content",
+        "defaultOpen",
+        "dir",
+        "open",
+        "side",
+        "sideOffset"
+      ],
+      "required": [],
+      "enums": {
+        "side": [
+          "top",
+          "right",
+          "bottom",
+          "left"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": []
+    },
+    "Progress": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "aria-valuetext",
+        "label",
+        "max",
+        "membrane",
+        "shape",
+        "showValue",
+        "tone",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "tone": [
+          "neutral",
+          "positive",
+          "warning",
+          "destructive"
+        ],
+        "shape": [
+          "linear",
+          "circle"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Radio": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "form",
+        "items",
+        "label",
+        "labelPosition",
+        "membrane",
+        "name",
+        "onValueChange",
+        "orientation",
+        "required",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-orientation",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role"
+      ]
+    },
+    "Rating": {
+      "props": [
+        "allowHalf",
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "form",
+        "formatValue",
+        "label",
+        "labelPosition",
+        "max",
+        "membrane",
+        "name",
+        "onValueChange",
+        "readOnly",
+        "required",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-disabled",
+        "aria-readonly",
+        "aria-required",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow",
+        "aria-valuetext",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Scroll": {
+      "props": [
+        "aria-label",
+        "children",
+        "className",
+        "height",
+        "orientation",
+        "style"
+      ],
+      "required": [],
+      "enums": {
+        "orientation": [
+          "vertical",
+          "horizontal",
+          "both"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "autoFocus",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "hidden",
+        "role",
+        "suppressContentEditableWarning",
+        "tabIndex"
+      ]
+    },
+    "SegmentedControl": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "form",
+        "items",
+        "label",
+        "labelPosition",
+        "membrane",
+        "multiple",
+        "name",
+        "onValueChange",
+        "orientation",
+        "required",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-checked",
+        "aria-disabled",
+        "aria-orientation",
+        "aria-pressed",
+        "aria-readonly",
+        "aria-required",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role"
+      ]
+    },
+    "Select": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "contentClassName",
+        "contentMinWidth",
+        "defaultOpen",
+        "defaultValue",
+        "description",
+        "disabled",
+        "displayValue",
+        "error",
+        "form",
+        "fullWidth",
+        "iconOnly",
+        "items",
+        "label",
+        "labelPosition",
+        "labels",
+        "membrane",
+        "multiple",
+        "name",
+        "onOpenChange",
+        "onValueChange",
+        "open",
+        "placeholder",
+        "required",
+        "stretchText",
+        "surface",
+        "triggerClassName",
+        "value",
+        "valueClassName"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "surface": [
+          "auto",
+          "popover",
+          "sheet",
+          "side"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-activedescendant",
+        "aria-controls",
+        "aria-disabled",
+        "aria-expanded",
+        "aria-haspopup",
+        "aria-required",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultValue",
+        "formAction",
+        "formEncType",
+        "formMethod",
+        "formNoValidate",
+        "formTarget",
+        "onChange",
+        "popoverTarget",
+        "popoverTargetAction",
+        "role",
+        "type",
+        "value"
+      ]
+    },
+    "Separator": {
+      "props": [
+        "decorative",
+        "membrane",
+        "orientation"
+      ],
+      "required": [],
+      "enums": {
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-orientation",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role"
+      ]
+    },
+    "Skeleton": {
+      "props": [
+        "height",
+        "shape",
+        "width"
+      ],
+      "required": [],
+      "enums": {
+        "shape": [
+          "rect",
+          "circle",
+          "text"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-hidden",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Slider": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "clampToCrop",
+        "crop",
+        "cropName",
+        "cropRange",
+        "defaultCropRange",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "form",
+        "formatValue",
+        "label",
+        "labelPosition",
+        "labels",
+        "max",
+        "membrane",
+        "min",
+        "name",
+        "onCropRangeChange",
+        "onCropRangeCommit",
+        "orientation",
+        "required",
+        "showValue",
+        "step",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-disabled",
+        "aria-orientation",
+        "aria-readonly",
+        "aria-required",
+        "aria-valuemax",
+        "aria-valuemin",
+        "aria-valuenow",
+        "aria-valuetext",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Steps": {
+      "props": [
+        "className",
+        "defaultStep",
+        "disabled",
+        "items",
+        "linear",
+        "membrane",
+        "onStepChange",
+        "step"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-disabled",
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Switcher": {
+      "props": [
+        "aria-describedby",
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "checked",
+        "className",
+        "defaultChecked",
+        "disabled",
+        "form",
+        "fullWidth",
+        "label",
+        "membrane",
+        "name",
+        "onCheckedChange",
+        "required",
+        "style",
+        "truncate",
+        "value"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Table": {
+      "props": [
+        "activeRow",
+        "aria-label",
+        "aria-labelledby",
+        "columns",
+        "defaultSelectedRows",
+        "defaultSort",
+        "labels",
+        "membrane",
+        "onColumnResize",
+        "onRowClick",
+        "onSelectedRowsChange",
+        "onSortChange",
+        "resizable",
+        "rowKey",
+        "rowNumbers",
+        "rows",
+        "selectable",
+        "selectedRows",
+        "showDividers",
+        "sort",
+        "stickyHeader",
+        "stickyLastColumn",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "plain",
+          "tile"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "align",
+        "bgcolor",
+        "border",
+        "cellPadding",
+        "cellSpacing",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "frame",
+        "rules",
+        "summary",
+        "suppressContentEditableWarning",
+        "width"
+      ]
+    },
+    "Tabs": {
+      "props": [
+        "actions",
+        "activationMode",
+        "aria-describedby",
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultValue",
+        "disabled",
+        "items",
+        "membrane",
+        "onValueChange",
+        "orientation",
+        "renderPanels",
+        "value",
+        "variant",
+        "wrap"
+      ],
+      "required": [],
+      "enums": {
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ],
+        "activationMode": [
+          "automatic",
+          "manual"
+        ],
+        "variant": [
+          "pill",
+          "underline"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "aria-disabled",
+        "aria-orientation",
+        "aria-selected",
+        "autoFocus",
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role"
+      ]
+    },
+    "Text": {
+      "props": [
+        "align",
+        "as",
+        "children",
+        "fullWidth",
+        "heightMode",
+        "htmlFor",
+        "icon",
+        "iconPosition",
+        "inset",
+        "membrane",
+        "size",
+        "stretchText",
+        "truncate",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "body",
+          "heading",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "label",
+          "kbd",
+          "code",
+          "markdown",
+          "muted",
+          "blockquote"
+        ],
+        "size": [
+          "xs",
+          "sm",
+          "md",
+          "lg",
+          "xl"
+        ],
+        "as": [
+          "p",
+          "span",
+          "div",
+          "h1",
+          "h2",
+          "h3",
+          "h4",
+          "h5",
+          "h6",
+          "label",
+          "kbd",
+          "code",
+          "strong",
+          "em",
+          "small",
+          "blockquote"
+        ],
+        "iconPosition": [
+          "start",
+          "end"
+        ],
+        "inset": [
+          "control",
+          "none"
+        ],
+        "heightMode": [
+          "control",
+          "content"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Tile": {
+      "props": [
+        "actionVisibility",
+        "actions",
+        "active",
+        "align",
+        "aria-busy",
+        "aria-expanded",
+        "chevron",
+        "children",
+        "density",
+        "disabled",
+        "fullWidth",
+        "icon",
+        "iconPosition",
+        "indent",
+        "interactive",
+        "leading",
+        "membrane",
+        "meta",
+        "stretchText",
+        "tone",
+        "truncate",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "default",
+          "ghost"
+        ],
+        "density": [
+          "default",
+          "spacious"
+        ],
+        "tone": [
+          "neutral",
+          "muted",
+          "accent",
+          "positive",
+          "warning",
+          "destructive"
+        ],
+        "actionVisibility": [
+          "reveal",
+          "hover",
+          "always",
+          "hidden"
+        ],
+        "iconPosition": [
+          "start",
+          "end"
+        ],
+        "chevron": [
+          "down",
+          "end"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue"
+      ]
+    },
+    "Toast": {
+      "props": [
+        "action",
+        "className",
+        "closable",
+        "description",
+        "labels",
+        "onClose",
+        "title",
+        "tone"
+      ],
+      "required": [],
+      "enums": {
+        "tone": [
+          "destructive",
+          "neutral",
+          "positive",
+          "warning"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "role",
+        "title"
+      ]
+    },
+    "Toc": {
+      "props": [
+        "className",
+        "defaultValue",
+        "items",
+        "line",
+        "onSelect",
+        "onValueChange",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "line": [
+          "start",
+          "end",
+          "none"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "onSelect",
+        "suppressContentEditableWarning"
+      ]
+    },
+    "Toggle": {
+      "props": [
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultValue",
+        "description",
+        "disabled",
+        "error",
+        "form",
+        "items",
+        "label",
+        "labelPosition",
+        "membrane",
+        "multiple",
+        "name",
+        "orientation",
+        "required",
+        "value"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ],
+        "orientation": [
+          "horizontal",
+          "vertical"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": []
+    },
+    "Tooltip": {
+      "props": [
+        "align",
+        "children",
+        "closeDelay",
+        "content",
+        "defaultOpen",
+        "dir",
+        "open",
+        "openDelay",
+        "side",
+        "sideOffset"
+      ],
+      "required": [],
+      "enums": {
+        "side": [
+          "top",
+          "right",
+          "bottom",
+          "left"
+        ],
+        "align": [
+          "start",
+          "center",
+          "end"
+        ]
+      },
+      "acceptsChildren": true,
+      "deniedNative": []
+    },
+    "Tree": {
+      "props": [
+        "aria-label",
+        "defaultExpanded",
+        "defaultValue",
+        "expanded",
+        "items",
+        "onExpandedChange",
+        "onValueChange",
+        "renderNode",
+        "value",
+        "variant"
+      ],
+      "required": [],
+      "enums": {
+        "variant": [
+          "default",
+          "lines"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "autoFocus",
+        "children",
+        "contentEditable",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role",
+        "suppressContentEditableWarning",
+        "tabIndex"
+      ]
+    },
+    "Upload": {
+      "props": [
+        "accept",
+        "aria-label",
+        "aria-labelledby",
+        "autoFocus",
+        "defaultFiles",
+        "description",
+        "disabled",
+        "error",
+        "files",
+        "form",
+        "label",
+        "labelPosition",
+        "labels",
+        "maxFiles",
+        "maxSize",
+        "multiple",
+        "name",
+        "onFilesChange",
+        "onReject",
+        "required"
+      ],
+      "required": [],
+      "enums": {
+        "labelPosition": [
+          "top",
+          "start"
+        ]
+      },
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "defaultChecked",
+        "defaultValue",
+        "role"
+      ]
+    }
+  }
+}

@@ -179,7 +179,7 @@
             {
               "type": "Date",
               "props": {
-                "mode": "range"
+                "selection": "range"
               },
               "key": "date-range"
             }
@@ -212,7 +212,7 @@
                 {
                   "type": "Badge",
                   "props": {
-                    "variant": "success",
+                    "tone": "positive",
                     "children": "+12%"
                   },
                   "key": "trend"
@@ -242,7 +242,7 @@
                 {
                   "type": "Badge",
                   "props": {
-                    "variant": "success",
+                    "tone": "positive",
                     "children": "+8%"
                   },
                   "key": "trend"
@@ -272,7 +272,7 @@
                 {
                   "type": "Badge",
                   "props": {
-                    "variant": "warning",
+                    "tone": "warning",
                     "children": "-0.5%"
                   },
                   "key": "trend"

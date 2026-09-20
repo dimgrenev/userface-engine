@@ -12,13 +12,13 @@
     ]
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
       "title": "Settings"
     },
     "children": [
       {
-        "type": "Panel",
+        "type": "Card",
         "key": "profile-section",
         "props": {
           "title": "Profile"
@@ -32,7 +32,7 @@
               "value": {
                 "$ref": "settings.displayName"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "settings.update"
               }
             }
@@ -46,7 +46,7 @@
               "value": {
                 "$ref": "settings.email"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "settings.update"
               }
             }
@@ -54,7 +54,7 @@
         ]
       },
       {
-        "type": "Panel",
+        "type": "Card",
         "key": "preferences-section",
         "props": {
           "title": "Preferences"
@@ -68,7 +68,7 @@
               "checked": {
                 "$ref": "settings.darkMode"
               },
-              "onChange": {
+              "onCheckedChange": {
                 "$action": "settings.toggleDarkMode"
               }
             }
@@ -81,7 +81,7 @@
               "checked": {
                 "$ref": "settings.emailNotifications"
               },
-              "onChange": {
+              "onCheckedChange": {
                 "$action": "settings.toggleNotifications"
               }
             }
@@ -97,7 +97,7 @@
               "value": {
                 "$ref": "settings.language"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "settings.updateLanguage"
               }
             }
@@ -105,7 +105,7 @@
         ]
       },
       {
-        "type": "Panel",
+        "type": "Bar",
         "key": "actions",
         "children": [
           {

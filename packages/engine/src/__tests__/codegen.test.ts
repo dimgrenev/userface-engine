@@ -6,16 +6,16 @@ const sampleDoc = {
   'schema-version': 1,
   root: {
     type: 'Card',
-    props: { variant: 'outlined' },
+    props: { variant: 'plain' },
     children: [
       {
         type: 'Text',
-        props: { text: 'Hello World' },
+        props: { children: 'Hello World' },
       },
       {
         type: 'Button',
         props: {
-          text: 'Click me',
+          children: 'Click me',
           onClick: { $action: 'card.click', args: { id: 1 } },
         },
       },
@@ -67,10 +67,10 @@ describe('face-ui codegen', () => {
       const doc = {
         schema: 'face',
         'schema-version': 1,
-        root: { type: 'Divider', props: {} },
+        root: { type: 'Separator', props: {} },
       };
       const code = generateReactCode(doc);
-      expect(code).toContain('<Divider');
+      expect(code).toContain('<Separator');
       expect(code).toContain('/>');
     });
 
@@ -78,7 +78,7 @@ describe('face-ui codegen', () => {
       const doc = {
         schema: 'face',
         'schema-version': 1,
-        root: { type: 'Text', props: { text: { $ref: 'user.name' } } },
+        root: { type: 'Text', props: { children: { $ref: 'user.name' } } },
       };
       const code = generateReactCode(doc);
       expect(code).toContain('state.user.name');

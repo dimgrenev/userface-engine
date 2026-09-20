@@ -31,7 +31,7 @@
       "minCount": 1
     },
     {
-      "type": "Panel",
+      "type": "Card",
       "minCount": 1
     }
   ],
@@ -64,7 +64,7 @@
         "Panel",
         "Panel"
       ],
-      "reason": "Nested detail panels are confusing; use one detail level or navigate to a new page"
+      "reason": "Nested sidebars are confusing; one navigation panel per screen, and the detail pane is a Card"
     },
     {
       "nested": [
@@ -77,7 +77,7 @@
   "componentSelection": {
     "faceUiPrimitives": [
       "Table",
-      "Panel",
+      "Card",
       "Input",
       "Text",
       "Button",
@@ -178,7 +178,7 @@
           ]
         },
         {
-          "type": "Panel",
+          "type": "Card",
           "key": "detail-pane",
           "children": [
             {
@@ -330,7 +330,7 @@
               ]
             },
             {
-              "type": "Panel",
+              "type": "Card",
               "key": "email-view",
               "children": [
                 {
@@ -445,7 +445,7 @@
               ]
             },
             {
-              "type": "Panel",
+              "type": "Card",
               "key": "preview",
               "children": [
                 {
@@ -457,7 +457,9 @@
                 },
                 {
                   "type": "Media",
-                  "props": {},
+                  "props": {
+                    "src": "preview.png"
+                  },
                   "key": "preview-img"
                 },
                 {

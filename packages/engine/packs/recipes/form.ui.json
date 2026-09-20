@@ -13,7 +13,7 @@
     ]
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
       "title": {
         "$ref": "form.title"
@@ -28,10 +28,10 @@
           "value": {
             "$ref": "form.name"
           },
-          "onChange": {
+          "required": true,
+          "onValueChange": {
             "$action": "form.update"
-          },
-          "required": true
+          }
         }
       },
       {
@@ -43,10 +43,10 @@
           "value": {
             "$ref": "form.email"
           },
-          "onChange": {
+          "required": true,
+          "onValueChange": {
             "$action": "form.update"
-          },
-          "required": true
+          }
         }
       },
       {
@@ -60,7 +60,7 @@
           "value": {
             "$ref": "form.role"
           },
-          "onChange": {
+          "onValueChange": {
             "$action": "form.update"
           }
         }
@@ -73,13 +73,13 @@
           "checked": {
             "$ref": "form.sendNotification"
           },
-          "onChange": {
+          "onCheckedChange": {
             "$action": "form.update"
           }
         }
       },
       {
-        "type": "Panel",
+        "type": "Bar",
         "key": "actions",
         "children": [
           {
