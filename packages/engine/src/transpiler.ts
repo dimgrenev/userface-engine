@@ -14,11 +14,9 @@ const _req: NodeRequire = (() => {
   }
 })();
 
-// Prefer native esbuild in Node; fall back to esbuild-wasm in browser
+// Resolve the native compiler from the installed engine, independently of cwd.
+// Keep optional compilation dependencies lazy for non-rendering SDK consumers.
 let nodeEsbuild: any = null;
-try {
-  nodeEsbuild = _req('esbuild');
-} catch {}
 
 // Ленивая загрузка плагинов, чтобы не тянуть ESM в граф сборки API преждевременно
 let vuePluginFactory: any = null;
@@ -84,6 +82,14 @@ function requireShimForFramework(framework: Framework): string {
 
 async function getEsbuild(): Promise<any> {
   if (nodeEsbuild) return nodeEsbuild;
+  if (typeof window === 'undefined') {
+    try {
+      nodeEsbuild = await import('esbuild');
+      return nodeEsbuild;
+    } catch {
+      // Preserve the legacy optional wasm fallback when native esbuild is absent.
+    }
+  }
   // If native esbuild failed to load, fall back to esbuild-wasm.
   // IMPORTANT: handle Node vs Browser differently:
   // - Browser: use wasmURL (served by app)
@@ -156,8 +162,8 @@ export async function transpileToIIFE(
       plugins.push(
         sveltePluginFactory({
           compilerOptions: {
-            generate: mode === 'ssr' ? 'ssr' : 'dom',
-            hydratable: true,
+            compatibility: { componentApi: 4 },
+            generate: mode === 'ssr' ? 'server' : 'client',
             // css handling is internal; avoid unsupported flags across versions
           }
         })
@@ -218,9 +224,7 @@ ${bundled}
 
 /**
  * Server/Node-only: compile an entry file from an in-memory VFS.
- * This is intentionally separated from `transpileToIIFE()` to avoid impacting the current React path.
- *
- * Supports: Vue SFC (.vue) and Svelte (.svelte) with relative imports between VFS files.
+ * Supports React, Vue SFC and Svelte with relative imports between VFS files.
  * Returns:
  * - `cleanCode`: executable IIFE which evals to a component constructor/options object (or module-like object).
  * - `styles`: extracted CSS from SFC/Svelte compilation (caller can inject into iframe).
@@ -230,6 +234,10 @@ export async function transpileVfsToIIFE(args: {
   entryPath: string;
   framework: Extract<Framework, 'vue' | 'svelte' | 'react'>;
   mode?: TargetMode;
+  /** Select this exact module export; never fall back to default or the module object. */
+  exportName?: string;
+  /** Resolve bare VFS imports against these roots in order before the legacy cwd fallback. */
+  dependencyRoots?: string[];
 }): Promise<{ cleanCode: string; styles: string; isIIFE: true }> {
   const esbuild = await getEsbuild();
   const mode = args.mode || 'dom';
@@ -276,6 +284,12 @@ export async function transpileVfsToIIFE(args: {
     const joined = normalizeKey(path.posix.join(baseDir, r));
     const candidates = [
       joined,
+      // TypeScript's NodeNext imports retain JS specifiers in source while
+      // the captured input contains TS. Resolve those against the VFS only.
+      ...(/\.js$/i.test(joined) ? [joined.slice(0, -3) + '.ts', joined.slice(0, -3) + '.tsx'] : []),
+      ...(/\.jsx$/i.test(joined) ? [joined.slice(0, -4) + '.tsx'] : []),
+      ...(/\.mjs$/i.test(joined) ? [joined.slice(0, -4) + '.mts'] : []),
+      ...(/\.cjs$/i.test(joined) ? [joined.slice(0, -4) + '.cts'] : []),
       `${joined}.ts`,
       `${joined}.tsx`,
       `${joined}.js`,
@@ -350,6 +364,26 @@ export async function transpileVfsToIIFE(args: {
     return Array.from(out).sort();
   };
 
+  const dependencyRoots = Array.from(new Set(
+    [...(args.dependencyRoots || []), process.cwd()]
+      .filter((root): root is string => typeof root === 'string' && path.isAbsolute(root))
+      .map((root) => path.resolve(root))
+  ));
+
+  const loadFrameworkCompiler = (id: string): any => {
+    let missing: unknown = null;
+    for (const root of dependencyRoots) {
+      try {
+        return createRequire(path.join(root, 'package.json'))(id);
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code;
+        if (code !== 'MODULE_NOT_FOUND' && code !== 'ERR_PACKAGE_PATH_NOT_EXPORTED') throw error;
+        missing = error;
+      }
+    }
+    throw missing || new Error(`Cannot resolve framework compiler: ${id}`);
+  };
+
   const entryVirtual = '/' + entryPath;
   const buildOnce = async (forcedBareExternals: Set<string>) => {
     const compiledCssParts: string[] = [];
@@ -382,6 +416,33 @@ export async function transpileVfsToIIFE(args: {
           });
         }
 
+        // Use esbuild's browser-aware resolver for project dependencies first, then
+        // the installed host runtime. The VFS may be a source-only project with no
+        // node_modules; Svelte's generated internal imports still need real code.
+        if (framework !== 'react') {
+          build.onResolve({ filter: /^[^./][^:]*/, namespace: 'uf-vfs' }, async (args: any) => {
+            if (args.pluginData?.ufDependencyProbe) return null;
+            const id = String(args.path || '').trim();
+            if (!isBareModuleId(id)) return null;
+            for (const root of dependencyRoots) {
+              const resolved = await build.resolve(id, {
+                resolveDir: root,
+                kind: args.kind || 'import-statement',
+                pluginData: { ufDependencyProbe: true },
+              });
+              if (resolved.path && !resolved.errors?.length) {
+                return {
+                  path: resolved.path,
+                  namespace: resolved.namespace,
+                  external: resolved.external,
+                  sideEffects: resolved.sideEffects,
+                };
+              }
+            }
+            return null;
+          });
+        }
+
         // VFS path resolution for relative imports
         // IMPORTANT: scope to our virtual namespace only.
         // Otherwise we break node_modules resolution (Svelte internal code has tons of relative imports).
@@ -393,9 +454,10 @@ export async function transpileVfsToIIFE(args: {
           if (!resolved) {
             return { errors: [{ text: `Cannot resolve '${args.path}' from '${args.importer}'` }] };
           }
-          // React mode: treat CSS imports as side-effect only and return empty JS modules (styles are handled separately).
+          // React mode: ordinary CSS is collected by the host; CSS Modules also
+          // need esbuild to provide the imported class-name map.
           if (framework === 'react' && /\.css$/i.test(resolved)) {
-            return { path: '/' + resolved, namespace: 'uf-css' };
+            return { path: '/' + resolved, namespace: /\.module\.css$/i.test(resolved) ? 'uf-css-module' : 'uf-css' };
           }
           return { path: '/' + resolved, namespace: 'uf-vfs' };
         });
@@ -403,6 +465,32 @@ export async function transpileVfsToIIFE(args: {
         if (framework === 'react') {
           build.onLoad({ filter: /.*/, namespace: 'uf-css' }, async (_args: any) => {
             return { contents: `export {};`, loader: 'js', resolveDir: process.cwd() };
+          });
+          const resolveCssDependency = (args: any) => {
+            const importer = normalizeKey(String(args.importer || ''));
+            const cleaned = String(args.path || '').split('?')[0].split('#')[0];
+            const resolved = resolveRel(importer, cleaned);
+            if (!resolved) return { errors: [{ text: `Cannot resolve '${args.path}' from '${args.importer}'` }] };
+            return { path: '/' + resolved, namespace: /\.module\.css$/i.test(resolved) ? 'uf-css-module'
+              : /\.css$/i.test(resolved) ? 'uf-css-import' : 'uf-css-asset' };
+          };
+          for (const namespace of ['uf-css-module', 'uf-css-import']) {
+            build.onResolve({ filter: /^\.\.?\//, namespace }, resolveCssDependency);
+          }
+          build.onLoad({ filter: /.*/, namespace: 'uf-css-module' }, (args: any) => {
+            const key = normalizeKey(String(args.path || ''));
+            if (!fileMap.has(key)) return { errors: [{ text: `CSS Module not found in VFS: ${key}` }] };
+            return { contents: fileMap.get(key), loader: 'local-css', resolveDir: process.cwd() };
+          });
+          build.onLoad({ filter: /.*/, namespace: 'uf-css-import' }, (args: any) => {
+            const key = normalizeKey(String(args.path || ''));
+            if (!fileMap.has(key)) return { errors: [{ text: `CSS import not found in VFS: ${key}` }] };
+            return { contents: fileMap.get(key), loader: 'css', resolveDir: process.cwd() };
+          });
+          build.onLoad({ filter: /.*/, namespace: 'uf-css-asset' }, (args: any) => {
+            const key = normalizeKey(String(args.path || ''));
+            if (!fileMap.has(key)) return { errors: [{ text: `CSS asset not found in VFS: ${key}` }] };
+            return { contents: fileMap.get(key), loader: 'dataurl', resolveDir: process.cwd() };
           });
         }
 
@@ -423,10 +511,10 @@ export async function transpileVfsToIIFE(args: {
           // Vue: compile SFC to JS/TS module text using @vue/compiler-sfc (from esbuild-plugin-vue deps).
           if (ext === '.vue') {
             try {
-              const sfc = _req('@vue/compiler-sfc');
+              const sfc = loadFrameworkCompiler('vue/compiler-sfc');
               const id = hashId(key);
               const parsed = sfc.parse(src, { filename: key });
-              const descriptor = parsed && parsed.descriptor ? parsed.descriptor : null;
+              const descriptor = parsed.descriptor;
               const tpl = descriptor && descriptor.template ? descriptor.template.content : '<div></div>';
 
               // styles
@@ -439,7 +527,9 @@ export async function transpileVfsToIIFE(args: {
               } catch {}
 
               // script (supports <script setup> via compileScript)
-              const script = sfc.compileScript(descriptor, { id });
+              const script = descriptor.script || descriptor.scriptSetup
+                ? sfc.compileScript(descriptor, { id })
+                : { content: 'const __sfc__ = {};' };
               const tplRes = sfc.compileTemplate({
                 source: tpl,
                 filename: key,
@@ -450,7 +540,8 @@ export async function transpileVfsToIIFE(args: {
                 ssr: mode === 'ssr',
               });
               if (tplRes && tplRes.errors && tplRes.errors.length) {
-                throw new Error(String(tplRes.errors[0]?.message || tplRes.errors[0] || 'Vue template compile error'));
+                const firstError = tplRes.errors[0];
+                throw new Error(typeof firstError === 'string' ? firstError : String(firstError?.message || 'Vue template compile error'));
               }
 
               // `script.content` is ESM. We stitch render in and ensure there is exactly ONE default export.
@@ -486,11 +577,11 @@ export async function transpileVfsToIIFE(args: {
           // Svelte: compile to JS module using svelte/compiler.
           if (ext === '.svelte') {
             try {
-              const svelte = _req('svelte/compiler');
+              const svelte = loadFrameworkCompiler('svelte/compiler');
               const compiled = svelte.compile(src, {
                 filename: key,
-                generate: mode === 'ssr' ? 'ssr' : 'dom',
-                hydratable: true,
+                compatibility: { componentApi: 4 },
+                generate: mode === 'ssr' ? 'server' : 'client',
                 // Svelte v5: css option is string ("external" | "injected")
                 css: 'external',
               });
@@ -509,8 +600,8 @@ export async function transpileVfsToIIFE(args: {
           // Regular TS/JS files
           const loader =
             ext === '.tsx' ? 'tsx' :
-            ext === '.ts' ? 'ts' :
-            ext === '.jsx' ? 'jsx' :
+            /\.[cm]?ts$/.test(ext) ? 'ts' :
+            ext === '.jsx' || (framework === 'react' && /\.[cm]?js$/.test(ext)) ? 'jsx' :
             'js';
           return { contents: src, loader, resolveDir };
         });
@@ -521,6 +612,7 @@ export async function transpileVfsToIIFE(args: {
       entryPoints: [entryVirtual],
       bundle: true,
       write: false,
+      outfile: '/uf-preview.js',
       platform: 'browser',
       target: 'es2019',
       format: 'iife',
@@ -538,15 +630,18 @@ export async function transpileVfsToIIFE(args: {
           }
         }
       ],
+      jsx: framework === 'react' ? 'automatic' : undefined,
       define: framework === 'vue' ? {
         '__VUE_OPTIONS_API__': 'true',
         '__VUE_PROD_DEVTOOLS__': 'false'
       } : undefined
     });
 
-    const bundled = buildResult.outputFiles && buildResult.outputFiles[0] ? String(buildResult.outputFiles[0].text || '') : '';
+    const outputFiles = buildResult.outputFiles || [];
+    const bundled = String(outputFiles.find((file: any) => /\.js$/i.test(file.path))?.text || '');
     if (!bundled.trim()) throw new Error('esbuild produced empty bundle');
-    return { bundled, styles: compiledCssParts.filter(Boolean).join('\n') };
+    const bundledCss = outputFiles.filter((file: any) => /\.css$/i.test(file.path)).map((file: any) => String(file.text || ''));
+    return { bundled, styles: [...compiledCssParts, ...bundledCss].filter(Boolean).join('\n') };
   };
 
   let buildOut: { bundled: string; styles: string };
@@ -560,9 +655,13 @@ export async function transpileVfsToIIFE(args: {
 
   const bundled = String(buildOut.bundled || '');
 
-  const requireShim = requireShimForFramework(framework as any);
-
-  const wrapper = `(function(){\n${requireShim}${bundled}\n  try {\n    var m = (typeof __UF_COMPONENT__ !== 'undefined') ? __UF_COMPONENT__ : undefined;\n    if (m && m.default) return m.default;\n    if (m) return m;\n  } catch (e) {}\n  return undefined;\n})();`;
+  const requireShim = args.exportName !== undefined && mode === 'ssr'
+    ? 'var require = function(id) { if (typeof __ufRequire !== "function") throw new Error("SSR runtime resolver is unavailable: " + id); return __ufRequire(id); };\n'
+    : requireShimForFramework(framework as any);
+  const selection = args.exportName === undefined
+    ? 'if (m && m.default) return m.default; if (m) return m; return undefined;'
+    : `if (!m || !Object.prototype.hasOwnProperty.call(m, ${JSON.stringify(args.exportName)})) throw new Error(${JSON.stringify('Missing component export: ' + args.exportName)}); return m[${JSON.stringify(args.exportName)}];`;
+  const wrapper = `(function(){\n${requireShim}${bundled}\n  var m = (typeof __UF_COMPONENT__ !== 'undefined') ? __UF_COMPONENT__ : undefined;\n  ${selection}\n})();`;
 
   return { cleanCode: wrapper, isIIFE: true, styles: String(buildOut.styles || '') };
 }

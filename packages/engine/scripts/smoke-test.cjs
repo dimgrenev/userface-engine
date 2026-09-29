@@ -65,6 +65,128 @@ try {
   check(`CJS require failed: ${e.message}`, false);
 }
 
+const esmRootResult = spawnSync(process.execPath, ['--input-type=module', '-e',
+  "import('@userface/engine').then((m) => { for (const key of ['createEngine', 'RuleEngine', 'normalizePropDef']) if (typeof m[key] !== 'function') throw Error(key + ' missing'); }).catch((error) => { console.error(error); process.exit(1); })",
+], { cwd: ENGINE, encoding: 'utf8', timeout: 10000 });
+check('ESM root import resolves through package exports', esmRootResult.status === 0);
+if (esmRootResult.status !== 0) console.error(esmRootResult.stderr);
+
+for (const format of ['esm', 'cjs']) {
+  const load = format === 'esm'
+    ? "import { AdvancedPropParser } from '@userface/engine/prop-analysis'; import { generateStates } from '@userface/engine';"
+    : "const { AdvancedPropParser } = require('@userface/engine/prop-analysis'); const { generateStates } = require('@userface/engine');";
+  const result = spawnSync(process.execPath, [...(format === 'esm' ? ['--input-type=module'] : []), '-e', `${load}
+    const parser = new AdvancedPropParser();
+    const props = parser.parse('Sample.tsx', { 'Sample.tsx': { content:
+      'export function First(p: {wrong:string}) {return null;} export function Selected(p: {count:number}) {return null;}'
+    } }, 'react', 'Selected');
+    if (props.length !== 1 || props[0].name !== 'count') throw Error('Wrong export props: ' + JSON.stringify(props));
+    const batch = parser.parseMany([{fileName:'Empty.tsx',exportName:'Empty'}], {'Empty.tsx':{content:'export function Empty(){return null;}'}});
+    if (batch.length !== 1 || batch[0].length !== 0) throw Error('Invalid batch analysis');
+    const selections = parser.parseMany([
+      {fileName:'Mixed.stories.tsx',exportName:'Sample',format:'source'},
+      {fileName:'Mixed.stories.tsx',exportName:'Sample',format:'story'},
+      {fileName:'Scenarios.tsx',exportName:'Selected',format:'story'}
+    ], {
+      'Mixed.stories.tsx': {content: 'export function Sample(p: {sourceOnly:string}) {return null;} Sample.args = {storyOnly:-1}; export default {component:Sample};'},
+      'Scenarios.tsx': {content: 'export default {argTypes:{choice:{options:[1,"1",true]}}}; export const Selected = {args:{choice:false}};'}
+    });
+    if (JSON.stringify(selections.map(props => props.map(prop => prop.name))) !== '[["sourceOnly"],["sourceOnly","storyOnly"],["choice"]]'
+      || selections[1][1].defaultValue !== -1 || JSON.stringify(selections[2][0].options) !== '[1,"1",true]') throw Error('Explicit analysis format or literal values changed');
+    const states = generateStates([{name:'choice',type:'select',required:false,description:'',options:[1,'1',true]}, {name:'label',type:'string',required:false,description:'',defaultValue:null}]);
+    if (JSON.stringify(states.map(state => state.props.choice)) !== '[1,"1",true]' || states.some(state => state.props.label !== null)) throw Error('Literal state values were changed');
+    parser.dispose();
+  `], { cwd: ENGINE, encoding: 'utf8', timeout: 10000 });
+  check(`${format} prop-analysis public entry analyzes the selected export`, result.status === 0);
+  if (result.status !== 0) console.error(result.stderr);
+}
+check('prop-analysis public types exist', fileExists('dist/types/prop-analysis/index.d.ts'));
+check('lightweight prop-analysis public types exist', fileExists('dist/types/prop-analysis/lightweight/index.d.ts'));
+for (const format of ['esm', 'cjs']) {
+  const load = format === 'esm'
+    ? "import { extractReactTsPropsFromSource, extractVuePropsFromSFC, extractSvelteProps } from '@userface/engine/prop-analysis/lightweight';"
+    : "const { extractReactTsPropsFromSource, extractVuePropsFromSFC, extractSvelteProps } = require('@userface/engine/prop-analysis/lightweight');";
+  const result = spawnSync(process.execPath, [...(format === 'esm' ? ['--input-type=module'] : []), '-e', `${load}
+    const react = extractReactTsPropsFromSource({fileName:'Card.tsx', code:"export interface CardProps { tone?: 'warm' | 'cool' }"});
+    const vue = extractVuePropsFromSFC("<script setup>defineProps<{enabled?: boolean}>()</script>");
+    const svelte = extractSvelteProps("<script>export let count: number = 0;</script>");
+    if (react[0]?.name !== 'tone' || vue[0]?.name !== 'enabled' || svelte[0]?.defaultValue !== 0) throw Error('Lightweight parser behavior changed');
+  `], { cwd: ENGINE, encoding: 'utf8', timeout: 10000 });
+  check(`${format} lightweight prop-analysis public entry executes`, result.status === 0);
+  if (result.status !== 0) console.error(result.stderr);
+}
+for (const format of ['esm', 'cjs']) {
+  const load = format === 'esm'
+    ? "import { createEngine } from '@userface/engine'; import * as React from 'react'; import * as ReactDOMServer from 'react-dom/server'; import assert from 'node:assert/strict'; import { runInNewContext } from 'node:vm';"
+    : "const { createEngine } = require('@userface/engine'); const React = require('react'); const ReactDOMServer = require('react-dom/server'); const assert = require('node:assert/strict'); const { runInNewContext } = require('node:vm');";
+  const renderRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'userface-engine-render-cwd-'));
+  const result = spawnSync(process.execPath, [...(format === 'esm' ? ['--input-type=module'] : []), '-e', `${load}
+    process.chdir(${JSON.stringify(renderRoot)});
+    (async () => {
+      const engine = createEngine({ React, ReactDOMServer });
+      const files = [
+        {name:'src/index.ts',content:"export { Item as Selected } from './Item.js';"},
+        {name:'src/Item.tsx',content:"export function Item({count=7}:{count?:number}){return <b>selected:{count}</b>}"}
+      ];
+      const spec = await engine.analyzeComponent(files, {entryPath:'src/index.ts',exportName:'Selected'});
+      files[1].content = 'export function Item(){throw new Error("wrong snapshot")}';
+      const rendered = await engine.renderFromSpec(spec.name, {count:23}, 'ssr');
+      assert.match(rendered.data.html, /<b>selected:23<\\/b>/);
+      assert.doesNotMatch(rendered.data.html, /<script/);
+      const automatic = createEngine();
+      const automaticSpec = await automatic.analyzeComponent([{name:'Automatic.tsx',content:'export default function Automatic(){return <b>installed runtime</b>}'}], {entryPath:'Automatic.tsx'});
+      assert.match((await automatic.renderFromSpec(automaticSpec.name, {}, 'ssr')).data.html, /installed runtime/);
+      const bad = await engine.analyzeComponent([{name:'Bad.tsx',content:'export function Missing(){throw new Error("expected render failure")}'}], {entryPath:'Bad.tsx',exportName:'Missing'});
+      await assert.rejects(engine.renderFromSpec(bad.name, {}, 'ssr'), {code:'UF400', message:/expected render failure/});
+      const asynchronous = await engine.analyzeComponent([{name:'Async.tsx',content:'export default async function Async(){throw new Error("unhandled SSR rejection")}'}], {entryPath:'Async.tsx',exportName:'default'});
+      await assert.rejects(engine.renderFromSpec(asynchronous.name, {}, 'ssr'), {code:'UF400', message:/asynchronous SSR renderer/});
+      const legacy = await engine.analyzeComponent([{name:'Legacy.js',content:'const label=document.title; export default function Legacy(){return <b>{label}</b>}'}], {entryPath:'Legacy.js'});
+      const live = await engine.renderFromSpec(legacy.name, {}, 'live');
+      const Component = runInNewContext(live.data.componentCode, {React, document:{title:'browser only'}});
+      assert.equal(ReactDOMServer.renderToStaticMarkup(React.createElement(Component)), '<b>browser only</b>');
+    })().catch(error => { console.error(error); process.exitCode = 1; });
+  `], { cwd: ENGINE, encoding: 'utf8', timeout: 15000 });
+  fs.rmSync(renderRoot, { recursive: true, force: true });
+  check(`${format} public engine renders the selected snapshot and prepares legacy live from an unrelated cwd`, result.status === 0);
+  if (result.status !== 0) console.error(result.stdout, result.stderr);
+}
+const typesRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'userface-engine-public-types-'));
+try {
+  fs.mkdirSync(path.join(typesRoot, 'node_modules', '@userface'), { recursive: true });
+  fs.symlinkSync(ENGINE, path.join(typesRoot, 'node_modules', '@userface', 'engine'), 'dir');
+  const source = `import { createEngine, generateStates, normalizePropDef, type StateMatrixProp, type EngineEntryPathOptions, type EngineRenderResult } from '@userface/engine';
+    import { AdvancedPropParser, type ParsedProp } from '@userface/engine/prop-analysis';
+    import { extractReactTsPropsFromSource, type ExtractedProp } from '@userface/engine/prop-analysis/lightweight';
+    const fallbackProps: ExtractedProp[] = extractReactTsPropsFromSource({ fileName: 'Sample.tsx', code: 'export interface SampleProps { label?: string }' });
+    if (fallbackProps[0]?.name !== 'label') throw Error('Lightweight parser type contract');
+    const parser = new AdvancedPropParser();
+    const props: ParsedProp[] = parser.parse('Sample.tsx', { 'Sample.tsx': { content: 'export default () => null' } }, 'react', 'default');
+    const batch: ParsedProp[][] = parser.parseMany([{fileName:'Sample.tsx',exportName:'default',format:'source'}], {'Sample.tsx':{content:'export default () => null'}});
+    generateStates([normalizePropDef({ name: 'label', type: 'string' })]);
+    const literalChoices: StateMatrixProp = { name: 'choice', type: 'select', required: false, description: '', options: [1, '1', true] };
+    generateStates([literalChoices]);
+    const target: EngineEntryPathOptions = {entryPath:'Sample.tsx', exportName:'Selected'};
+    async function render(): Promise<EngineRenderResult> {
+      const engine = createEngine();
+      const spec = await engine.analyzeComponent([{name:'Sample.tsx', content:'export function Selected(){return null;}'}], target);
+      return engine.renderFromSpec(spec.name, {}, 'ssr');
+    }
+    parser.dispose();`;
+  const fixtures = ['consumer.mts', 'consumer.cts'].map(name => {
+    const file = path.join(typesRoot, name);
+    fs.writeFileSync(file, source);
+    return file;
+  });
+  const result = spawnSync(process.execPath, [require.resolve('typescript/bin/tsc'),
+    '--target', 'ES2022', '--module', 'NodeNext', '--moduleResolution', 'NodeNext',
+    '--strict', '--skipLibCheck', 'false', '--noEmit', ...fixtures,
+  ], { cwd: ENGINE, encoding: 'utf8', timeout: 30000 });
+  check('public ESM/CJS types resolve in NodeNext without skipLibCheck', result.status === 0);
+  if (result.status !== 0) console.error(result.stdout, result.stderr);
+} finally {
+  fs.rmSync(typesRoot, { recursive: true, force: true });
+}
+
 console.log('\n3. CLI binary:');
 const cliPath = path.join(DIST, 'esm', 'cli.js');
 check('cli.js has shebang', (() => {
@@ -206,6 +328,39 @@ const nextIntegrationResult = spawnSync(
   { cwd: ENGINE, encoding: 'utf8', timeout: 5000 }
 );
 check('Next integration import resolves through package exports', nextIntegrationResult.status === 0);
+
+console.log('\n9. Preview public dependencies:');
+for (const kind of ['cjs', 'esm']) {
+  const script = `${kind === 'esm'
+    ? "const source = await import('@userface/engine/source'); const face = await import('@userface/engine/face-contract');"
+    : "const source = require('@userface/engine/source'); const face = require('@userface/engine/face-contract');"}
+    const model = ${kind === 'esm' ? "await import('@userface/engine/face-ui/model')" : "require('@userface/engine/face-ui/model')"};
+    const document = {schema:'face','schema-version':1,root:{type:'Button',key:'root',props:{text:'base'}}};
+    const node = model.materializeFaceUiDoc(document,{registry:{resolve:()=>null}}).root;
+    const edited = model.setNodeProp(document,node.nodeId,'text','edited');
+    if(edited.root.props.text !== 'edited' || document.root.props.text !== 'base') throw Error('immutable Face model edit failed');
+    if(Object.hasOwn(model.unsetNodeProp(edited,node.nodeId,'text').root.props,'text')) throw Error('Face model reset failed');
+    const entries = await source.discoverSourceComponentExports('export const Button = () => <button/>;', 'Button.tsx');
+    if (entries.length !== 1 || entries[0].exportName !== 'Button') throw Error('source discovery failed');
+    const doc = face.decodeFaceJsonContract('{"name":"Button","currentState":{"props":{"label":""}}}');
+    if (!doc || face.resolveFaceJsonPreviewProps({}, doc).label !== '') throw Error('Face contract failed');
+  `;
+  const args = kind === 'esm' ? ['--input-type=module', '-e', script] : ['-e', `(async () => { ${script} })().catch(error => { console.error(error); process.exit(1); });`];
+  const result = spawnSync(process.execPath, args, { cwd: ENGINE, encoding: 'utf8', timeout: 10000 });
+  check(`${kind} source and Face contract exports execute`, result.status === 0);
+  if (result.status !== 0) console.error(result.stderr);
+}
+try {
+  const { buildSync } = require('esbuild');
+  const result = buildSync({
+    absWorkingDir: ENGINE, stdin: { contents: "export { FaceUi } from '@userface/engine/face-ui/react'; export { decodeFaceJsonContract } from '@userface/engine/face-contract'; export {materializeFaceUiDoc,setNodeProp,unsetNodeProp} from '@userface/engine/face-ui/model'; export {extractReactTsPropsFromSource,extractVuePropsFromSFC,extractSvelteProps} from '@userface/engine/prop-analysis/lightweight';", resolveDir: ENGINE },
+    bundle: true, write: false, format: 'esm', platform: 'browser', external: ['react'], metafile: true,
+  });
+  check('public React and Face contract entries bundle without Node polyfills', result.outputFiles.length === 1);
+  check('browser entries do not include the source analyzer or TypeScript', !Object.keys(result.metafile.inputs).some(file => file.includes('typescript') || file.includes('ts-morph') || file.includes('/source/index')));
+} catch (error) {
+  check(`preview browser exports failed: ${error.message}`, false);
+}
 
 console.log(`\n${failures === 0 ? 'ALL PASSED' : `${failures} FAILURE(S)`}\n`);
 process.exit(failures > 0 ? 1 : 0);

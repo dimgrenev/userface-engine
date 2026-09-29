@@ -1065,7 +1065,7 @@ async function cmdReadiness(args: string[], config: any = {}) {
   for (const artifact of writtenPaths) {
     process.stderr.write(`✓ Readiness ${artifact.label}: ${displayPath(artifact.path)}\n`);
   }
-  if (report.status === 'blocked') process.exit(1);
+  if (report.status === 'blocked') process.exitCode = 1;
 }
 
 async function cmdDiff(args: string[], _config: any = {}) {

@@ -229,7 +229,8 @@
             {
               "type": "Pagination",
               "props": {
-                "total": 5
+                "total": 50,
+                "pageSize": 10
               },
               "key": "pagination"
             }

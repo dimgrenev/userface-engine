@@ -1,6 +1,9 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  // Match the package build: TS sources are authoritative when legacy JS
+  // siblings exist. Node consumers are verified separately against dist.
+  resolve: { extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'] },
   test: {
     environment: 'node',
     include: [

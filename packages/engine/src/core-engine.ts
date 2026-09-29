@@ -116,6 +116,7 @@ export interface ComponentSpec {
     types: any[];
     schema?: any; // Добавляем схему в метаданные
     entryPath?: string;
+    exportName?: string;
   };
   props: ComponentProp[];
   styles: string;
@@ -202,7 +203,7 @@ export class CoreEngine {
   /**
    * Framework adapter SSR-like render
    */
-  private async renderViaAdapter(framework: 'react' | 'vue' | 'svelte', code: string, props: any, styles?: string): Promise<string> {
+  private async renderViaAdapter(framework: 'react' | 'vue' | 'svelte', code: string, props: any, styles?: string, precompiled = false): Promise<string> {
     const adapter = this.deps?.renderers?.[framework];
     if (!adapter || typeof (adapter as any).render !== 'function') {
       throw new Error('No adapter available for framework: ' + framework);
@@ -210,7 +211,7 @@ export class CoreEngine {
 
     // Ensure code is transpiled to IIFE before giving it to adapter
     let iifeCode = '' as string;
-    try {
+    if (!precompiled) try {
       const t = await import('./transpiler');
       const transpiled: any = await (t as any).transpileToIIFE(code, framework, 'DynamicComponent', 'ssr');
       iifeCode = transpiled && transpiled.cleanCode ? transpiled.cleanCode : '';
@@ -242,7 +243,8 @@ export class CoreEngine {
       throw new Error(result.data);
     }
 
-    const html = (result as any)?.data?.html || (typeof (result as any)?.data === 'string' ? (result as any).data : '');
+    const html = result?.data?.html ?? (typeof result?.data === 'string' ? result.data : undefined);
+    if (typeof html !== 'string') throw new Error('Renderer did not return HTML');
     return html;
   }
 
@@ -251,14 +253,21 @@ export class CoreEngine {
    */
   async analyzeComponent(
     files: Array<{ name: string; content: string }>,
-    options?: { entryPath?: string }
+    options?: { entryPath?: string; exportName?: string | null }
   ): Promise<ComponentSpec> {
     engineLog('🔍 Starting component analysis...');
     const t0 = Date.now();
     
     try {
-      // Определяем фреймворк
-      const framework = this.detectFramework(files);
+      // Capture the caller's files before asynchronous analysis. Each registered
+      // export retains this exact VFS, independently of subsequent analyses.
+      files = files.map(file => ({ name: file.name, content: file.content }));
+      const exportName = options?.exportName ?? undefined;
+      if (exportName !== undefined && (typeof exportName !== 'string' || !exportName.length)) {
+        throw Object.assign(new Error('exportName must be a non-empty module export name'), { code: 'UF200' });
+      }
+      const explicitEntry = files.find(file => file.name === options?.entryPath);
+      const framework = this.detectFramework(explicitEntry ? [explicitEntry] : files);
       engineLog(`📊 Detected framework: ${framework}`);
       
       // Находим основной файл
@@ -273,21 +282,35 @@ export class CoreEngine {
         });
       }
 
-      const mainFile = this.findMainFile(files, framework, { entryPath });
+      const mainFile = exportName !== undefined ? explicitEntry : this.findMainFile(files, framework, { entryPath });
       if (!mainFile) {
         throw new Error(`No main file found for ${framework} framework`);
       }
       
       engineLog(`📄 Main file: ${mainFile.name}`);
 
-      const specId = String(entryPath || mainFile.name || '')
+      const legacySpecId = String(entryPath || mainFile.name || '')
         .replace(/\.(tsx|jsx|ts|js|vue|svelte)$/i, '');
+      const specId = exportName === undefined ? legacySpecId : `${legacySpecId}#export=${encodeURIComponent(exportName)}`;
       
       // Парсим код
       let parseResult: { props: ComponentProp[]; interfaces: string[]; cleanCode: string };
       
       // В Node.js окружении всегда используем простой парсинг
-      if (typeof window === 'undefined') {
+      if (exportName !== undefined) {
+        if (typeof window !== 'undefined') throw new Error('Explicit source-export analysis requires the Node engine');
+        const { AdvancedPropParser } = await import('./prop-analysis/index.js');
+        const parser = new AdvancedPropParser();
+        try {
+          const [props] = parser.parseMany([{ fileName: entryPath, framework, exportName, format: 'source' }],
+            Object.fromEntries(files.map(file => [file.name, { content: file.content }])));
+          parseResult = {
+            cleanCode: mainFile.content, interfaces: [],
+            props: props.map(prop => ({ name: prop.name, type: prop.type, required: prop.required,
+              description: prop.description || '', defaultValue: prop.defaultValue, options: prop.options?.map(String) })),
+          };
+        } finally { parser.dispose(); }
+      } else if (typeof window === 'undefined') {
         engineLog('🖥️ Running in Node.js environment, using simple parsing');
         parseResult = this.parseCodeSimple(mainFile.content);
       } else {
@@ -311,6 +334,7 @@ export class CoreEngine {
       const spec = this.createComponentSpec(specId, framework, parseResult, styles, files);
       try {
         spec.metadata.entryPath = entryPath;
+        if (exportName !== undefined) spec.metadata.exportName = exportName;
       } catch {}
 
       // Stable diagnostics (hashes + files) for reproducibility
@@ -419,7 +443,15 @@ export class CoreEngine {
       let iifeCode = '';
       let isIIFE = false;
 
-      if (hasRelativeImports && typeof bundlerFn === 'function') {
+      if (spec.metadata.exportName !== undefined || typeof window === 'undefined') {
+        const { transpileVfsToIIFE } = await import('./transpiler');
+        const files = this.vfs.get(spec.name)?.files;
+        if (!files) throw new Error(`Source snapshot not found for ${spec.name}`);
+        const compiled = await transpileVfsToIIFE({ files, entryPath, framework: spec.framework,
+          exportName: spec.metadata.exportName ?? 'default', mode: renderMode === 'ssr' ? 'ssr' : 'dom' });
+        iifeCode = compiled.cleanCode;
+        isIIFE = compiled.isIIFE;
+      } else if (hasRelativeImports && typeof bundlerFn === 'function') {
         // Multi-file path: bundle all VFS dependencies into a single executable.
         logs.push(`BUNDLE: Entry has relative imports, using VFS bundler for ${spec.name}...`);
         // entryPath already computed above (before hasRelativeImports check).
@@ -577,14 +609,8 @@ export class CoreEngine {
       logs.push(`🚀 Starting render with ${spec.framework} adapter...`);
       
       try {
-        const html = await this.renderViaAdapter(spec.framework as 'react' | 'vue' | 'svelte', sanitizedCode, props, spec.styles);
+        const html = await this.renderViaAdapter(spec.framework as 'react' | 'vue' | 'svelte', sanitizedCode, props, spec.styles, true);
         logs.push(`✅ Render completed successfully`);
-        
-        if (!html) {
-          const error = 'Renderer returned empty HTML';
-          logs.push(`❌ ${error}`);
-          return { success: false, error, logs };
-        }
         
         // Возвращаем в соответствии с StructuredRenderResult
         logs.push(`componentName=${spec.name}`);

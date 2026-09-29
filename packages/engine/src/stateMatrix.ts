@@ -21,6 +21,11 @@ import type { FaceJsonV2 } from './schemas/face-v2.schema';
 // Public types
 // ---------------------------------------------------------------------------
 
+/** Literal choices keep their runtime types; legacy string options remain valid. */
+export type StateMatrixProp = Omit<ComponentProp, 'options'> & {
+  options?: Array<string | number | boolean>;
+};
+
 export interface StateEntry {
   /** Human-readable state name, e.g. 'variant=accent', 'disabled=true', 'default' */
   name: string;
@@ -46,8 +51,8 @@ export interface GenerateStatesOptions {
 // ---------------------------------------------------------------------------
 
 /** Produce a default value for a prop based on its type. */
-function defaultForType(prop: ComponentProp): any {
-  if (prop.defaultValue !== undefined && prop.defaultValue !== null) {
+function defaultForType(prop: StateMatrixProp): any {
+  if (prop.defaultValue !== undefined) {
     return prop.defaultValue;
   }
   switch (prop.type) {
@@ -72,7 +77,7 @@ function defaultForType(prop: ComponentProp): any {
 }
 
 /** Build a default-state object from all props. */
-function buildDefaultState(props: ComponentProp[]): Record<string, any> {
+function buildDefaultState(props: StateMatrixProp[]): Record<string, any> {
   const state: Record<string, any> = {};
   for (const prop of props) {
     const val = defaultForType(prop);
@@ -162,7 +167,7 @@ function generateBehaviorStates(
 // ---------------------------------------------------------------------------
 
 function generateOneAtATime(
-  props: ComponentProp[],
+  props: StateMatrixProp[],
   defaultState: Record<string, any>,
 ): StateEntry[] {
   const states: StateEntry[] = [];
@@ -204,7 +209,7 @@ function generateOneAtATime(
 // ---------------------------------------------------------------------------
 
 function generateCartesian(
-  props: ComponentProp[],
+  props: StateMatrixProp[],
   defaultState: Record<string, any>,
   maxStates: number,
 ): StateEntry[] {
@@ -265,7 +270,7 @@ function generateCartesian(
  * @returns Array of named states, each with a full prop set
  */
 export function generateStates(
-  props: ComponentProp[],
+  props: StateMatrixProp[],
   options?: GenerateStatesOptions,
 ): StateEntry[] {
   const maxStates = options?.maxStates ?? 100;

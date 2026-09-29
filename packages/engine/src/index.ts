@@ -16,7 +16,7 @@ export { CoreEngine } from './core-engine';
 export type { ComponentProp, ComponentSpec } from './core-engine';
 export * from './adapters/core-adapters';
 export * from './faces/types';
-export * from './face-ui';
+export * from './face-ui/index';
 
 // Diff
 export { diffFaces } from './diff';
@@ -27,12 +27,12 @@ export { scanRegistry, clearRegistryCache } from './registry';
 export type { RegistryEntry, RegistryIndex, RegistryPropSummary, ScanOptions } from './registry';
 
 // Rule Engine
-export { RuleEngine, builtinRules, basePolicyPack } from './rules';
-import type { ValidateMode } from './rules';
+export { RuleEngine, builtinRules, basePolicyPack } from './rules/index';
+import type { ValidateMode } from './rules/index';
 export type {
   Rule, Violation, ValidationReport, ValidationScores,
   ValidateOptions, ValidateMode, BudgetMode, PolicyPack,
-} from './rules';
+} from './rules/index';
 export {
   USERFACE_PROOF_SCHEMA,
   USERFACE_PROOF_JSON_SCHEMA,

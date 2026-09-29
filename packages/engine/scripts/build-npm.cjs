@@ -37,7 +37,7 @@ function fixEsmExtensions(dir) {
       fixEsmExtensions(full);
       continue;
     }
-    if (!entry.endsWith('.js')) continue;
+    if (!entry.endsWith('.js') && !entry.endsWith('.d.ts')) continue;
     let content = fs.readFileSync(full, 'utf8');
     let changed = false;
     // Fix: from './foo' → from './foo.js', import('./foo') → import('./foo.js')
@@ -73,6 +73,7 @@ function main() {
 
   // Fix ESM relative imports (add .js extensions for Node.js compatibility).
   fixEsmExtensions(path.join(ENGINE_ROOT, 'dist', 'esm'));
+  fixEsmExtensions(path.join(ENGINE_ROOT, 'dist', 'types'));
   console.log('[engine:npm] fixed ESM import extensions');
 
   fs.mkdirSync(path.join(ENGINE_ROOT, 'dist', 'schemas'), { recursive: true });

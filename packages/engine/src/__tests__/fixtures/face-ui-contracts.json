@@ -632,6 +632,7 @@
       "props": [
         "alt",
         "aria-label",
+        "aria-labelledby",
         "autoPlay",
         "children",
         "controls",
@@ -650,6 +651,7 @@
         "onSuspend",
         "playsInline",
         "poster",
+        "role",
         "src",
         "type",
         "variant",
