@@ -120,6 +120,7 @@ export class AdvancedPropParser {
   };
   private maxImportDepth = 5;
   private pathMap = new Map<string, string>();
+  private capturedManifestPaths = new Set<string>();
   private readonly cwd: string;
   private readonly paths: Record<string, string[]> | undefined;
   private readonly recoverableKeys = new Set<string>();
@@ -135,6 +136,7 @@ export class AdvancedPropParser {
     this.projectSnapshotKey = null;
     this.resultCache.clear();
     this.pathMap.clear();
+    this.capturedManifestPaths.clear();
     this.recoverableKeys.clear();
     this.cleanup();
   }
@@ -165,9 +167,11 @@ export class AdvancedPropParser {
           useInMemoryFileSystem: !this.options.allowFileSystem,
           compilerOptions: {
             target: 99, // ESNext
-            ...(this.options.allowFileSystem ? {} : { moduleResolution: ts.ModuleResolutionKind.NodeJs }),
+            ...(this.options.allowFileSystem ? {} : { moduleResolution: ts.ModuleResolutionKind.Bundler }),
             module: 99, // ESNext
             jsx: 2, // React
+            allowJs: true,
+            checkJs: false,
             strict: false,
             skipLibCheck: true,
             esModuleInterop: true,
@@ -180,9 +184,11 @@ export class AdvancedPropParser {
           useInMemoryFileSystem: !this.options.allowFileSystem,
           compilerOptions: {
             target: 99,
-            ...(this.options.allowFileSystem ? {} : { moduleResolution: ts.ModuleResolutionKind.NodeJs }),
+            ...(this.options.allowFileSystem ? {} : { moduleResolution: ts.ModuleResolutionKind.Bundler }),
             module: 99,
             jsx: 2,
+            allowJs: true,
+            checkJs: false,
             strict: false,
             skipLibCheck: true,
             esModuleInterop: true,
@@ -200,6 +206,10 @@ export class AdvancedPropParser {
     }
 
     this.pathMap.clear();
+    if (!this.options.allowFileSystem) {
+      for (const manifest of this.capturedManifestPaths) this.project?.getFileSystem().deleteSync(manifest);
+      this.capturedManifestPaths.clear();
+    }
 
     // Добавляем все файлы из VFS в проект
     for (const [fileName, file] of Object.entries(vfs)) {
@@ -208,6 +218,13 @@ export class AdvancedPropParser {
         if (!rel) continue;
         const abs = path.isAbsolute(rel) ? rel : path.join(this.cwd, rel);
         this.pathMap.set(rel, abs);
+        if (!this.options.allowFileSystem && path.basename(abs) === 'package.json') {
+          // TypeScript reads package export conditions through its filesystem,
+          // independently of source files. This filesystem is instance-owned RAM.
+          this.project?.getFileSystem().writeFileSync(abs, file.content);
+          this.capturedManifestPaths.add(abs);
+          continue;
+        }
         this.project?.createSourceFile(abs, file.content, { overwrite: true });
       } catch (err) {
         this.debugAdvancedPropParser(`[AdvancedPropParser] failed to add file ${fileName}:`, err);
@@ -312,7 +329,9 @@ export class AdvancedPropParser {
         throw new PropParseFailure('missing-export', `Source analysis requires an existing component export: ${exportName}`);
       }
 
-      const unresolvedImports = this.reportUnresolvedImports(sourceFile);
+      // Vue/Svelte script syntax has its own parser below; those source files
+      // are not native TypeScript program entries for semantic diagnostics.
+      const unresolvedImports = framework === 'react' ? this.reportUnresolvedImports(sourceFile) : new Set<string>();
       const unresolvedTypes = !isStory && framework === 'react'
         ? this.reportUnresolvedSelectedPropsTypes(sourceFile, exportName)
         : new Set<string>();
@@ -376,7 +395,7 @@ export class AdvancedPropParser {
   }
 
   private hasRuntimeExport(sourceFile: SourceFile, exportName: string): boolean {
-    const symbol = sourceFile.getSymbol()?.getExports().find(item => item.getName() === exportName);
+    const symbol = sourceFile.getExportSymbols().find(item => item.getName() === exportName);
     if (!symbol) return false;
     for (const declaration of symbol.getDeclarations()) {
       if (Node.isExportSpecifier(declaration) && (
@@ -403,7 +422,7 @@ export class AdvancedPropParser {
     const importRanges = imports.map(declaration => ({
       start: declaration.getStart(), end: declaration.getEnd(), moduleName: declaration.getModuleSpecifierValue(), declaration,
     }));
-    for (const diagnostic of this.project.getPreEmitDiagnostics()) {
+    for (const diagnostic of sourceFile.getPreEmitDiagnostics()) {
       if (![2305, 2307, 2614, 2724].includes(diagnostic.getCode())) continue;
       if (diagnostic.getSourceFile()?.getFilePath() !== sourceFile.getFilePath()) continue;
       const start = diagnostic.getStart();
@@ -431,7 +450,7 @@ export class AdvancedPropParser {
     const unresolvedNames = new Set<string>();
     if (!this.project) return unresolvedNames;
     const content = sourceFile.getFullText();
-    for (const diagnostic of this.project.getPreEmitDiagnostics()) {
+    for (const diagnostic of sourceFile.getPreEmitDiagnostics()) {
       if (diagnostic.getCode() !== 2304 || diagnostic.getSourceFile()?.getFilePath() !== sourceFile.getFilePath()) continue;
       const start = diagnostic.getStart();
       const length = diagnostic.getLength();
@@ -899,7 +918,7 @@ export class AdvancedPropParser {
    */
   private resolveReactComponentNode(sourceFile: SourceFile, exportName?: string | null): Node | null {
     try {
-      if (exportName) return sourceFile.getExportedDeclarations().get(exportName)?.[0] || null;
+      if (exportName && exportName !== 'default') return sourceFile.getExportedDeclarations().get(exportName)?.[0] || null;
       const defSym = sourceFile.getDefaultExportSymbol();
       if (defSym) {
         const decls = defSym.getDeclarations();
@@ -1033,17 +1052,18 @@ export class AdvancedPropParser {
 
         const decls = sym.getDeclarations ? sym.getDeclarations() : [];
         const decl = decls && decls.length > 0 ? decls[0] : loc;
-        // Determine if the prop is explicitly declared in the component's own source
-        // (any file outside node_modules) vs purely inherited from React/HTML types.
+        // Package component declarations are public component props too. Only
+        // React/DOM declaration owners contribute the intrinsic attribute noise.
         // A prop like `disabled` can be declared in BOTH Button.tsx AND @types/react —
-        // it's only "inherited" if ALL its declarations live in node_modules.
+        // it's only "inherited" if ALL its declarations belong to those owners.
         let isInherited = false;
         try {
           let hasOwnDecl = false;
           for (const d of decls) {
             try {
               const p = this.getDeclarationSourcePath(d);
-              if (p && !p.includes('/node_modules/')) { hasOwnDecl = true; break; }
+              const intrinsicOwner = /\/node_modules\/(?:@types\/(?:react|react-dom)\/|typescript\/lib\/lib\.dom(?:\.[\w-]+)?\.d\.[cm]?ts$)/.test(p);
+              if (p && !intrinsicOwner) { hasOwnDecl = true; break; }
             } catch (error) {
               this.reportAdvancedPropParserRecoverable('advancedPropParser.type.declarationPath', error, {
                 fileName: sourcePath,

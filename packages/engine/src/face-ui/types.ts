@@ -66,6 +66,8 @@ export type FaceUiRegistry = {
 export type FaceUiActionContext = {
   nodeType: string;
   propName: string;
+  /** Original local callback values; omitted for legacy no-argument invocations. */
+  callbackArgs?: readonly unknown[];
 };
 
 export type FaceUiActions = {

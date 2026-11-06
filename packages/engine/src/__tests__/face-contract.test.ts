@@ -1,7 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { decodeFaceJsonContract, isLikelyFaceJsonRecord, resolveFaceJsonPreviewProps, parseJsonRecord } from '../face-contract/index.js';
+import { decodeFaceJsonContract, isLikelyFaceJsonRecord, normalizeFaceJsonContract, resolveFaceJsonPreviewProps, parseJsonRecord } from '../face-contract/index.js';
 
 describe('public Face contract semantics', () => {
+  it('preserves an authored executable preview reference without changing its props or legacy source identity', () => {
+    const authored = { name: 'Widget', preview: { entryPath: './Widget.preview.tsx', exportName: 'Interactive' },
+      initialProps: { label: 'Ready' }, states: [{ name: 'Default', props: { disabled: false } }] };
+    const before = JSON.stringify(authored);
+    const face = normalizeFaceJsonContract(authored);
+    expect(face?.preview).toEqual(authored.preview);
+    expect(resolveFaceJsonPreviewProps({}, face!)).toEqual({ label: 'Ready', disabled: false });
+    expect(JSON.stringify(authored)).toBe(before);
+    expect(normalizeFaceJsonContract({ name: 'Widget', props: {} })).not.toHaveProperty('preview');
+  });
+
+  it.each(['./Widget.preview.tsx', '../examples/Widget.tsx', 'examples/Widget.tsx'])('recognizes a preview-only Face reference %s without inventing a registry', (entryPath) => {
+    expect(decodeFaceJsonContract(JSON.stringify({ name: 'Widget', preview: { entryPath, exportName: 'default' } }))?.preview)
+      .toEqual({ entryPath, exportName: 'default' });
+  });
+
+  it.each([
+    null, false, [], {}, { entryPath: './Widget.tsx' }, { exportName: 'Widget' },
+    { entryPath: '', exportName: 'Widget' }, { entryPath: './Widget.tsx', exportName: '' },
+    { entryPath: '/Widget.tsx', exportName: 'Widget' }, { entryPath: 'C:/Widget.tsx', exportName: 'Widget' },
+    { entryPath: 'https://example.test/Widget.tsx', exportName: 'Widget' },
+    { entryPath: '.\\Widget.tsx', exportName: 'Widget' }, { entryPath: './Widget.tsx?raw', exportName: 'Widget' },
+    { entryPath: './Widget.tsx#Widget', exportName: 'Widget' }, { entryPath: './Widget\u0000.tsx', exportName: 'Widget' },
+    { entryPath: './Widget.tsx', exportName: 'Widget', typo: true },
+  ])('rejects a malformed explicit preview instead of silently dropping it: %j', (preview) => {
+    expect(() => normalizeFaceJsonContract({ name: 'Widget', props: {}, preview }))
+      .toThrowError(expect.objectContaining({ code: 'UF_FACE_PREVIEW_REFERENCE_INVALID' }));
+    expect(() => decodeFaceJsonContract(JSON.stringify({ name: 'Widget', preview })))
+      .toThrowError(expect.objectContaining({ code: 'UF_FACE_PREVIEW_REFERENCE_INVALID' }));
+  });
+
   it('rejects malformed JSON and non-contract records', () => {
     expect(decodeFaceJsonContract('{')).toBeNull();
     expect(decodeFaceJsonContract('[]')).toBeNull();

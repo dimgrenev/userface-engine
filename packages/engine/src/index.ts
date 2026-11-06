@@ -69,6 +69,10 @@ export type {
 export interface UserfaceConfig {
   root?: string;
   framework?: 'react' | 'vue' | 'svelte' | 'auto';
+  /** Producer-owned delivery directories; not automatic source candidates. */
+  generated?: {
+    deliveryRoots?: Record<string, string>;
+  };
   validation?: {
     mode?: ValidateMode;
     policies?: string[];

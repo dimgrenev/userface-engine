@@ -178,6 +178,7 @@ const FALLBACK_FACE_UI_COMPONENT_TYPES = [
   'Separator',
   'Skeleton',
   'Slider',
+  'Spinner',
   'Steps',
   'Switcher',
   'Table',

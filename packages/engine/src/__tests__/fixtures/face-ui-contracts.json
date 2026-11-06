@@ -3,7 +3,7 @@
   "source": {
     "repo": "face-ui",
     "ref": "face-ui-10",
-    "generatedFrom": "7caceed"
+    "generatedFrom": "77a6ec43846666e9e67e8410d580940519551cc9"
   },
   "components": {
     "Accordion": {
@@ -693,7 +693,9 @@
     "Menu": {
       "props": [
         "align",
+        "alignToOption",
         "aria-label",
+        "attachmentSelector",
         "children",
         "className",
         "defaultOpen",
@@ -869,6 +871,8 @@
     "Overlay": {
       "props": [
         "align",
+        "alignToOption",
+        "attachmentSelector",
         "children",
         "closeDelay",
         "content",
@@ -973,6 +977,8 @@
     "Popover": {
       "props": [
         "align",
+        "alignToOption",
+        "attachmentSelector",
         "children",
         "content",
         "defaultOpen",
@@ -1369,6 +1375,22 @@
         "suppressContentEditableWarning"
       ]
     },
+    "Spinner": {
+      "props": [
+        "label",
+        "title"
+      ],
+      "required": [],
+      "enums": {},
+      "acceptsChildren": false,
+      "deniedNative": [
+        "children",
+        "dangerouslySetInnerHTML",
+        "height",
+        "viewBox",
+        "width"
+      ]
+    },
     "Steps": {
       "props": [
         "className",
@@ -1680,6 +1702,7 @@
     "Toast": {
       "props": [
         "action",
+        "buttonProps",
         "className",
         "closable",
         "description",
@@ -1771,6 +1794,8 @@
     "Tooltip": {
       "props": [
         "align",
+        "alignToOption",
+        "attachmentSelector",
         "children",
         "closeDelay",
         "content",

@@ -27,7 +27,9 @@ function reviveValue(nodeType: string, propName: string, value: FaceUiValue, env
       console.warn(`[Face UI] Action "${value.$action}" is not in the allowlist. Dropping action binding.`);
       return undefined;
     }
-    return () => actions.dispatch(value.$action, value.args, { nodeType, propName });
+    return (...callbackArgs: unknown[]) => actions.dispatch(value.$action, value.args, {
+      nodeType, propName, ...(callbackArgs.length ? { callbackArgs } : {}),
+    });
   }
   if (isRef(value)) {
     const resolveRef = env.resolveRef;

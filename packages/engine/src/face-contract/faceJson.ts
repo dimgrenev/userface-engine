@@ -32,8 +32,44 @@ export type FaceJsonControl = {
   type: string;
 };
 
+/** Project-owned executable usage, resolved relative to this Face file by the host. */
+export type FaceJsonPreviewReference = {
+  entryPath: string;
+  exportName: string;
+};
+
+export class FaceJsonPreviewReferenceError extends Error {
+  readonly code = 'UF_FACE_PREVIEW_REFERENCE_INVALID' as const;
+  constructor(detail: string) {
+    super(`Invalid Face preview reference: ${detail}`);
+    this.name = 'FaceJsonPreviewReferenceError';
+  }
+}
+
+/** Syntax only: the host must authorize the resolved file against its workspace. */
+export function parseFaceJsonPreviewReference(value: unknown): FaceJsonPreviewReference {
+  const record = readFaceJsonRecord(value);
+  if (!record || Object.keys(record).some(key => key !== 'entryPath' && key !== 'exportName')) {
+    throw new FaceJsonPreviewReferenceError('expected an object containing entryPath and exportName only.');
+  }
+  if (!Object.prototype.hasOwnProperty.call(record, 'entryPath') || typeof record.entryPath !== 'string'
+    || !Object.prototype.hasOwnProperty.call(record, 'exportName') || typeof record.exportName !== 'string') {
+    throw new FaceJsonPreviewReferenceError('entryPath and exportName must be nonempty strings.');
+  }
+  const entryPath = record.entryPath.trim(), exportName = record.exportName.trim();
+  if (!entryPath || !exportName || /[\u0000-\u001f\u007f]/.test(entryPath + exportName)) {
+    throw new FaceJsonPreviewReferenceError('entryPath and exportName must be nonempty strings without control characters.');
+  }
+  if (entryPath.startsWith('/') || entryPath.includes('\\') || /^[a-z][a-z0-9+.-]*:/i.test(entryPath)
+    || /[?#]/.test(entryPath)) {
+    throw new FaceJsonPreviewReferenceError('entryPath must be a relative file path using forward slashes, without a URL, query or fragment.');
+  }
+  return { entryPath, exportName };
+}
+
 export type FaceJsonContract = {
   name?: string;
+  preview?: FaceJsonPreviewReference;
   currentState?: Record<string, unknown>;
   initialProps?: Record<string, unknown>;
   rootProps?: Record<string, unknown>;
@@ -403,9 +439,7 @@ export function applyFaceJsonControlDefaults(nextProps: Record<string, unknown>,
     const type = String(control.type || 'string').toLowerCase();
     const hasExplicitDefault = control.defaultValue !== undefined;
     const needsPreviewSeed = control.required
-      || (type === 'array' && FACE_JSON_PREVIEW_COLLECTION_CONTROLS.has(name))
-      || name === 'variant'
-      || name === 'size';
+      || (type === 'array' && FACE_JSON_PREVIEW_COLLECTION_CONTROLS.has(name));
     if (!hasExplicitDefault && !needsPreviewSeed) continue;
 
     nextProps[control.name] = pickFaceJsonControlDefault(control, face.name);
@@ -499,6 +533,7 @@ export function isLikelyFaceJsonRecord(parsed: Record<string, unknown>): boolean
   const hasSchemaPropsContract = (Array.isArray(schemaProps) && schemaProps.length > 0)
     || !!readFaceJsonTypedPropsControls(schemaProps);
   const hasName = Boolean(parsed.name);
+  if (hasName && Object.prototype.hasOwnProperty.call(parsed, 'preview')) return true;
   if (parsed.schema === 'face' && parsed['schema-version'] === 1 && parsed.root) return true;
   if (Array.isArray(parsed.controls)) return true;
   if (Array.isArray(parsed.props)) return true;
@@ -513,6 +548,8 @@ export function isLikelyFaceJsonRecord(parsed: Record<string, unknown>): boolean
 export function normalizeFaceJsonContract(parsed: Record<string, unknown>): FaceJsonContract | null {
   if (!isLikelyFaceJsonRecord(parsed)) return null;
 
+  const preview = Object.prototype.hasOwnProperty.call(parsed, 'preview')
+    ? parseFaceJsonPreviewReference(parsed.preview) : undefined;
   const currentState = readFaceCurrentStateProps(parsed.currentState);
   const initialProps = readFaceJsonRecord(parsed.initialProps);
   const root = readFaceJsonRecord(parsed.root);
@@ -531,6 +568,7 @@ export function normalizeFaceJsonContract(parsed: Record<string, unknown>): Face
 
   return {
     ...(typeof parsed.name === 'string' ? { name: parsed.name } : {}),
+    ...(preview ? { preview } : {}),
     ...(currentState ? { currentState } : {}),
     ...(initialProps ? { initialProps } : {}),
     ...(rootProps ? { rootProps } : {}),

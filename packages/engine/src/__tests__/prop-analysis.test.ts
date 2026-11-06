@@ -10,6 +10,8 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 describe('canonical prop analysis', () => {
   it.each([
     { fileName: 'Empty.tsx', framework: 'react' as const, exportName: 'Empty', content: 'export function Empty(){ return null; }' },
+    { fileName: 'Empty.jsx', framework: 'react' as const, exportName: 'default', content: 'export default function Empty(){ return null; }' },
+    { fileName: 'Empty.js', framework: 'react' as const, exportName: 'default', content: 'export default function Empty(){ return null; }' },
     { fileName: 'Empty.vue', framework: 'vue' as const, exportName: 'default', content: '<script setup lang="ts"></script><template><p>Empty</p></template>' },
     { fileName: 'EmptyGeneric.vue', framework: 'vue' as const, exportName: 'default', content: '<script setup lang="ts">defineProps<{}>()</script><template><p>Empty</p></template>' },
     { fileName: 'EmptyRuntime.vue', framework: 'vue' as const, exportName: 'default', content: '<script setup lang="ts">defineProps({})</script><template><p>Empty</p></template>' },
@@ -511,6 +513,96 @@ it('resolves imported props through instance-owned paths without reading the fil
       expect.objectContaining({ name: 'count', type: 'number' }),
     ]));
     expect(result.some(prop => prop.name === 'unrelated')).toBe(false);
+  } finally { parser.dispose(); }
+});
+
+it('unwraps an explicitly selected default forwardRef export and keeps the same props as its named export', () => {
+  const parser = new AdvancedPropParser({ root: '/preview' });
+  const files = { 'Text.tsx': { content: `
+    import React from 'react';
+    export interface TextProps { children?: string; tone?: 'warm' | 'cold'; }
+    export const Text = React.forwardRef<HTMLElement, TextProps>(function Text(props, ref) { return null; });
+    export default Text;
+  ` } };
+  try {
+    const defaults = parser.parseResult({ fileName: 'Text.tsx', exportName: 'default', format: 'source' }, files);
+    const named = parser.parseResult({ fileName: 'Text.tsx', exportName: 'Text', format: 'source' }, files);
+    expect(defaults).toMatchObject({ ok: true, props: [
+      expect.objectContaining({ name: 'children', type: 'string', required: false }),
+      expect.objectContaining({ name: 'tone', options: ['warm', 'cold'], required: false }),
+    ] });
+    expect(defaults).toEqual(named);
+  } finally { parser.dispose(); }
+});
+
+it('keeps installed component props through utility/intersection/generic types while filtering React intrinsic noise', () => {
+  const parser = new AdvancedPropParser({ root: '/preview', paths: {
+    '@vendor/control': ['/preview/node_modules/@vendor/control/index.d.ts'],
+    'react': ['/preview/node_modules/@types/react/index.d.ts'],
+  } });
+  try {
+    const result = parser.parseResult({ fileName: 'Control.tsx', exportName: 'default', format: 'source' }, {
+      'Control.tsx': { content: `
+        import type { ControlProps } from '@vendor/control';
+        type Props = Omit<ControlProps<'warm' | 'cool'>, 'hidden'> & { own?: number };
+        export default function Control(props: Props) { return null; }
+      ` },
+      'node_modules/@vendor/control/index.d.ts': { content: `
+        import type { HTMLAttributes } from 'react';
+        export interface ControlProps<T> extends HTMLAttributes { tone: T; hidden: boolean; caption: string }
+      ` },
+      'node_modules/@types/react/index.d.ts': { content: `
+        export interface HTMLAttributes { children?: string; onAuxClick?: () => void; className?: string }
+      ` },
+    });
+    expect(result).toMatchObject({ ok: true, diagnostics: [] });
+    if (!result.ok) throw new Error(result.error.message);
+    expect(result.props).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'tone', required: true, options: ['warm', 'cool'] }),
+      expect.objectContaining({ name: 'caption', required: true, type: 'string' }),
+      expect.objectContaining({ name: 'own', required: false, type: 'number' }),
+      expect.objectContaining({ name: 'children', isInherited: true }),
+    ]));
+    expect(result.props.find(prop => prop.name === 'caption')?.isInherited).toBeUndefined();
+    expect(result.props.some(prop => prop.name === 'hidden' || prop.name === 'onAuxClick')).toBe(false);
+  } finally { parser.dispose(); }
+});
+
+it('resolves captured modern package exports per importer and forgets deleted package manifests', () => {
+  const parser = new AdvancedPropParser({ root: '/preview' });
+  const files = {
+    'Control.tsx': { content: `import type { Outer } from '@vendor/control'; export function Control(p:Outer){return null}` },
+    'node_modules/@vendor/control/package.json': { content: JSON.stringify({ name: '@vendor/control', exports: { '.': { types: './entry.d.ts' } } }) },
+    'node_modules/@vendor/control/entry.d.ts': { content: `import type { Inner } from '@vendor/value'; export interface Outer { outer: 'root'; nested: Inner }` },
+    'node_modules/@vendor/value/package.json': { content: JSON.stringify({ name: '@vendor/value', exports: { '.': { types: './entry.d.ts' } } }) },
+    'node_modules/@vendor/value/entry.d.ts': { content: `export type Inner = 'wrong-root'` },
+    'node_modules/@vendor/control/node_modules/@vendor/value/package.json': { content: JSON.stringify({ name: '@vendor/value', exports: { '.': { types: './entry.d.ts' } } }) },
+    'node_modules/@vendor/control/node_modules/@vendor/value/entry.d.ts': { content: `export type Inner = 'correct-nested'` },
+  };
+  try {
+    const result = parser.parseResult({ fileName: 'Control.tsx', exportName: 'Control', format: 'source' }, files);
+    expect(result).toMatchObject({ ok: true, diagnostics: [] });
+    expect(result.ok && result.props).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: 'nested', type: '"correct-nested"' }),
+    ]));
+    const withoutManifest = { ...files };
+    delete (withoutManifest as Partial<typeof files>)['node_modules/@vendor/control/package.json'];
+    expect(parser.parseResult({ fileName: 'Control.tsx', exportName: 'Control', format: 'source' }, withoutManifest)).toMatchObject({ ok: false });
+  } finally { parser.dispose(); }
+});
+
+it('analyzes a selected export-star component without treating a type-only star export as a runtime value', () => {
+  const parser = new AdvancedPropParser({ root: '/preview' });
+  try {
+    const files = {
+      'index.ts': { content: 'export * from "./Control"; export type * from "./types";' },
+      'Control.tsx': { content: 'export function Control({caption="Source"}:{caption?:string}){return null}' },
+      'types.ts': { content: 'export interface TypeOnly { forbidden: string }' },
+    };
+    expect(parser.parseResult({ fileName: 'index.ts', exportName: 'Control', format: 'source' }, files)).toMatchObject({
+      ok: true, props: [expect.objectContaining({ name: 'caption', type: 'string' })], diagnostics: [],
+    });
+    expect(parser.parseResult({ fileName: 'index.ts', exportName: 'TypeOnly', format: 'source' }, files)).toMatchObject({ ok: false });
   } finally { parser.dispose(); }
 });
 
