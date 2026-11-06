@@ -6,31 +6,31 @@
     "description": "Minimal face schema v1 document that renders a small UI tree"
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
-      "left": "UI from face.json",
-      "right": {
-        "$ref": "props.right"
+      "title": "UI from face.json",
+      "description": {
+        "$ref": "props.subtitle"
       }
     },
     "children": [
       {
         "type": "Text",
         "props": {
-          "text": "Hello from face schema v1"
+          "children": "Hello from face schema v1"
         }
       },
       {
         "type": "Button",
         "props": {
-          "text": "Click",
           "variant": "accent",
           "onClick": {
             "$action": "log",
             "args": {
               "msg": "clicked"
             }
-          }
+          },
+          "children": "Click"
         }
       }
     ]

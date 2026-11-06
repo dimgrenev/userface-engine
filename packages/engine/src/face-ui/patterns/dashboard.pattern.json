@@ -172,14 +172,14 @@
               "type": "Text",
               "props": {
                 "variant": "h1",
-                "text": "Dashboard"
+                "children": "Dashboard"
               },
               "key": "title"
             },
             {
               "type": "Date",
               "props": {
-                "mode": "range"
+                "selection": "range"
               },
               "key": "date-range"
             }
@@ -197,7 +197,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "muted",
-                    "text": "Total Users"
+                    "children": "Total Users"
                   },
                   "key": "label"
                 },
@@ -205,15 +205,15 @@
                   "type": "Text",
                   "props": {
                     "variant": "h2",
-                    "text": "12,345"
+                    "children": "12,345"
                   },
                   "key": "value"
                 },
                 {
                   "type": "Badge",
                   "props": {
-                    "text": "+12%",
-                    "variant": "success"
+                    "tone": "positive",
+                    "children": "+12%"
                   },
                   "key": "trend"
                 }
@@ -227,7 +227,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "muted",
-                    "text": "Revenue"
+                    "children": "Revenue"
                   },
                   "key": "label"
                 },
@@ -235,15 +235,15 @@
                   "type": "Text",
                   "props": {
                     "variant": "h2",
-                    "text": "$45,678"
+                    "children": "$45,678"
                   },
                   "key": "value"
                 },
                 {
                   "type": "Badge",
                   "props": {
-                    "text": "+8%",
-                    "variant": "success"
+                    "tone": "positive",
+                    "children": "+8%"
                   },
                   "key": "trend"
                 }
@@ -257,7 +257,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "muted",
-                    "text": "Conversion"
+                    "children": "Conversion"
                   },
                   "key": "label"
                 },
@@ -265,15 +265,15 @@
                   "type": "Text",
                   "props": {
                     "variant": "h2",
-                    "text": "3.2%"
+                    "children": "3.2%"
                   },
                   "key": "value"
                 },
                 {
                   "type": "Badge",
                   "props": {
-                    "text": "-0.5%",
-                    "variant": "warning"
+                    "tone": "warning",
+                    "children": "-0.5%"
                   },
                   "key": "trend"
                 }
@@ -351,7 +351,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h1",
-                    "text": "Analytics"
+                    "children": "Analytics"
                   },
                   "key": "title"
                 },
@@ -377,14 +377,14 @@
                       "type": "Text",
                       "props": {
                         "variant": "muted",
-                        "text": "Visitors"
+                        "children": "Visitors"
                       }
                     },
                     {
                       "type": "Text",
                       "props": {
                         "variant": "h2",
-                        "text": "24,500"
+                        "children": "24,500"
                       }
                     }
                   ]
@@ -398,14 +398,14 @@
                       "type": "Text",
                       "props": {
                         "variant": "muted",
-                        "text": "Page Views"
+                        "children": "Page Views"
                       }
                     },
                     {
                       "type": "Text",
                       "props": {
                         "variant": "h2",
-                        "text": "89,100"
+                        "children": "89,100"
                       }
                     }
                   ]
@@ -470,7 +470,7 @@
               "type": "Text",
               "props": {
                 "variant": "h1",
-                "text": "Sales Overview"
+                "children": "Sales Overview"
               },
               "key": "title"
             },
@@ -486,14 +486,14 @@
                       "type": "Text",
                       "props": {
                         "variant": "muted",
-                        "text": "MRR"
+                        "children": "MRR"
                       }
                     },
                     {
                       "type": "Text",
                       "props": {
                         "variant": "h2",
-                        "text": "$125,000"
+                        "children": "$125,000"
                       }
                     }
                   ]
@@ -506,14 +506,14 @@
                       "type": "Text",
                       "props": {
                         "variant": "muted",
-                        "text": "New Customers"
+                        "children": "New Customers"
                       }
                     },
                     {
                       "type": "Text",
                       "props": {
                         "variant": "h2",
-                        "text": "48"
+                        "children": "48"
                       }
                     }
                   ]
@@ -526,14 +526,14 @@
                       "type": "Text",
                       "props": {
                         "variant": "muted",
-                        "text": "Churn Rate"
+                        "children": "Churn Rate"
                       }
                     },
                     {
                       "type": "Text",
                       "props": {
                         "variant": "h2",
-                        "text": "2.1%"
+                        "children": "2.1%"
                       }
                     }
                   ]

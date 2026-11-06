@@ -41,7 +41,7 @@ When building UI:
     "props": { "label": "Hello", "variant": "accent" },
     "children": [
       { "type": "Input", "props": { "label": "Name", "value": { "$ref": "user.name" } } },
-      { "type": "Button", "props": { "text": "Save", "onClick": { "$action": "form.submit" } } }
+      { "type": "Button", "props": { "children": "Save", "onClick": { "$action": "form.submit" } } }
     ]
   }
 }

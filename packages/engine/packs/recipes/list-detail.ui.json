@@ -13,7 +13,7 @@
     ]
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
       "title": {
         "$ref": "page.title"
@@ -21,7 +21,7 @@
     },
     "children": [
       {
-        "type": "Panel",
+        "type": "Card",
         "key": "list-pane",
         "children": [
           {
@@ -33,7 +33,7 @@
               "value": {
                 "$ref": "list.searchQuery"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "list.filter"
               }
             }
@@ -56,7 +56,7 @@
         ]
       },
       {
-        "type": "Panel",
+        "type": "Card",
         "key": "detail-pane",
         "props": {
           "title": {
@@ -68,7 +68,7 @@
             "type": "Text",
             "key": "detail-id",
             "props": {
-              "text": {
+              "children": {
                 "$ref": "detail.id"
               }
             }
@@ -77,7 +77,7 @@
             "type": "Text",
             "key": "detail-desc",
             "props": {
-              "text": {
+              "children": {
                 "$ref": "detail.description"
               }
             }
@@ -86,22 +86,22 @@
             "type": "Button",
             "key": "edit-btn",
             "props": {
-              "text": "Edit",
               "variant": "accent",
               "onClick": {
                 "$action": "detail.edit"
-              }
+              },
+              "children": "Edit"
             }
           },
           {
             "type": "Button",
             "key": "delete-btn",
             "props": {
-              "text": "Delete",
               "variant": "outline",
               "onClick": {
                 "$action": "detail.delete"
-              }
+              },
+              "children": "Delete"
             }
           }
         ]

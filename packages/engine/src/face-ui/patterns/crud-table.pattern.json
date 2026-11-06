@@ -165,7 +165,7 @@
               "type": "Text",
               "props": {
                 "variant": "h2",
-                "text": "Items"
+                "children": "Items"
               },
               "key": "title"
             },
@@ -180,8 +180,8 @@
             {
               "type": "Button",
               "props": {
-                "text": "Create",
-                "variant": "accent"
+                "variant": "accent",
+                "children": "Create"
               },
               "key": "create"
             }
@@ -222,14 +222,15 @@
               "type": "Text",
               "props": {
                 "variant": "muted",
-                "text": "Showing 1-10 of 50"
+                "children": "Showing 1-10 of 50"
               },
               "key": "count"
             },
             {
               "type": "Pagination",
               "props": {
-                "total": 5
+                "total": 50,
+                "pageSize": 10
               },
               "key": "pagination"
             }
@@ -299,7 +300,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h2",
-                    "text": "Users"
+                    "children": "Users"
                   },
                   "key": "title"
                 },
@@ -314,8 +315,8 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Add User",
-                    "variant": "accent"
+                    "variant": "accent",
+                    "children": "Add User"
                   },
                   "key": "add"
                 }
@@ -374,7 +375,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "h2",
-                    "text": "Inventory"
+                    "children": "Inventory"
                   },
                   "key": "title"
                 },
@@ -395,8 +396,8 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Add Product",
-                    "variant": "accent"
+                    "variant": "accent",
+                    "children": "Add Product"
                   },
                   "key": "add"
                 }

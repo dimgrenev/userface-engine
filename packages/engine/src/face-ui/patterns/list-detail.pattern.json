@@ -31,7 +31,7 @@
       "minCount": 1
     },
     {
-      "type": "Panel",
+      "type": "Card",
       "minCount": 1
     }
   ],
@@ -64,7 +64,7 @@
         "Panel",
         "Panel"
       ],
-      "reason": "Nested detail panels are confusing; use one detail level or navigate to a new page"
+      "reason": "Nested sidebars are confusing; one navigation panel per screen, and the detail pane is a Card"
     },
     {
       "nested": [
@@ -77,7 +77,7 @@
   "componentSelection": {
     "faceUiPrimitives": [
       "Table",
-      "Panel",
+      "Card",
       "Input",
       "Text",
       "Button",
@@ -178,14 +178,14 @@
           ]
         },
         {
-          "type": "Panel",
+          "type": "Card",
           "key": "detail-pane",
           "children": [
             {
               "type": "Text",
               "props": {
                 "variant": "h3",
-                "text": "Item Title"
+                "children": "Item Title"
               },
               "key": "detail-title"
             },
@@ -193,7 +193,7 @@
               "type": "Text",
               "props": {
                 "variant": "muted",
-                "text": "Subtitle or metadata"
+                "children": "Subtitle or metadata"
               },
               "key": "detail-meta"
             },
@@ -205,7 +205,7 @@
               "type": "Text",
               "props": {
                 "variant": "body",
-                "text": "Detail content goes here..."
+                "children": "Detail content goes here..."
               },
               "key": "detail-body"
             },
@@ -216,16 +216,16 @@
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Edit",
-                    "variant": "default"
+                    "variant": "default",
+                    "children": "Edit"
                   },
                   "key": "edit"
                 },
                 {
                   "type": "Button",
                   "props": {
-                    "text": "Delete",
-                    "variant": "destructive"
+                    "variant": "destructive",
+                    "children": "Delete"
                   },
                   "key": "delete"
                 }
@@ -259,7 +259,7 @@
           "type": "Modal",
           "minCount": 1,
           "props": {
-            "placement": "right",
+            "placement": "end",
             "edge": "flush"
           }
         }
@@ -330,14 +330,14 @@
               ]
             },
             {
-              "type": "Panel",
+              "type": "Card",
               "key": "email-view",
               "children": [
                 {
                   "type": "Text",
                   "props": {
                     "variant": "h3",
-                    "text": "RE: Project Update"
+                    "children": "RE: Project Update"
                   },
                   "key": "subject"
                 },
@@ -345,7 +345,7 @@
                   "type": "Text",
                   "props": {
                     "variant": "muted",
-                    "text": "From: alice@example.com — Mar 15, 2026"
+                    "children": "From: alice@example.com — Mar 15, 2026"
                   },
                   "key": "meta"
                 },
@@ -356,7 +356,7 @@
                 {
                   "type": "Markdown",
                   "props": {
-                    "content": "Email body content..."
+                    "children": "Email body content..."
                   },
                   "key": "body"
                 },
@@ -367,14 +367,14 @@
                     {
                       "type": "Button",
                       "props": {
-                        "text": "Reply"
+                        "children": "Reply"
                       },
                       "key": "reply"
                     },
                     {
                       "type": "Button",
                       "props": {
-                        "text": "Forward"
+                        "children": "Forward"
                       },
                       "key": "forward"
                     }
@@ -412,8 +412,8 @@
                     {
                       "type": "Button",
                       "props": {
-                        "text": "Upload",
-                        "variant": "accent"
+                        "variant": "accent",
+                        "children": "Upload"
                       },
                       "key": "upload"
                     }
@@ -445,7 +445,7 @@
               ]
             },
             {
-              "type": "Panel",
+              "type": "Card",
               "key": "preview",
               "children": [
                 {
@@ -457,7 +457,9 @@
                 },
                 {
                   "type": "Media",
-                  "props": {},
+                  "props": {
+                    "src": "preview.png"
+                  },
                   "key": "preview-img"
                 },
                 {

@@ -7,12 +7,12 @@ import { FaceUi, createFaceUiRegistry } from '@userface/engine/face-ui';
  * In a real app, map these to your UI library components.
  */
 const Button: React.FC<any> = (p) => <button {...p} />;
-const Text: React.FC<any> = (p) => <div {...p}>{p.text}</div>;
-const Panel: React.FC<any> = (p) => (
+const Text: React.FC<any> = (p) => <div {...p}>{p.children}</div>;
+const Card: React.FC<any> = (p) => (
   <div style={{ border: '1px solid #ccc', padding: 12 }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-      <div>{p.left}</div>
-      <div>{p.right}</div>
+    <div style={{ marginBottom: 8 }}>
+      <strong>{p.title}</strong>
+      <div>{p.description}</div>
     </div>
     <div>{p.children}</div>
   </div>
@@ -21,14 +21,14 @@ const Panel: React.FC<any> = (p) => (
 const registry = createFaceUiRegistry({
   Button,
   Text,
-  Panel,
+  Card,
 });
 
 export function AppFromFace(props: { doc: FaceUiDoc }) {
   return (
     <FaceUi
       doc={props.doc}
-      props={{ right: '…right slot…' }}
+      props={{ subtitle: '…subtitle from props…' }}
       context={{}}
       registry={registry}
       actions={{

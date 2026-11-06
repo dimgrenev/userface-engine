@@ -59,8 +59,8 @@ export function createEngine(options: CreateEngineOptions = {}): EngineInstance 
     async analyzeComponent(files, entry) {
       try {
         if (!entry || !entry.entryPath) throw new Error('entryPath is required');
-        diagnostics.lastAnalyze = { entryPath: entry.entryPath, files: files?.length || 0 };
-        return await (core as any).analyzeComponent(files as any, { entryPath: entry.entryPath });
+        diagnostics.lastAnalyze = { entryPath: entry.entryPath, exportName: entry.exportName, files: files?.length || 0 };
+        return await core.analyzeComponent(files, entry);
       } catch (e) {
         throw toUfErrorPayload(e, { code: 'UF200' as any, phase: 'engine_analyze', owner: 'engine', details: { entry } });
       }
@@ -69,6 +69,11 @@ export function createEngine(options: CreateEngineOptions = {}): EngineInstance 
       try {
         diagnostics.lastRender = { specId, mode };
         const r: any = await (core as any).renderFromSpec(specId, props, mode);
+        if (r?.success === false || r?.type === 'error') {
+          throw Object.assign(new Error(String(r.error || r.data || 'Component render failed')), {
+            code: 'UF400', phase: 'engine_render', owner: 'engine', details: { specId, mode, logs: r.logs },
+          });
+        }
         // Prefer stable contract fields if present.
         if (r && typeof r === 'object' && r.type && r.data) {
           return { type: String(r.type), data: r.data } as EngineRenderResult;
@@ -99,5 +104,4 @@ export function createEngine(options: CreateEngineOptions = {}): EngineInstance 
     },
   };
 }
-
 

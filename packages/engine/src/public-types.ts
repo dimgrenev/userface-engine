@@ -21,6 +21,8 @@ export type UfErrorPayload = {
 
 export type EngineEntryPathOptions = {
   entryPath: string;
+  /** Explicit source-module export for Node analysis/rendering. Null/omitted preserves legacy selection. */
+  exportName?: string | null;
 };
 
 export type EngineAnalyzeFile = { name: string; content: string };
@@ -30,6 +32,7 @@ export type EngineRenderMode = 'live' | 'ssr';
 export type EngineRenderData = {
   componentCode: string;
   componentName: string;
+  html?: string;
   styles?: string;
   props?: any;
   files?: any;

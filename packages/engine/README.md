@@ -157,14 +157,31 @@ const spec = await engine.analyzeComponent(
       `,
     },
   ],
-  { entryPath: 'Button.tsx' },
+  { entryPath: 'Button.tsx', exportName: 'Button' },
 );
 
 const states = engine.generateStates(spec.props);
+const rendered = await engine.renderFromSpec(spec.name, { disabled: true }, 'ssr');
 ```
 
-`entryPath` is required. The engine does not guess the main file when called
-through the SDK.
+`entryPath` is required. In Node, `exportName` selects the exact source export,
+including named exports and relative reexports; use `'default'` for a default
+export. Its props are analyzed with the existing AST parser. Different exports
+have distinct spec IDs and retain their captured input files. Include their
+relative dependencies in `files`. Omitted/null `exportName` retains the legacy
+spec ID and default selection. Explicit selection never falls back to a neighbour.
+
+SSR returns static `data.html`, without CDN scripts or browser execution of the
+server bundle. It uses the supplied framework runtime; unavailable SSR imports
+and component errors reject with `UF400`. A successful null component is valid.
+The React SSR resolver accepts the injected React and ReactDOMServer APIs, not
+arbitrary project packages. For live preview, `'live'` returns `componentCode`
+and captured files without executing the component on the server. Its host must
+provide the preview runtime and external dependencies before evaluating it.
+An SSR failure is not proof that the same component cannot render in a browser.
+The synchronous React SSR adapter diagnoses native async roots (including
+memo/forwardRef wrappers) before invoking them; use the browser path for these
+components. This API does not provide an asynchronous SSR renderer.
 
 ## MCP
 
@@ -236,7 +253,7 @@ Face schema v1 is a declarative composition document.
   "schema": "face",
   "schema-version": 1,
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": { "title": "Settings" },
     "children": [
       {
@@ -266,7 +283,51 @@ import { validateFaceUiDoc, generateReactCode } from '@userface/engine/face-ui';
 import { bundleFromVfs } from '@userface/engine/bundler';
 import { transpileToIIFE } from '@userface/engine/transpiler';
 import { ensureEngineReady } from '@userface/engine/integrations/next/engineController';
+import { discoverSourceComponentExports, discoverStorybookExports } from '@userface/engine/source';
+import { AdvancedPropParser } from '@userface/engine/prop-analysis';
+import { decodeFaceJsonContract, resolveFaceJsonPreviewProps } from '@userface/engine/face-contract';
+import { FaceUi } from '@userface/engine/face-ui/react';
 ```
+
+`/source` inspects exports with the TypeScript AST without executing project code;
+reexport resolution uses a supplied module reader. `/face-contract` preserves the
+supported Face props/state semantics without importing Node or React. The narrow
+`/face-ui/react` export supplies the ESM renderer for browser preview bundles;
+Node build tools may resolve this public entry instead of locating package internals.
+
+`/prop-analysis` provides instance-owned AST metadata analysis, separate from
+runtime rendering. Pass the source snapshot and an explicit export:
+
+```ts
+const parser = new AdvancedPropParser();
+const props = parser.parse('Button.tsx', {
+  'Button.tsx': { content: 'export function Button(p: {label:string}) { return null; }' },
+}, 'react', 'Button');
+parser.dispose();
+```
+
+For a catalog, `parser.parseMany([{ fileName: 'Button.tsx', exportName: 'Button' }],
+files)` captures the inputs once and reuses the in-memory TypeScript project.
+It returns a prop list for each target, in the same order. Updating or removing
+a captured type declaration invalidates the corresponding snapshot cache.
+
+Pass `format: 'source' | 'story'` on a batch target when its format is explicit.
+Source analysis ignores story annotations even in a `.stories` file; story
+analysis works in ordinary filenames and requires an existing named export.
+Omitting the format preserves legacy filename inference. Results are cached
+separately by format; story literal options retain strings, numbers and booleans.
+
+`generateStates` accepts `StateMatrixProp` inputs whose options can be strings,
+numbers or booleans. It preserves those literal values and explicit null defaults;
+existing `ComponentProp` inputs with string options remain compatible.
+
+The default filesystem is in memory: omitted imports are not read from the host.
+Include imported type declarations in the snapshot. `onDiagnostic` reports
+recoverable parser failures; returned metadata and caches are detached between
+calls. `root`, `allowFileSystem` and `tsConfigFilePath` explicitly opt a legacy
+host into disk-backed analysis. The API never executes the component or turns
+metadata defaults into runtime props. It does not change the older
+`createEngine().analyzeComponent` contract or promise complete type inference.
 
 ## Known Limits
 
@@ -282,3 +343,8 @@ import { ensureEngineReady } from '@userface/engine/integrations/next/engineCont
 ## License
 
 MIT
+
+`@userface/engine/face-ui/model` provides browser-safe document types,
+`materializeFaceUiDoc`, and the existing node patch operations (`setNodeProp`,
+`unsetNodeProp`, etc.). It does not import filesystem validation or the source
+analyzer. Use it for inspectors; the full `/face-ui` entry remains available.

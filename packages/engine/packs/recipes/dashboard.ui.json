@@ -12,7 +12,7 @@
     ]
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
       "title": "Dashboard"
     },
@@ -21,75 +21,73 @@
         "type": "Tabs",
         "key": "nav",
         "props": {
-          "tabs": [
+          "items": [
             {
-              "id": "overview",
+              "value": "overview",
               "label": "Overview"
             },
             {
-              "id": "users",
+              "value": "users",
               "label": "Users"
             },
             {
-              "id": "settings",
+              "value": "settings",
               "label": "Settings"
             }
           ],
-          "active": {
+          "value": {
             "$ref": "nav.activeTab"
           }
+        }
+      },
+      {
+        "type": "Card",
+        "key": "stats",
+        "props": {
+          "title": "Key Metrics"
         },
         "children": [
           {
-            "type": "Panel",
-            "key": "stats",
+            "type": "Text",
+            "key": "metric-users",
             "props": {
-              "title": "Key Metrics"
-            },
-            "children": [
-              {
-                "type": "Text",
-                "key": "metric-users",
-                "props": {
-                  "text": {
-                    "$ref": "stats.totalUsers"
-                  }
-                }
-              },
-              {
-                "type": "Text",
-                "key": "metric-revenue",
-                "props": {
-                  "text": {
-                    "$ref": "stats.revenue"
-                  }
-                }
-              },
-              {
-                "type": "Progress",
-                "key": "metric-progress",
-                "props": {
-                  "value": {
-                    "$ref": "stats.goalProgress"
-                  },
-                  "label": "Goal Progress"
-                }
+              "children": {
+                "$ref": "stats.totalUsers"
               }
-            ]
+            }
           },
           {
-            "type": "Table",
-            "key": "data-table",
+            "type": "Text",
+            "key": "metric-revenue",
             "props": {
-              "columns": {
-                "$ref": "table.columns"
-              },
-              "rows": {
-                "$ref": "table.rows"
+              "children": {
+                "$ref": "stats.revenue"
               }
+            }
+          },
+          {
+            "type": "Progress",
+            "key": "metric-progress",
+            "props": {
+              "value": {
+                "$ref": "stats.goalProgress"
+              },
+              "label": "Goal Progress"
             }
           }
         ]
+      },
+      {
+        "type": "Table",
+        "key": "data-table",
+        "props": {
+          "columns": {
+            "$ref": "table.columns"
+          },
+          "rows": {
+            "$ref": "table.rows"
+          }
+        }
       }
     ]
   }

@@ -125,7 +125,7 @@
           "type": "Text",
           "props": {
             "variant": "h3",
-            "text": "Pro license"
+            "children": "Pro license"
           },
           "key": "title"
         },
@@ -133,7 +133,7 @@
           "type": "Text",
           "props": {
             "variant": "muted",
-            "text": "Commercial license for one product."
+            "children": "Commercial license for one product."
           },
           "key": "description"
         },
@@ -208,7 +208,7 @@
               "type": "Text",
               "props": {
                 "variant": "h3",
-                "text": "Desktop license"
+                "children": "Desktop license"
               },
               "key": "title"
             },

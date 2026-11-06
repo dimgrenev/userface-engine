@@ -1,7 +1,7 @@
 import React from 'react';
 import type { FaceUiActions, FaceUiDoc, FaceUiRenderEnv, FaceUiRegistry } from './types';
 import { createFaceUiRegistry } from './registry';
-import { renderFaceUiToReact } from './react';
+import { renderFaceUiToReact, type FaceUiReactRenderOptions } from './react';
 
 export type FaceUiProps = {
   /** Face document in schema `face` version 1. */
@@ -33,6 +33,8 @@ export type FaceUiProps = {
   nodeIdPolicy?: FaceUiRenderEnv['nodeIdPolicy'];
   /** Maximum tree depth allowed during materialization/render (default: 64). */
   maxDepth?: FaceUiRenderEnv['maxDepth'];
+  /** Observe the Engine-created DOM wrapper for each Face node. */
+  onNodeElement?: FaceUiReactRenderOptions['onNodeElement'];
 };
 
 function defaultResolveRef(ref: any, ctx: any): any {
@@ -47,7 +49,7 @@ function defaultResolveRef(ref: any, ctx: any): any {
 }
 
 export function FaceUi(props: FaceUiProps): React.ReactElement | null {
-  const { doc, props: uiProps, context, registry, components, actions, resolveRef, nodeIdPolicy, maxDepth } = props;
+  const { doc, props: uiProps, context, registry, components, actions, resolveRef, nodeIdPolicy, maxDepth, onNodeElement } = props;
 
   const env = React.useMemo<FaceUiRenderEnv>(() => {
     const reg =
@@ -63,5 +65,5 @@ export function FaceUi(props: FaceUiProps): React.ReactElement | null {
     };
   }, [registry, components, context, uiProps, actions, resolveRef, nodeIdPolicy, maxDepth]);
 
-  return renderFaceUiToReact(doc, env) as any;
+  return renderFaceUiToReact(doc, env, { onNodeElement }) as any;
 }

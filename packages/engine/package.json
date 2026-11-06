@@ -1,6 +1,6 @@
 {
   "name": "@userface/engine",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Component contracts, validation, registry scanning, face composition, code generation, and MCP tooling for AI-assisted UI work.",
   "license": "MIT",
@@ -71,7 +71,36 @@
     },
     "./schemas/userface-proof@1.json": "./dist/schemas/userface-proof@1.json",
     "./schemas/merge-gate-evidence@1.json": "./dist/schemas/merge-gate-evidence@1.json",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./source": {
+      "types": "./dist/types/source/index.d.ts",
+      "import": "./dist/esm/source/index.js",
+      "require": "./dist/cjs/source/index.js"
+    },
+    "./face-contract": {
+      "types": "./dist/types/face-contract/index.d.ts",
+      "import": "./dist/esm/face-contract/index.js",
+      "require": "./dist/cjs/face-contract/index.js"
+    },
+    "./face-ui/react": {
+      "types": "./dist/types/face-ui/FaceUi.d.ts",
+      "default": "./dist/esm/face-ui/FaceUi.js"
+    },
+    "./prop-analysis": {
+      "types": "./dist/types/prop-analysis/index.d.ts",
+      "import": "./dist/esm/prop-analysis/index.js",
+      "require": "./dist/cjs/prop-analysis/index.js"
+    },
+    "./prop-analysis/lightweight": {
+      "types": "./dist/types/prop-analysis/lightweight/index.d.ts",
+      "import": "./dist/esm/prop-analysis/lightweight/index.js",
+      "require": "./dist/cjs/prop-analysis/lightweight/index.js"
+    },
+    "./face-ui/model": {
+      "types": "./dist/types/face-ui/model.d.ts",
+      "import": "./dist/esm/face-ui/model.js",
+      "require": "./dist/cjs/face-ui/model.js"
+    }
   },
   "files": [
     "bin",
@@ -129,7 +158,9 @@
   "dependencies": {
     "node-fetch": "^3.3.2",
     "tar": "^7.5.9",
-    "zod": "^4.0.15"
+    "zod": "^4.0.15",
+    "typescript": "^5.9.3",
+    "ts-morph": "^28.0.0"
   },
   "optionalDependencies": {
     "keytar": "^7.9.0"
@@ -151,7 +182,6 @@
     "@typescript-eslint/parser": "^8.56.0",
     "eslint": "^10.0.0",
     "eslint-plugin-react-hooks": "^7.1.1",
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "prettier": "^3.8.1"
   }
 }

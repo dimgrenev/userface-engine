@@ -10,6 +10,15 @@
  */
 
 import { z } from 'zod';
+import { parseFaceJsonPreviewReference } from '../face-contract/faceJson.js';
+
+const PreviewReferenceSchema = z.unknown().transform((value, context) => {
+  try { return parseFaceJsonPreviewReference(value); }
+  catch (error) {
+    context.addIssue({ code: 'custom', message: error instanceof Error ? error.message : 'Invalid Face preview reference.' });
+    return z.NEVER;
+  }
+});
 
 // ---------------------------------------------------------------------------
 // v1 (existing) sections
@@ -130,6 +139,7 @@ export const FaceJsonV2Schema = z.object({
   // v1 fields
   name: z.string(),
   description: z.string().optional(),
+  preview: PreviewReferenceSchema.optional(),
   props: z.record(z.string(), PropDefinitionSchema).optional(),
   states: z.array(StateDefinitionSchema).optional(),
 

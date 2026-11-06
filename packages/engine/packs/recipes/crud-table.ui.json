@@ -13,7 +13,7 @@
     ]
   },
   "root": {
-    "type": "Panel",
+    "type": "Card",
     "props": {
       "title": {
         "$ref": "page.title"
@@ -21,7 +21,7 @@
     },
     "children": [
       {
-        "type": "Panel",
+        "type": "Bar",
         "key": "toolbar",
         "children": [
           {
@@ -33,7 +33,7 @@
               "value": {
                 "$ref": "search.query"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "search.update"
               }
             }
@@ -42,11 +42,11 @@
             "type": "Button",
             "key": "create-btn",
             "props": {
-              "text": "Create New",
               "variant": "accent",
               "onClick": {
                 "$action": "modal.openCreate"
-              }
+              },
+              "children": "Create New"
             }
           }
         ]
@@ -73,7 +73,7 @@
           "title": {
             "$ref": "modal.title"
           },
-          "onClose": {
+          "onOpenChange": {
             "$action": "modal.close"
           }
         },
@@ -86,7 +86,7 @@
               "value": {
                 "$ref": "modal.form.name"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "form.updateName"
               }
             }
@@ -99,7 +99,7 @@
               "value": {
                 "$ref": "modal.form.email"
               },
-              "onChange": {
+              "onValueChange": {
                 "$action": "form.updateEmail"
               }
             }
@@ -108,22 +108,22 @@
             "type": "Button",
             "key": "save-btn",
             "props": {
-              "text": "Save",
               "type": "submit",
               "onClick": {
                 "$action": "form.submit"
-              }
+              },
+              "children": "Save"
             }
           },
           {
             "type": "Button",
             "key": "cancel-btn",
             "props": {
-              "text": "Cancel",
               "variant": "outline",
               "onClick": {
                 "$action": "modal.close"
-              }
+              },
+              "children": "Cancel"
             }
           }
         ]
